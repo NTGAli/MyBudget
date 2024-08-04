@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MyBudget"
 include(":app")
+include(":core:designsystem")
