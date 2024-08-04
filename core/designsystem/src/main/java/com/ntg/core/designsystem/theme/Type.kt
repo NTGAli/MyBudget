@@ -9,10 +9,10 @@ import androidx.compose.ui.unit.sp
 import com.ntg.mybudget.core.designsystem.R
 
 val outlineFonts = FontFamily(
-//    Font(R.font.outfilt_light, FontWeight.Light),
-//    Font(R.font.outfilt_regular, FontWeight.Normal),
-//    Font(R.font.outfilt_medium, FontWeight.Medium),
-//    Font(R.font.outfilt_bold, FontWeight.Bold)
+    Font(R.font.bakh_light, FontWeight.Light),
+    Font(R.font.bakh_regular, FontWeight.Normal),
+    Font(R.font.bakh_regular, FontWeight.Medium),
+    Font(R.font.bakh_bold, FontWeight.Bold)
 )
 
 val Typography = Typography(
