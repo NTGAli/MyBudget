@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
+import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.designsystem.theme.MyBudgetTheme
@@ -96,6 +97,14 @@ class MainActivity : ComponentActivity() {
 
 
                         AmountReport(outcome = "120000", income = "500000")
+
+                        CardReport(
+                            modifier = Modifier.padding(24.dp),
+                             title = "140000 ت",
+                            subTitle = "موجودی همه ی حساب ها",
+                            out = "140000",
+                            inValue = "140000"
+                        )
 
                     }
                 }
