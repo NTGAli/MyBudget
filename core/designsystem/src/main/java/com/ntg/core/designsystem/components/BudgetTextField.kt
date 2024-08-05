@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
@@ -48,6 +49,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -61,6 +63,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.BufferedReader
@@ -321,122 +324,122 @@ fun BudgetTextField(
             })
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-
-
-        Row(
-            modifier = Modifier
-                .semantics(mergeDescendants = true) {}
-                .padding(top = 8.dp)
-                .height(IntrinsicSize.Min)
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr ) {
+        Box(
+            modifier = modifier
                 .fillMaxWidth()
-//                .padding(vertical = 16.dp)
-                .align(Alignment.BottomCenter)
-                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                .padding(vertical = 14.dp)
-                .wrapContentHeight(),
-            verticalAlignment = Alignment.CenterVertically
-
         ) {
-
-            Text(
-                modifier = Modifier.padding(start = 9.dp, end = 4.dp),
-                text = "+", style = TextStyle(fontSize = 14.sp)
-            )
-
-            BasicTextField(
+            Row(
                 modifier = Modifier
-                    .weight(2f)
-                    .padding(start = (1.5).dp),
-                value = code.value,
-                onValueChange = {
-                    code.value = it
-                },
-                textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            )
+                    .semantics(mergeDescendants = true) {}
+                    .padding(top = 8.dp)
+                    .height(IntrinsicSize.Min)
+                    .fillMaxWidth()
+//                .padding(vertical = 16.dp)
+                    .align(Alignment.BottomCenter)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                    .padding(vertical = 14.dp)
+                    .wrapContentHeight(),
+                verticalAlignment = Alignment.CenterVertically
 
-
-            VerticalDivider(
-                Modifier
-                    .width(1.dp)
-                    .fillMaxHeight(),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest
-            )
-
-            Box(
-                modifier = Modifier
-                    .weight(10f)
             ) {
 
-                if (annotatedString.value.text.isEmpty()) {
-                    Text(
-                        modifier = Modifier.padding(start = 8.dp),
-                        text =
-                        mask,
-                        style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outline)
-                    )
-                } else {
-                    Text(
-                        modifier = Modifier.padding(start = 8.dp),
-                        text =
-                        annotatedString.value,
-                        style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outline)
-                    )
-                }
-
+                Text(
+                    modifier = Modifier.padding(start = 9.dp, end = 4.dp),
+                    text = "+", style = TextStyle(fontSize = 14.sp)
+                )
 
                 BasicTextField(
-
-                    value = phone.value,
-
-                    onValueChange = { newTextFieldValueState ->
-                        val trimMask = mask.replace(" ", "")
-                        if (newTextFieldValueState.length <= trimMask.length ||
-                            mask.isEmpty()
-                        ) {
-                            phone.value = newTextFieldValueState
-                        }
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    visualTransformation = if (mask.isNotEmpty()) PhoneVisualTransformation(
-                        mask, '0'
-                    ) else VisualTransformation.None,
                     modifier = Modifier
-                        .padding(start = 8.dp)
-                        .onPreviewKeyEvent {
-                            if (it.key == Key.Backspace) {
-                                if (phone.value.isEmpty()) {
-                                    code.value = code.value.dropLast(1)
-                                    isBackspaceClicked = true
-                                }
-                            }
-                            false
-                        },
+                        .weight(2f)
+                        .padding(start = (1.5).dp),
+                    value = code.value,
+                    onValueChange = {
+                        code.value = it
+                    },
                     textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                    maxLines = 1,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 )
+
+
+                VerticalDivider(
+                    Modifier
+                        .width(1.dp)
+                        .fillMaxHeight(),
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(10f)
+                ) {
+
+                    if (annotatedString.value.text.isEmpty()) {
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text =
+                            mask,
+                            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outline)
+                        )
+                    } else {
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text =
+                            annotatedString.value,
+                            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outline)
+                        )
+                    }
+
+
+                    BasicTextField(
+
+                        value = phone.value,
+
+                        onValueChange = { newTextFieldValueState ->
+                            val trimMask = mask.replace(" ", "")
+                            if (newTextFieldValueState.length <= trimMask.length ||
+                                mask.isEmpty()
+                            ) {
+                                phone.value = newTextFieldValueState
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        visualTransformation = if (mask.isNotEmpty()) PhoneVisualTransformation(
+                            mask, '0'
+                        ) else VisualTransformation.None,
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .onPreviewKeyEvent {
+                                if (it.key == Key.Backspace) {
+                                    if (phone.value.isEmpty()) {
+                                        code.value = code.value.dropLast(1)
+                                        isBackspaceClicked = true
+                                    }
+                                }
+                                false
+                            },
+                        textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        maxLines = 1,
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    )
+
+
+                }
 
 
             }
 
 
+            Text(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 8.dp)
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 4.dp),
+                text = "Phone number", fontSize = 12.sp
+            )
+
         }
-
-
-        Text(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 8.dp)
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 4.dp),
-            text = "Phone number", fontSize = 12.sp
-        )
-
     }
 }
 

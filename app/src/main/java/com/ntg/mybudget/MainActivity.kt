@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.model.NavigationItem
@@ -92,6 +93,9 @@ class MainActivity : ComponentActivity() {
                             label = "HELLO",
                             fixText = "تومن"
                         )
+
+
+                        AmountReport(outcome = "120000", income = "500000")
 
                     }
                 }
