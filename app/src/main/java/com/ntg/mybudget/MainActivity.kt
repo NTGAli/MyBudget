@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
+import com.ntg.core.designsystem.components.OtpField
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.designsystem.theme.MyBudgetTheme
@@ -97,6 +99,30 @@ class MainActivity : ComponentActivity() {
 
                         AmountReport(outcome = "120000", income = "500000")
 
+
+                        var otpValue by remember {
+                            mutableStateOf("")
+                        }
+
+                        var wasWrong by remember {
+                            mutableStateOf(false)
+                        }
+
+                        var isSuccess by remember {
+                            mutableStateOf(false)
+                        }
+
+                        OtpField(
+                            otpText = otpValue,
+                            wasWrong = wasWrong,
+                            isSucceeded = isSuccess,
+                            onOtpTextChange = { value, otpInputFilled ->
+                                otpValue = value
+                            }
+                        )
+
+                        wasWrong = otpValue.length == 6 && otpValue != "123456"
+                        if (otpValue == "123456") isSuccess = true
                     }
                 }
             }
