@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
@@ -24,6 +26,7 @@ import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.CardReport
+import com.ntg.core.designsystem.components.DateDivider
 import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -74,7 +77,10 @@ class MainActivity : ComponentActivity() {
 
                     }
                     ) { innerPadding ->
-                    Column {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                    ) {
 
                         BudgetTextField(
                             modifier = Modifier
@@ -107,8 +113,14 @@ class MainActivity : ComponentActivity() {
                             inValue = "140000"
                         )
 
+                        DateDivider(
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                            date = "امروز 10 مرداد", amount = "10.500", type = "income")
+
                         TransactionItem(
-                            modifier = Modifier.padding(horizontal = 16.dp).padding(top = 24.dp),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp),
                             amount = "24000",
                             title = "کافه",
                             date = "13:45",
@@ -133,6 +145,8 @@ class MainActivity : ComponentActivity() {
                             date = "13:45",
                             type = "Outcome"
                         )
+                        
+
 
                     }
                 }
