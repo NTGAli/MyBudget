@@ -25,14 +25,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val text = remember { mutableStateOf("") }
+            val code = remember { mutableStateOf("") }
             MyBudgetTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column {
 
                         BudgetTextField(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 24.dp),
+                            phone = text,
+                            code = code
+                        )
+
+
+                        BudgetTextField(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 24.dp),
                             text = text,
-                            label = "Hi"
+                            label = "HELLO",
+                            fixText = "تومن"
                         )
 
                     }
