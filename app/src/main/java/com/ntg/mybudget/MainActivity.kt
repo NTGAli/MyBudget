@@ -24,6 +24,7 @@ import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.CardReport
+import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.designsystem.theme.MyBudgetTheme
@@ -104,6 +105,33 @@ class MainActivity : ComponentActivity() {
                             subTitle = "موجودی همه ی حساب ها",
                             out = "140000",
                             inValue = "140000"
+                        )
+
+                        TransactionItem(
+                            modifier = Modifier.padding(horizontal = 16.dp).padding(top = 24.dp),
+                            amount = "24000",
+                            title = "کافه",
+                            date = "13:45",
+                            type = "income",
+                            divider = true
+                        )
+
+                        TransactionItem(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            amount = "24000",
+                            title = "کافه",
+                            date = "13:45",
+                            type = "income",
+                            divider = true,
+                            attached = true
+                        )
+
+                        TransactionItem(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            amount = "24000",
+                            title = "کافه",
+                            date = "13:45",
+                            type = "Outcome"
                         )
 
                     }
