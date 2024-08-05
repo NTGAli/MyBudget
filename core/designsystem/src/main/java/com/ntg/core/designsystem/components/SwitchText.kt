@@ -3,7 +3,6 @@ package com.ntg.core.designsystem.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,10 +45,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SwitchText(
     modifier: Modifier = Modifier,
-//    firstText: String,
-//    secondText: String,
     items: List<SwitchItem>,
-//    color: SwitchTextColor = defaultSwitchTextColor(),
     selected: (Int) -> Unit,
 ) {
 
@@ -80,11 +75,6 @@ fun SwitchText(
                     shape = RoundedCornerShape(ROUND_CORNER.dp),
                     color = MaterialTheme.colorScheme.surfaceContainer,
                 )
-//            .border(
-//                color = color.borderColor,
-//                shape = RoundedCornerShape(ROUND_CORNER.dp),
-//                width = WIDTH_SHAPE.dp,
-//            )
                 .wrapContentHeight(),
         ) {
 
@@ -130,7 +120,6 @@ fun SwitchText(
 private fun RowScope.ItemSelector(
     text: String,
     color: Color,
-    backColor: Color = Color.Transparent,
     isSelected: Boolean,
     onClick: (Float) -> Unit,
 ) {
@@ -156,7 +145,7 @@ private fun RowScope.ItemSelector(
             .padding(vertical = 16.dp),
         text = text,
         style = MaterialTheme.typography.labelMedium.copy(
-            color = color,
+            color = if (isSelected) color else MaterialTheme.colorScheme.outline,
         ),
         textAlign = TextAlign.Center,
     )
