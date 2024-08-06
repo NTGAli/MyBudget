@@ -15,4 +15,5 @@ object BudgetIcons {
   val ArrowUp = R.drawable.arrow_up
   val Pdf = R.drawable.file_pdf
   val Image = R.drawable.image_rectangle
+  val Close = R.drawable.close_16
 }

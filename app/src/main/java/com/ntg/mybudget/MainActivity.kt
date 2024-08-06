@@ -32,6 +32,7 @@ import com.ntg.core.designsystem.components.OtpField
 import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.components.DateDivider
 import com.ntg.core.designsystem.components.SwitchText
+import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.model.SwitchItem
@@ -112,6 +113,13 @@ class MainActivity : ComponentActivity() {
                         ) {
                             type = it
                         }
+
+
+                        Tag(modifier = Modifier, text = "متن نمونه", type = "" +
+                                "", enableDismiss = true) {
+
+                        }
+
 
                         BudgetTextField(
                             modifier = Modifier
@@ -205,6 +213,9 @@ class MainActivity : ComponentActivity() {
                             date = "13:45",
                             type = "Outcome"
                         )
+
+
+
 
 
 
