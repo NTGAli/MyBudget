@@ -16,4 +16,5 @@ object BudgetIcons {
   val Pdf = R.drawable.file_pdf
   val Image = R.drawable.image_rectangle
   val Close = R.drawable.close_16
+  val CameraPlus = R.drawable.cameraplus_24
 }

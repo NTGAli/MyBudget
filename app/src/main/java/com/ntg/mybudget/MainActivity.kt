@@ -31,6 +31,7 @@ import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.OtpField
 import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.components.DateDivider
+import com.ntg.core.designsystem.components.ImagePicker
 import com.ntg.core.designsystem.components.SwitchText
 import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TransactionItem
@@ -119,6 +120,8 @@ class MainActivity : ComponentActivity() {
                                 "", enableDismiss = true) {
 
                         }
+
+                        ImagePicker(modifier = Modifier.padding(horizontal = 24.dp))
 
 
                         BudgetTextField(

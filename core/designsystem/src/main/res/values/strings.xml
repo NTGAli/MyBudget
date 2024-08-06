@@ -2,4 +2,5 @@
 <resources>
     <string name="income">ورودی</string>
     <string name="outcome">خروجی</string>
+    <string name="add_image">اضافه کردن تصویر</string>
 </resources>
