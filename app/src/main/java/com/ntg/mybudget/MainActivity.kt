@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
@@ -123,6 +124,11 @@ class MainActivity : ComponentActivity() {
 
                         wasWrong = otpValue.length == 6 && otpValue != "123456"
                         if (otpValue == "123456") isSuccess = true
+
+                        AccountSelector(
+                            title = "Hi",
+                            subTitle = "2 items"
+                        )
                     }
                 }
             }

@@ -8,4 +8,6 @@ object BudgetIcons {
   val Home = R.drawable.home_wave
   val income = R.drawable.ic_income
   val outcome = R.drawable.ic_outcome
+  val wallet = R.drawable.wallet
+  val directionDown = R.drawable.direction_down_01
 }
