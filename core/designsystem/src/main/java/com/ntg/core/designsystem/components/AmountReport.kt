@@ -46,9 +46,9 @@ private fun RowScope.Item(
             .padding(end = 4.dp)
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(18.dp)
             )
-            .padding(vertical = 16.dp, horizontal = 16.dp)
+            .padding(vertical = 8.dp, horizontal = 16.dp)
             .weight(1f),
         verticalAlignment = Alignment.CenterVertically
     ) {

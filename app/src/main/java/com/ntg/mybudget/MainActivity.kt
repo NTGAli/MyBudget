@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,7 +29,12 @@ import com.ntg.core.designsystem.components.AmountReport
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.OtpField
+import com.ntg.core.designsystem.components.CardReport
+import com.ntg.core.designsystem.components.DateDivider
+import com.ntg.core.designsystem.components.SwitchText
+import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.model.NavigationItem
+import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.designsystem.theme.MyBudgetTheme
 import com.ntg.core.designsystem.theme.SurfaceDark
@@ -75,7 +83,35 @@ class MainActivity : ComponentActivity() {
 
                     }
                     ) { innerPadding ->
-                    Column {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                    ) {
+
+                        var type by remember { mutableIntStateOf(0) }
+
+
+
+                        val switchItems = listOf(
+                            SwitchItem(
+                                id = 0, tint = MaterialTheme.colorScheme.onError, title = "خروجی", backColor = MaterialTheme.colorScheme.error
+                            ),
+                            SwitchItem(
+                                id = 0, tint = MaterialTheme.colorScheme.onSecondary, title = "ورودی", backColor = MaterialTheme.colorScheme.secondary
+                            ),
+                            SwitchItem(
+                                id = 0, tint = MaterialTheme.colorScheme.onPrimary, title = "جیب به جیب", backColor = MaterialTheme.colorScheme.primary
+                            ),
+                        )
+                        SwitchText(
+                            modifier = Modifier
+                                .padding(horizontal = 32.dp)
+                                .padding(top = 16.dp)
+                                .fillMaxWidth(),
+                            items = switchItems,
+                        ) {
+                            type = it
+                        }
 
                         BudgetTextField(
                             modifier = Modifier
@@ -129,6 +165,49 @@ class MainActivity : ComponentActivity() {
                             title = "Hi",
                             subTitle = "2 items"
                         )
+                        CardReport(
+                            modifier = Modifier.padding(24.dp),
+                             title = "140000 ت",
+                            subTitle = "موجودی همه ی حساب ها",
+                            out = "140000",
+                            inValue = "140000"
+                        )
+
+                        DateDivider(
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                            date = "امروز 10 مرداد", amount = "10.500", type = "income")
+
+                        TransactionItem(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp),
+                            amount = "24000",
+                            title = "کافه",
+                            date = "13:45",
+                            type = "income",
+                            divider = true
+                        )
+
+                        TransactionItem(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            amount = "24000",
+                            title = "کافه",
+                            date = "13:45",
+                            type = "income",
+                            divider = true,
+                            attached = true
+                        )
+
+                        TransactionItem(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            amount = "24000",
+                            title = "کافه",
+                            date = "13:45",
+                            type = "Outcome"
+                        )
+
+
+
                     }
                 }
             }
