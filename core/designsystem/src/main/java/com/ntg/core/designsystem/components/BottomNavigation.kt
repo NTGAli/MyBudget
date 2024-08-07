@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,6 +36,7 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 fun BottomNavigation(
     modifier: Modifier = Modifier,
     items: List<NavigationItem>,
+    txtButton: String? = null,
     expandButton: Boolean = false,
     onCLick: (Int) -> Unit,
 ) {
@@ -126,29 +128,36 @@ fun BottomNavigation(
             }
 
 
-            Icon(
+            Box(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .then(if (expandButton) Modifier.width(animatedWidth) else Modifier)
-                    .padding(horizontal = 8.dp, vertical = padding)
+                    .padding(horizontal = 24.dp, vertical = padding)
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         shape = RoundedCornerShape(8.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
-
                     .clickable {
-//                        expandButton = !expandButton
                         onCLick.invoke(-1)
                     }
 
                     .padding(horizontal = 24.dp, vertical = padding)
+            ) {
+                if (txtButton != null){
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = txtButton, style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onPrimary))
+                }else{
+                    Icon(
+                        modifier = Modifier.align(Alignment.Center),
+                        painter = painterResource(id = BudgetIcons.Transaction),
+                        contentDescription = "Transaction",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
 
-                ,
-                painter = painterResource(id = BudgetIcons.Transaction),
-                contentDescription = "Transaction",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
         }
 
     }

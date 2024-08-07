@@ -1,5 +1,8 @@
 package com.ntg.core.designsystem.components
 
+import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -50,6 +54,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -66,9 +71,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
+import com.ntg.core.mybudget.common.getCountryName
+import com.ntg.core.mybudget.common.getCountryPattern
+import com.ntg.mybudget.core.designsystem.R
 
 @Composable
 fun BudgetTextField(
@@ -178,15 +183,17 @@ fun BudgetTextField(
         } else null,
         colors = OutlinedTextFieldDefaults.colors(),
         singleLine = searchMode || singleLine,
-        leadingIcon = if (leadingIcon != null || fixText != null ) {
+        leadingIcon = if (leadingIcon != null || fixText != null) {
             {
-                if (fixText != null){
+                if (fixText != null) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            text = fixText, style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline))
+                            text = fixText,
+                            style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline)
+                        )
                         VerticalDivider(
                             Modifier
                                 .width(1.dp)
@@ -195,7 +202,7 @@ fun BudgetTextField(
                             color = MaterialTheme.colorScheme.surfaceContainerHighest
                         )
                     }
-                }else{
+                } else {
                     IconButton(onClick = {
                         leadingIconOnClick.invoke(text.value)
                     }) {
@@ -214,7 +221,7 @@ fun BudgetTextField(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Done
         )
-        )
+    )
 
     LaunchedEffect(Unit) {
         if (searchMode) {
@@ -230,16 +237,15 @@ fun BudgetTextField(
     modifier: Modifier = Modifier,
     code: MutableState<String> = remember { mutableStateOf("") },
     phone: MutableState<String> = remember { mutableStateOf("") },
+    wasWrong: Boolean,
+    isRunning: (Boolean) -> Unit = {}
 ) {
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = phone.value)) }
-    // Holds the latest TextFieldValue that BasicTextField was recomposed with. We couldn't simply
-    // pass `TextFieldValue(text = value)` to the CoreTextField because we need to preserve the
-    // composition.
-    val textFieldValue = textFieldValueState.copy(text = phone.value)
+    var textFieldValue = textFieldValueState.copy(text = phone.value)
 
     SideEffect {
         if (textFieldValue.selection != textFieldValueState.selection ||
@@ -254,15 +260,26 @@ fun BudgetTextField(
     }
     val maskNumber = '0'
 
+    val buttonRotate = remember { Animatable(0f) }
 
+
+    LaunchedEffect(wasWrong) {
+        if (!buttonRotate.isRunning && wasWrong) {
+
+            buttonRotate.animateTo(0f, keyframes {
+                durationMillis = 250
+                0f at 0
+                -15f at 150
+            })
+        }
+    }
     mask = getCountryPattern(context, code.value)
-
-
     val annotatedString = remember {
         mutableStateOf(
             AnnotatedString("")
         )
     }
+
     annotatedString.value = buildAnnotatedString {
         if (phone.value.isEmpty()) return@buildAnnotatedString
 
@@ -284,6 +301,8 @@ fun BudgetTextField(
     }
 
 
+    val textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.inverseSurface)
+    val hintStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.outline)
 
 
 
@@ -292,6 +311,7 @@ fun BudgetTextField(
             focusManager.moveFocus(
                 focusDirection = FocusDirection.Next,
             )
+
         }
 
     }
@@ -303,6 +323,7 @@ fun BudgetTextField(
 
 
     LaunchedEffect(key1 = isBackspaceClicked) {
+        Log.d("LaunchedEffect", "LaunchedEffect")
         if (phone.value.isEmpty() && isBackspaceClicked || isBackspaceClicked) {
             focusManager.moveFocus(
                 focusDirection = FocusDirection.Previous,
@@ -318,46 +339,58 @@ fun BudgetTextField(
         LaunchedEffect(
             key1 = code.value,
             block = {
+
                 focusManager.moveFocus(
                     focusDirection = FocusDirection.Next,
                 )
             })
     }
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr ) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-        ) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .offset(x = buttonRotate.value.dp),
+    ) {
+
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(
                 modifier = Modifier
                     .semantics(mergeDescendants = true) {}
                     .padding(top = 8.dp)
                     .height(IntrinsicSize.Min)
                     .fillMaxWidth()
-//                .padding(vertical = 16.dp)
                     .align(Alignment.BottomCenter)
-                    .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                    .padding(vertical = 14.dp)
+                    .border(
+                        2.dp,
+                        MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(vertical = 18.dp)
                     .wrapContentHeight(),
                 verticalAlignment = Alignment.CenterVertically
 
             ) {
 
                 Text(
-                    modifier = Modifier.padding(start = 9.dp, end = 4.dp),
-                    text = "+", style = TextStyle(fontSize = 14.sp)
+                    modifier = Modifier.padding(start = 12.dp),
+                    text = "+",
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.inverseSurface
+                    )
                 )
 
                 BasicTextField(
                     modifier = Modifier
                         .weight(2f)
-                        .padding(start = (1.5).dp),
+                        .padding(start = (2).dp),
                     value = code.value,
                     onValueChange = {
                         code.value = it
+
                     },
-                    textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    textStyle = textStyle,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 )
 
@@ -365,8 +398,7 @@ fun BudgetTextField(
                 VerticalDivider(
                     Modifier
                         .width(1.dp)
-                        .fillMaxHeight(),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        .fillMaxHeight()
                 )
 
                 Box(
@@ -379,16 +411,17 @@ fun BudgetTextField(
                             modifier = Modifier.padding(start = 8.dp),
                             text =
                             mask,
-                            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outline)
+                            style = hintStyle.copy(color = MaterialTheme.colorScheme.outline)
                         )
                     } else {
                         Text(
                             modifier = Modifier.padding(start = 8.dp),
                             text =
                             annotatedString.value,
-                            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outline)
+                            style = hintStyle.copy(color = MaterialTheme.colorScheme.outline)
                         )
                     }
+
 
 
                     BasicTextField(
@@ -415,79 +448,43 @@ fun BudgetTextField(
                                         code.value = code.value.dropLast(1)
                                         isBackspaceClicked = true
                                     }
+
+                                    true
+                                } else {
+                                    false
                                 }
                                 false
                             },
-                        textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        textStyle = textStyle,
                         maxLines = 1,
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    )
+
+                        )
 
 
                 }
 
 
             }
-
-
-            Text(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 8.dp)
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 4.dp),
-                text = "Phone number", fontSize = 12.sp
-            )
-
         }
+
+
+
+        Text(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 12.dp)
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 4.dp),
+            text = stringResource(R.string.phone_number),
+            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.primary)
+        )
+
     }
+
+
 }
 
-
-fun getCountryName(context: android.content.Context, code: String): String {
-    var countryName = "---"
-    try {
-        val inputStream = context.assets.open("countries.txt")
-        val reader = BufferedReader(InputStreamReader(inputStream))
-        var line: String?
-        while (reader.readLine().also { line = it } != null) {
-            val parts = line?.split(";")
-            if (parts?.getOrNull(0) == code) {
-                countryName = parts[2]
-                break
-            }
-        }
-        reader.close()
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-    return countryName
-}
-
-
-fun getCountryPattern(context: android.content.Context, code: String): String {
-    var countryName = ""
-    try {
-        val inputStream = context.assets.open("countries.txt")
-        val reader = BufferedReader(InputStreamReader(inputStream))
-        var line: String?
-        while (reader.readLine().also { line = it } != null) {
-            val parts = line?.split(";")
-            if (parts?.getOrNull(0) == code) {
-                countryName = try {
-                    parts[3]
-                } catch (e: Exception) {
-                    ""
-                }
-                break
-            }
-        }
-        reader.close()
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-    return countryName.replace("X", "0")
-}
 
 class PhoneVisualTransformation(val mask: String, val maskNumber: Char) : VisualTransformation {
 
@@ -548,3 +545,5 @@ private class PhoneOffsetMapper(val mask: String, val numberChar: Char) : Offset
     override fun transformedToOriginal(offset: Int): Int =
         offset - mask.take(offset).count { it != numberChar }
 }
+
+
