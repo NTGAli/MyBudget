@@ -18,3 +18,5 @@ dependencyResolutionManagement {
 rootProject.name = "MyBudget"
 include(":app")
 include(":core:designsystem")
+include(":features:login")
+include(":core:common")

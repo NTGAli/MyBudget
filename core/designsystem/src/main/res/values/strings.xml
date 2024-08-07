@@ -3,4 +3,5 @@
     <string name="income">ورودی</string>
     <string name="outcome">خروجی</string>
     <string name="add_image">اضافه کردن تصویر</string>
+    <string name="phone_number">شماره تلفن</string>
 </resources>

@@ -59,6 +59,8 @@ android {
 dependencies {
 
     implementation(project(":core:designsystem"))
+    implementation(project(":core:common"))
+    implementation(project(":features:login"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3.adaptive)
@@ -76,7 +78,6 @@ dependencies {
     implementation(libs.androidx.window.core)
     implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.coil.kt)
-    implementation(project(":core:designsystem"))
 
     ksp(libs.hilt.compiler)
 
