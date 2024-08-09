@@ -1,6 +1,7 @@
 package com.ntg.core.designsystem.components
 
 
+import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
@@ -25,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -38,12 +40,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -97,8 +101,7 @@ fun OtpField(
     if (wasWrong) {
         currentText = ""
         onOtpTextChange.invoke("", false)
-
-
+        itemSelected = false
     }
     LaunchedEffect(currentText) {
         if (wasWrong && otpText.length == otpCount) {
@@ -118,60 +121,63 @@ fun OtpField(
 
     val focusRequester = remember { FocusRequester() }
 
-    BasicTextField(
-        modifier = modifier
-            .focusRequester(focusRequester)
-            .offset(x = buttonRotate.value.dp),
-        value = TextFieldValue(currentText, selection = selection),
-        onValueChange = {
-            if (it.text.length <= otpCount) {
-                onOtpTextChange.invoke(it.text, it.text.length == otpCount)
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        BasicTextField(
+            modifier = modifier
+                .focusRequester(focusRequester)
+                .offset(x = buttonRotate.value.dp),
+            value = TextFieldValue(currentText, selection = selection),
+            onValueChange = {
+                if (it.text.length <= otpCount) {
+                    onOtpTextChange.invoke(it.text, it.text.length == otpCount)
 
-            } else {
-                itemSelected = false
-            }
-
-            if (it.text.length >= currentText.length) {
-                currentText = it.text
-                posSelected++
-            } else {
-                if (currentText.replace("_", "").dropLast(1) == it.text.replace("_", "")) {
-                    if (currentText.last() == '_') currentText = currentText.dropLast(1)
-                    currentText = it.text
-                    itemSelected = false
                 } else {
-                    currentText = formatInput(currentText, it.text)
+                    itemSelected = false
                 }
-            }
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-        decorationBox = {
-            Row(horizontalArrangement = Arrangement.Center) {
-                repeat(otpCount) { index ->
-                    CharView(
-                        index = index,
-                        text = currentText,
-                        isFocused = if (itemSelected) {
-                            posSelected == index
-                        } else {
-                            otpText.length == index
-                        },
-                        color,
-                        defaultBorderColor,
-                        successColor,
-                        isSucceeded
-                    ) {
-                        itemSelected = true
-                        posSelected = it
+
+                if (it.text.length >= currentText.length) {
+                    currentText = it.text
+                    posSelected++
+                } else {
+                    if (currentText.replace("_", "").dropLast(1) == it.text.replace("_", "")) {
+                        if (currentText.last() == '_') currentText = currentText.dropLast(1)
+                        currentText = it.text
+                        itemSelected = false
+                    } else {
+                        currentText = formatInput(currentText, it.text)
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
                 }
-            }
-        },)
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            decorationBox = {
+                Row(horizontalArrangement = Arrangement.Center) {
+                    repeat(otpCount) { index ->
+                        CharView(
+                            index = index,
+                            text = currentText,
+                            isFocused = if (itemSelected) {
+                                posSelected == index
+                            } else {
+                                Log.d("aejfhkjaehf", "${otpText.length} --- $index")
+                                (currentText.length) == index
+                            },
+                            color,
+                            defaultBorderColor,
+                            successColor,
+                            isSucceeded
+                        ) {
+                            itemSelected = true
+                            posSelected = it
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                }
+            },)
 
-    LaunchedEffect(focusRequester) {
-        focusRequester.requestFocus()
+        LaunchedEffect(focusRequester) {
+            focusRequester.requestFocus()
 
+        }
     }
 }
 

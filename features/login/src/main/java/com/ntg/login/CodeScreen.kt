@@ -1,6 +1,9 @@
 package com.ntg.login
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.components.AppBar
@@ -42,6 +46,10 @@ private fun CodeScreen(
         mutableStateOf(false)
     }
 
+    var code by remember {
+        mutableStateOf("")
+    }
+
     Scaffold(
         topBar = {
             AppBar(
@@ -52,6 +60,7 @@ private fun CodeScreen(
     ) {
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(it)
                 .padding(top = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -73,8 +82,14 @@ private fun CodeScreen(
             OtpField(
                 modifier = Modifier.padding(top = 32.dp),
                 wasWrong = wasWrong, isSucceeded = isSucceeded
-            ) { text, bool ->
+            ) { userInputCode, bool ->
+                code = userInputCode
+                wasWrong = false
+            }
 
+            if (code.length == 6){
+                wasWrong = code != "123456"
+                isSucceeded = !wasWrong
             }
 
         }
