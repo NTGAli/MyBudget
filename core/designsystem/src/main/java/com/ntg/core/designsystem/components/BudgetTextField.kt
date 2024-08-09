@@ -324,7 +324,6 @@ fun BudgetTextField(
 
 
     LaunchedEffect(key1 = isBackspaceClicked) {
-        Log.d("LaunchedEffect", "LaunchedEffect")
         if (phone.value.isEmpty() && isBackspaceClicked || isBackspaceClicked) {
             focusManager.moveFocus(
                 focusDirection = FocusDirection.Previous,

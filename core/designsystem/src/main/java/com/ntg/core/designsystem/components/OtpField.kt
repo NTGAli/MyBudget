@@ -158,7 +158,6 @@ fun OtpField(
                             isFocused = if (itemSelected) {
                                 posSelected == index
                             } else {
-                                Log.d("aejfhkjaehf", "${otpText.length} --- $index")
                                 (currentText.length) == index
                             },
                             color,

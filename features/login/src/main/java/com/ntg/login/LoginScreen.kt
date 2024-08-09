@@ -33,6 +33,7 @@ import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.getCountryFromPhoneNumber
 import com.ntg.core.mybudget.common.getCountryFullNameFromPhoneNumber
+import com.ntg.core.mybudget.common.isValidIranianPhoneNumber
 import com.ntg.feature.login.R
 
 @Composable
@@ -128,9 +129,9 @@ private fun LoginScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(horizontal = 32.dp)
+                .padding(top = 64.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
 
 
@@ -181,7 +182,8 @@ private fun LoginScreen(
         if (code.value.isEmpty() || phone.value.isEmpty() || getCountryFullNameFromPhoneNumber(
                 context,
                 code.value
-            ).orEmpty().isEmpty()
+            ).orEmpty().isEmpty() ||
+            !isValidIranianPhoneNumber("+${code.value}${phone.value}")
         ) {
             wasWrong = true
             Handler(Looper.getMainLooper()).postDelayed({

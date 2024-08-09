@@ -127,3 +127,9 @@ fun getCountryName(context: Context, code: String): String {
     }
     return countryName
 }
+
+
+fun isValidIranianPhoneNumber(phoneNumber: String): Boolean {
+    val iranianPhoneNumberPattern = "^(09|00989|\\+989)\\d{9}$".toRegex()
+    return phoneNumber.matches(iranianPhoneNumberPattern)
+}
