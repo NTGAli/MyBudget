@@ -8,6 +8,7 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.login.LoginViewModel
 import com.ntg.login.Login_Route
 import com.ntg.login.loginScreen
+import com.ntg.login.navigateToCode
 import com.ntg.login.navigateToCountries
 import com.ntg.mybudget.ui.BudgetAppState
 
@@ -32,6 +33,7 @@ fun BudgetNavHost(
             loginViewModel,
             sharedViewModel,
             navigateToCountries = navController::navigateToCountries,
+            navigateToCode = navController::navigateToCode,
             onBack = navController::popBackStack
         )
 

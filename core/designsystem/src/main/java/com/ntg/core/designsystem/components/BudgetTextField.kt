@@ -262,6 +262,7 @@ fun BudgetTextField(
 
     val buttonRotate = remember { Animatable(0f) }
 
+    isRunning(buttonRotate.value == 0f)
 
     LaunchedEffect(wasWrong) {
         if (!buttonRotate.isRunning && wasWrong) {

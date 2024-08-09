@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,7 +50,8 @@ fun BudgetApp(
     val snackbarHostState = remember { SnackbarHostState() }
 
 
-    BudgetBackground(modifier = modifier) {
+    BudgetBackground(modifier = modifier
+        .safeDrawingPadding()) {
         BudgetApp(
             appState = appState,
             snackbarHostState = snackbarHostState,
@@ -77,7 +79,7 @@ internal fun BudgetApp(
 
     Scaffold(
         modifier = modifier
-            .safeContentPadding()
+//            .safeContentPadding()
             .semantics {
                 testTagsAsResourceId = true
             },
@@ -95,7 +97,7 @@ internal fun BudgetApp(
                     appState.currentDestination?.route == Login_Route
                 )
             }
-        },
+        }
     ) { padding ->
         Row(
             Modifier

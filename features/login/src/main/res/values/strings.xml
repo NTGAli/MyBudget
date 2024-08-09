@@ -3,4 +3,6 @@
     <string name="login_with_phone">ورود با شماره ی تلفن</string>
     <string name="choose_country_text">لطفا کشور خود را انتخاب کرده و شماره ی خود را وارد نمایید.</string>
     <string name="country">کشور</string>
+    <string name="entere_code">کد خود را وارد نمایید</string>
+    <string name="sent_code_format">ما یک پیامک حاوی کد تایید رو به شماره ی %s ارسال کردیم.</string>
 </resources>

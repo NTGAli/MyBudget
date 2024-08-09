@@ -1,5 +1,7 @@
 package com.ntg.login
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -38,29 +40,23 @@ fun LoginRoute(
     viewModel: LoginViewModel,
     sharedViewModel: SharedViewModel,
     navigateToDetail: () -> Unit = {},
+    navigateToCode: () -> Unit = {},
 ){
     LoginScreen(
         viewModel,
-        navigateToDetail = navigateToDetail
+        sharedViewModel,
+        navigateToDetail = navigateToDetail,
+        navigateToCode = navigateToCode
     )
-    val context = LocalContext.current
-    DisposableEffect(Unit) {
-        val listener = object : LoginEventListener {
-            override fun onLoginEvent() {
-                Toast.makeText(context, "Login Event Received", Toast.LENGTH_SHORT).show()
-            }
-        }
-        sharedViewModel.loginEventListener = listener
-        onDispose {
-            sharedViewModel.loginEventListener = null
-        }
-    }
+
 }
 
 @Composable
 private fun LoginScreen(
     loginViewModel: LoginViewModel,
+    sharedViewModel: SharedViewModel,
     navigateToDetail: () -> Unit = {},
+    navigateToCode: () -> Unit = {},
 ){
 
     val context = LocalContext.current
@@ -98,10 +94,21 @@ private fun LoginScreen(
         mutableStateOf("")
     }
 
+    DisposableEffect(Unit) {
+        val listener = object : LoginEventListener {
+            override fun onLoginEvent() {
+                onCLick = true
+            }
+        }
+        sharedViewModel.loginEventListener = listener
+        onDispose {
+            sharedViewModel.loginEventListener = null
+        }
+    }
+
     LaunchedEffect(key1 = Unit) {
         loginViewModel.countrySelected.observe(owner){
             Log.d("countrySelected", it)
-//            countryCode = it
             code.value = it
         }
     }
@@ -160,7 +167,10 @@ private fun LoginScreen(
                 modifier = Modifier.padding(top = 16.dp),
                 code, phone, wasWrong
             ) {
-                wasWrong = false
+                Log.d("phoneWasWrongChecker", "$it")
+                if (it){
+//                    wasWrong = false
+                }
             }
 
 
@@ -174,16 +184,13 @@ private fun LoginScreen(
             ).orEmpty().isEmpty()
         ) {
             wasWrong = true
-//            isLoading = false
+            Handler(Looper.getMainLooper()).postDelayed({
+                wasWrong = false
+            }, 500)
         } else {
-//                    wasWrong = !wasWrong
-//                    onCLick = false
-//            getData = true
-//            isLoading = false
+            navigateToCode()
         }
-
         onCLick = false
-
     }
 
 
