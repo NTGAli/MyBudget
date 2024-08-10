@@ -14,6 +14,9 @@ android {
 
 dependencies {
 
+    implementation(project(":core:common"))
+    implementation(project(":core:model"))
+    
     api(libs.androidx.compose.foundation)
     api(libs.androidx.compose.foundation.layout)
     api(libs.androidx.compose.material.iconsExtended)
@@ -23,7 +26,7 @@ dependencies {
     api(libs.androidx.compose.ui.util)
 
     implementation(libs.coil.kt.compose)
-    implementation(project(":core:common"))
+
 
     testImplementation(libs.androidx.compose.ui.test)
     testImplementation(libs.hilt.android.testing)
