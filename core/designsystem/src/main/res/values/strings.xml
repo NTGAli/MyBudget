@@ -4,4 +4,6 @@
     <string name="outcome">خروجی</string>
     <string name="add_image">اضافه کردن تصویر</string>
     <string name="phone_number">شماره تلفن</string>
+    <string name="source_expenditure">منبع خرج</string>
+    <string name="new_source_expenditure">اضافه کردن منبع خرج جدید</string>
 </resources>

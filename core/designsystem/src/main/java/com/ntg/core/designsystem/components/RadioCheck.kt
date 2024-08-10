@@ -25,6 +25,7 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 
 @Composable
 fun RadioCheck(
+    modifier: Modifier = Modifier,
     isChecked: Boolean,
     size: Float = 24f,
     radius: Int = 4,
@@ -37,7 +38,7 @@ fun RadioCheck(
     val density = LocalDensity.current
     val duration = 200
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(size.dp)
             .background(color = checkboxColor, shape = RoundedCornerShape(radius.dp))
             .border(width = 1.5.dp, color = if (isChecked) checkedColor else MaterialTheme.colorScheme.outline, shape = RoundedCornerShape(radius.dp)),
