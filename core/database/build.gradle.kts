@@ -15,6 +15,7 @@ android {
 
 dependencies {
     api(project(":core:model"))
+    api(project(":core:common"))
 
     implementation(libs.kotlinx.datetime)
 
