@@ -1,4 +1,4 @@
-package com.ntg.login
+package com.ntg.core.model
 
 import org.junit.Test
 
