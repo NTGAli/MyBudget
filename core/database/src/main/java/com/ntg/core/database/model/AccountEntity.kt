@@ -16,7 +16,7 @@ data class AccountEntity(
 )
 
 
-fun AccountEntity?.adAccount() = Account(
+fun AccountEntity?.asAccount() = Account(
     id = this?.id ?: -1,
     sId = this?.sId,
     name = this?.name ?: "",
