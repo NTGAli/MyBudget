@@ -19,7 +19,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.model.AppbarItem
 import com.ntg.core.designsystem.model.PopupItem
@@ -69,10 +71,13 @@ fun AppBar(
                 },
                 navigationIcon = {
                     if (enableNavigation) {
-
+                        var backIcon = Icons.Rounded.KeyboardArrowLeft
+                        if (LocalLayoutDirection.current == LayoutDirection.Rtl) {
+                            backIcon = Icons.Rounded.KeyboardArrowRight
+                        }
                         IconButton(onClick = { navigationOnClick.invoke() }) {
                             Icon(
-                                imageVector = Icons.Rounded.KeyboardArrowLeft,
+                                imageVector = backIcon,
                                 contentDescription = "navigation",
                                 tint = navigateIconColor
                             )
