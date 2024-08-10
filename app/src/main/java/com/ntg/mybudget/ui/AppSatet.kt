@@ -13,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.TopLevelDestination
 import kotlinx.coroutines.CoroutineScope
 
@@ -67,8 +68,8 @@ class BudgetAppState(
   val shouldShowBottomBar: Boolean
     @Composable get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
       && when (currentDestination?.route) {
-//      Home_Route, Profile_Route -> true
-      else -> true
+        Login_Route -> true
+      else -> false
     }
 
   val shouldShowNavRail: Boolean
