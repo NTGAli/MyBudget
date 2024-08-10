@@ -1,9 +1,21 @@
 package com.ntg.core.designsystem.theme
 
+import com.ntg.core.mybudget.common.Constants
 import com.ntg.mybudget.core.designsystem.R
 
 
 object BudgetIcons {
+
+  object BankLogo {
+    fun icon(id: String):Int{
+      return when (id){
+        Constants.SourceExpenseIcons.MELLI -> R.drawable.melli
+        else -> R.drawable.wallet
+      }
+    }
+  }
+
+
   val Transaction = R.drawable.arrow_sort
   val Home = R.drawable.home_wave
   val income = R.drawable.ic_income

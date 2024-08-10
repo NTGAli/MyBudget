@@ -1,5 +1,6 @@
 package com.ntg.core.designsystem.components
 
+import android.accounts.Account
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.mybudget.core.designsystem.R
 
@@ -51,10 +51,9 @@ fun AccountSection(
         }
 
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
+        items.forEach {
+            Item(painter = painterResource(id = BudgetIcons.BankLogo.icon(it.icon)), title = it.name, isChecked = isCheck, canEdit = true) {
 
-        items.forEach { 
-            Item(painter = , title = , isChecked = , canEdit = ) {
-                
             }
         }
 
