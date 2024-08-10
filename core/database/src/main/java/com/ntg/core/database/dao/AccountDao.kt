@@ -21,4 +21,12 @@ interface AccountDao {
 
     @Query("SELECT * FROM accounts WHERE sId=:sId")
     suspend fun getAccount(sId: String): AccountEntity?
+
+    @Query("SELECT * FROM accounts")
+    suspend fun getAll(): List<AccountEntity>
+
+    @Query("SELECT * FROM accounts WHERE isSelected = 1")
+    suspend fun currentAccount(): AccountEntity?
+
+
 }

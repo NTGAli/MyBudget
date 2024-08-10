@@ -16,20 +16,20 @@ data class AccountEntity(
 )
 
 
-fun AccountEntity.adAccount() = Account(
-    id = id,
-    sId = sId,
-    name = name,
-    isSynced = isSynced,
-    isSelected = isSelected,
-    dateCreated = dateCreated
+fun AccountEntity?.adAccount() = Account(
+    id = this?.id ?: -1,
+    sId = this?.sId,
+    name = this?.name ?: "",
+    isSynced = this?.isSynced ?: false,
+    isSelected = this?.isSelected ?: false,
+    dateCreated = this?.dateCreated ?: ""
 )
 
-fun Account.toEntity() = AccountEntity(
-    id = id,
-    sId = sId,
-    name = name,
-    isSynced = isSynced,
-    isSelected = isSelected,
-    dateCreated = dateCreated
+fun Account?.toEntity() = AccountEntity(
+    id = this?.id ?: -1,
+    sId = this?.sId,
+    name = this?.name ?: "",
+    isSynced = this?.isSynced ?: false,
+    isSelected = this?.isSelected ?: false,
+    dateCreated = this?.dateCreated ?: ""
 )
