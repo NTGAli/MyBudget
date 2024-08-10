@@ -16,6 +16,7 @@ internal abstract class DataModule {
     @Binds
     internal abstract fun bindAccountRepository(impl: AccountRepositoryImpl): AccountRepository
 
+    @Binds
     internal abstract fun bindSourceRepository(impl: SourceExpenditureRepositoryImpl): SourceExpenditureRepository
 
 }
