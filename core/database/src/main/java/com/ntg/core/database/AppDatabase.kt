@@ -3,6 +3,7 @@ package com.ntg.core.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.ntg.core.database.dao.AccountDao
+import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.model.AccountEntity
 
 @Database(
@@ -13,4 +14,6 @@ import com.ntg.core.database.model.AccountEntity
 )
 internal abstract class AppDatabase : RoomDatabase() {
     abstract fun accountDao(): AccountDao
+
+    abstract fun sourceDao(): SourceExpenditureDao
 }

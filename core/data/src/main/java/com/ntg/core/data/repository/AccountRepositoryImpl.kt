@@ -2,7 +2,7 @@ package com.ntg.core.data.repository
 
 import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.model.AccountEntity
-import com.ntg.core.database.model.adAccount
+import com.ntg.core.database.model.asAccount
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Account
 import com.ntg.core.mybudget.common.BudgetDispatchers
@@ -29,7 +29,7 @@ class AccountRepositoryImpl @Inject constructor(
         flow {
             emit(
                 accountDao.getAll()
-                    .map(AccountEntity::adAccount)
+                    .map(AccountEntity::asAccount)
             )
         }
             .flowOn(ioDispatcher)
@@ -38,7 +38,7 @@ class AccountRepositoryImpl @Inject constructor(
     override fun getAccount(id: Int): Flow<Account?> =
         flow {
             emit(
-                accountDao.getAccount(id).adAccount()
+                accountDao.getAccount(id).asAccount()
             )
         }
             .flowOn(ioDispatcher)
@@ -47,7 +47,7 @@ class AccountRepositoryImpl @Inject constructor(
         flow {
             emit(
                 accountDao.currentAccount()
-                    .adAccount()
+                    .asAccount()
             )
         }
             .flowOn(ioDispatcher)
