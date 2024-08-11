@@ -12,7 +12,7 @@ import com.ntg.core.database.model.SourceExpenditureEntity
         AccountEntity::class,
         SourceExpenditureEntity::class
     ],
-    version = 2, exportSchema = true
+    version = 3, exportSchema = true
 )
 internal abstract class AppDatabase : RoomDatabase() {
     abstract fun accountDao(): AccountDao

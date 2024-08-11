@@ -14,6 +14,7 @@ class SetupViewModel
     private val accountRepository: AccountRepository
 ) : ViewModel() {
 
+    fun accounts() = accountRepository.getAll()
 
     fun insertNewAccount(
         account: Account

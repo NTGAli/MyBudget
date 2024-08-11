@@ -11,6 +11,7 @@ data class SourceExpenditureEntity(
     val sId: String,
     val accountId: Int,
     val name: String,
+    val icon: String,
     val symbol: String,
     val isoCode: String,
     val precision: Int = 0,
@@ -31,7 +32,8 @@ fun SourceExpenditureEntity.asSource() = SourceExpenditure(
     isSynced = isSynced,
     dateCreated = dateCreated,
     isSelected = isSelected,
-    accountId = accountId
+    accountId = accountId,
+    icon = icon
 )
 
 
@@ -46,5 +48,6 @@ fun SourceExpenditure.toEntity() = SourceExpenditureEntity(
     isSynced = isSynced,
     dateCreated = dateCreated,
     isSelected = isSelected,
-    accountId = accountId
+    accountId = accountId,
+    icon = icon
 )
