@@ -113,7 +113,7 @@ fun AppBar(
             )
 
             if ((scrollBehavior?.state?.contentOffset ?: 0f) < -25f) {
-                HorizontalDivider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.surfaceVariant)
+                HorizontalDivider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.surfaceContainerHighest)
             }
 
         }
@@ -223,7 +223,11 @@ fun SearchBar(
                     tint = MaterialTheme.colorScheme.outline
                 )
             }
-        }
+        },
+        colors = TextFieldDefaults.colors().copy(
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            focusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     )
 
     LaunchedEffect(Unit) {

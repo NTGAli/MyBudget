@@ -24,12 +24,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -75,6 +77,7 @@ import com.ntg.core.mybudget.common.getCountryName
 import com.ntg.core.mybudget.common.getCountryPattern
 import com.ntg.mybudget.core.designsystem.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetTextField(
     modifier: Modifier = Modifier,
@@ -181,7 +184,6 @@ fun BudgetTextField(
 //            }
             }
         } else null,
-        colors = OutlinedTextFieldDefaults.colors(),
         singleLine = searchMode || singleLine,
         leadingIcon = if (leadingIcon != null || fixText != null) {
             {
@@ -220,7 +222,8 @@ fun BudgetTextField(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Done
-        )
+        ),
+        colors = OutlinedTextFieldDefaults.colors().copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest)
     )
 
     LaunchedEffect(Unit) {
@@ -243,6 +246,8 @@ fun BudgetTextField(
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val phoneFieldFocus = remember { FocusRequester() }
+
 
     var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = phone.value)) }
     var textFieldValue = textFieldValueState.copy(text = phone.value)
@@ -425,9 +430,7 @@ fun BudgetTextField(
 
 
                     BasicTextField(
-
                         value = phone.value,
-
                         onValueChange = { newTextFieldValueState ->
                             val trimMask = mask.replace(" ", "")
                             if (newTextFieldValueState.length <= trimMask.length ||
@@ -441,6 +444,7 @@ fun BudgetTextField(
                             mask, '0'
                         ) else VisualTransformation.None,
                         modifier = Modifier
+                            .focusRequester(phoneFieldFocus)
                             .padding(start = 8.dp)
                             .onPreviewKeyEvent {
                                 if (it.key == Key.Backspace) {
@@ -482,6 +486,9 @@ fun BudgetTextField(
 
     }
 
+    LaunchedEffect(key1 = Unit) {
+        phoneFieldFocus.requestFocus()
+    }
 
 }
 

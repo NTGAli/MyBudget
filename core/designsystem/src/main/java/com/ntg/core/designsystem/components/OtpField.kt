@@ -59,7 +59,7 @@ fun OtpField(
     otpCount: Int = 6,
     wasWrong: Boolean,
     isSucceeded: Boolean,
-    defaultBorderColor: Color = MaterialTheme.colorScheme.outline,
+    defaultBorderColor: Color = MaterialTheme.colorScheme.surfaceDim,
     errorColor: Color = MaterialTheme.colorScheme.error,
     successColor: Color = MaterialTheme.colorScheme.secondary,
     onOtpTextChange: (String, Boolean) -> Unit
