@@ -84,7 +84,7 @@ fun AccountSection(
         }
 
         InsetItem{
-
+            insertNewItem()
         }
     }
 

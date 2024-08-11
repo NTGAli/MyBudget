@@ -6,4 +6,10 @@
     <string name="phone_number">شماره تلفن</string>
     <string name="source_expenditure">منبع خرج</string>
     <string name="new_source_expenditure">اضافه کردن منبع خرج جدید</string>
+    <string name="bank_card">کارت بانکی</string>
+    <string name="card_theme">طرح کارت</string>
+    <string name="card_info">اطلاعات کارت</string>
+    <string name="card_number">شماره کارت</string>
+    <string name="first_last_name">نام و نام خانوادگی</string>
+    <string name="expire">انقضاء</string>
 </resources>

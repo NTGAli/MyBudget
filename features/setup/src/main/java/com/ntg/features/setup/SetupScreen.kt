@@ -37,7 +37,8 @@ import com.ntg.feature.setup.R
 @Composable
 fun ScreenRoute(
     sharedViewModel: SharedViewModel,
-    setupViewModel: SetupViewModel = hiltViewModel()
+    setupViewModel: SetupViewModel = hiltViewModel(),
+    navigateToSource: () -> Unit
 ){
 
     sharedViewModel.setExpand.postValue(true)
@@ -57,13 +58,14 @@ fun ScreenRoute(
 
     val accounts = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
     SetupScreen(
-        accounts
+        accounts,
+        navigateToSource
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SetupScreen(accounts: State<List<Account?>?>) {
+private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: () -> Unit) {
 
     val test = listOf(
         Account(
@@ -93,7 +95,9 @@ private fun SetupScreen(accounts: State<List<Account?>?>) {
                 if (it != null) {
                     AccountSection(
                         modifier = Modifier.padding(horizontal = 24.dp),
-                        account = it, canEdit = true)
+                        account = it, canEdit = true, insertNewItem = {
+                            navigateToSource()
+                        })
                 }
 
             }

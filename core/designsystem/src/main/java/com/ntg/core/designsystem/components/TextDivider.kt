@@ -24,7 +24,7 @@ fun TextDivider(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        HorizontalDivider(modifier = Modifier.fillMaxWidth())
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surfaceDim)
 
         val textModifier = if (type == TextDividerType.START) Modifier.align(Alignment.CenterStart) else Modifier.align(Alignment.Center)
 
