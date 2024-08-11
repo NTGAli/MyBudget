@@ -5,4 +5,7 @@
     <string name="country">کشور</string>
     <string name="entere_code">کد خود را وارد نمایید</string>
     <string name="sent_code_format">ما یک پیامک حاوی کد تایید رو به شماره ی %s ارسال کردیم.</string>
+    <string name="send_code">ارسال کد</string>
+    <string name="recieve_code">دریافت کد</string>
+    <string name="choose_your_countries">کشور خود را انتخاب کنید</string>
 </resources>

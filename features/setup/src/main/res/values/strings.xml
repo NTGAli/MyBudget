@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="createAccount">ایحاد حساب</string>
+    <string name="add_new_account">اضافه کردن حساب جدید</string>
+    <string name="submit">ثبت</string>
+</resources>

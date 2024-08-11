@@ -31,4 +31,5 @@ object BudgetIcons {
   val CameraPlus = R.drawable.cameraplus_24
   val Tick = R.drawable.check_small
   val Add = R.drawable.add
+  val Pen = R.drawable.pen
 }
