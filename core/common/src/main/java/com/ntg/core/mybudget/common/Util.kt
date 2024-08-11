@@ -133,3 +133,34 @@ fun isValidIranianPhoneNumber(phoneNumber: String): Boolean {
     val iranianPhoneNumberPattern = "^(09|00989|\\+989)\\d{9}$".toRegex()
     return phoneNumber.matches(iranianPhoneNumberPattern)
 }
+
+fun String.mask(mask: String): String {
+    var maskedString = ""
+    var valueIndex = 0
+    var maskIndex = 0
+    while (valueIndex < length && maskIndex < mask.length) {
+        if (mask[maskIndex] == '#') {
+            maskedString += get(valueIndex)
+            valueIndex++
+            maskIndex++
+        } else {
+            maskedString += mask[maskIndex]
+            maskIndex++
+        }
+    }
+    return maskedString
+}
+
+fun detectCardType(cardNumber: String): String {
+    val cleanCardNumber = cardNumber.replace("\\D".toRegex(), "")
+    return Constants.SourceExpenseIcons.MELLI
+//    return when {
+//        cleanCardNumber.startsWith("4") && (cleanCardNumber.length == 13 || cleanCardNumber.length == 16 || cleanCardNumber.length == 19) -> R.drawable.visa
+//        cleanCardNumber.startsWith("5") && cleanCardNumber.length == 16 -> R.drawable.master
+//        cleanCardNumber.matches("^3[47][0-9]{13}\$".toRegex()) -> R.drawable.amex
+//        cleanCardNumber.matches("^6(?:011|5[0-9]{2})[0-9]{12}\$".toRegex()) -> R.drawable.discover
+//        cleanCardNumber.matches("^3(?:0[0-5]|[68][0-9])[0-9]{11}\$".toRegex()) -> R.drawable.diners
+//        cleanCardNumber.matches("^35(2[89]|[3-8][0-9])[0-9]{12}\$".toRegex()) -> R.drawable.jcb
+//        else -> -1
+//    }
+}
