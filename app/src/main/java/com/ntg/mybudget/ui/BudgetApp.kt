@@ -1,5 +1,6 @@
 package com.ntg.mybudget.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -19,6 +20,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,11 +34,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.scrollbar.BudgetBackground
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
+import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.features.setup.Setup_Route
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
@@ -76,6 +82,23 @@ internal fun BudgetApp(
     sharedViewModel: SharedViewModel = hiltViewModel()
 ) {
 
+    var lifecycle = LocalLifecycleOwner.current
+    var bottomNavTitle by remember {
+        mutableStateOf("")
+    }
+
+    var isExpand by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        sharedViewModel.bottomNavTitle.observe(lifecycle){
+            bottomNavTitle = it
+        }
+        sharedViewModel.setExpand.observe(lifecycle){
+            isExpand = it
+        }
+    }
 
     Scaffold(
         modifier = modifier
@@ -94,7 +117,8 @@ internal fun BudgetApp(
                         sharedViewModel.sendLoginEvent()
 //                        appState::navigateToTopLevelDestination
                     },
-                    appState.currentDestination?.route == Login_Route
+                    expandButton = isExpand,
+                    title = bottomNavTitle
                 )
             }
         }
@@ -153,7 +177,8 @@ internal fun BudgetApp(
 @Composable
 private fun AppBottomBar(
     onNavigateToDestination: (TopLevelDestination) -> Unit,
-    expandButton:Boolean
+    expandButton:Boolean,
+    title: String
 ) {
     val navs = listOf(
         NavigationItem(
@@ -173,7 +198,7 @@ private fun AppBottomBar(
     )
 
 
-    BottomNavigation(modifier = Modifier, items = navs, expandButton = expandButton, txtButton = "دریافت کد") {
+    BottomNavigation(modifier = Modifier, items = navs, expandButton = expandButton, txtButton = title) {
         onNavigateToDestination(TopLevelDestination.HOME)
 //        if (it == 1) {
 //            onNavigateToDestination(TopLevelDestination.HOME)

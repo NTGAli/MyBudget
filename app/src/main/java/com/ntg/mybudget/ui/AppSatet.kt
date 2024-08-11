@@ -13,67 +13,69 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.ntg.features.setup.Setup_Route
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.TopLevelDestination
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun rememberBudgetAppState(
-  windowSizeClass: WindowSizeClass,
+    windowSizeClass: WindowSizeClass,
 //    networkMonitor: NetworkMonitor,
 //    userNewsResourceRepository: UserNewsResourceRepository,
 //    timeZoneMonitor: TimeZoneMonitor,
-  coroutineScope: CoroutineScope = rememberCoroutineScope(),
-  navController: NavHostController = rememberNavController(),
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    navController: NavHostController = rememberNavController(),
 ): BudgetAppState {
-  NavigationTrackingSideEffect(navController)
-  return remember(
-    navController,
-    coroutineScope,
-    windowSizeClass,
+    NavigationTrackingSideEffect(navController)
+    return remember(
+        navController,
+        coroutineScope,
+        windowSizeClass,
 //        networkMonitor,
 //        userNewsResourceRepository,
 //        timeZoneMonitor,
-  ) {
-    BudgetAppState(
-      navController = navController,
-      coroutineScope = coroutineScope,
-      windowSizeClass = windowSizeClass,
+    ) {
+        BudgetAppState(
+            navController = navController,
+            coroutineScope = coroutineScope,
+            windowSizeClass = windowSizeClass,
 //            networkMonitor = networkMonitor,
 //            userNewsResourceRepository = userNewsResourceRepository,
 //            timeZoneMonitor = timeZoneMonitor,
-    )
-  }
+        )
+    }
 }
 
 @Stable
 class BudgetAppState(
-  val navController: NavHostController,
-  coroutineScope: CoroutineScope,
-  val windowSizeClass: WindowSizeClass,
+    val navController: NavHostController,
+    coroutineScope: CoroutineScope,
+    val windowSizeClass: WindowSizeClass,
 //    networkMonitor: NetworkMonitor,
 //    userNewsResourceRepository: UserNewsResourceRepository,
 //    timeZoneMonitor: TimeZoneMonitor,
 ) {
-  val currentDestination: NavDestination?
-    @Composable get() = navController
-      .currentBackStackEntryAsState().value?.destination
+    val currentDestination: NavDestination?
+        @Composable get() = navController
+            .currentBackStackEntryAsState().value?.destination
 
-  val currentTopLevelDestination: TopLevelDestination?
-    @Composable get() = when (currentDestination?.route) {
+    val currentTopLevelDestination: TopLevelDestination?
+        @Composable get() = when (currentDestination?.route) {
 //      Home_Route -> TopLevelDestination.HOME
-      else -> null
-    }
+            else -> null
+        }
 
-  val shouldShowBottomBar: Boolean
-    @Composable get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-      && when (currentDestination?.route) {
-        Login_Route -> true
-      else -> false
-    }
+    val shouldShowBottomBar: Boolean
+        @Composable get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+                && when (currentDestination?.route) {
+            Login_Route -> true
+            Setup_Route -> true
+            else -> false
+        }
 
-  val shouldShowNavRail: Boolean
-    get() = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+    val shouldShowNavRail: Boolean
+        get() = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
 
 //    val isOffline = networkMonitor.isOnline
 //        .map(Boolean::not)
@@ -83,35 +85,35 @@ class BudgetAppState(
 //            initialValue = false,
 //        )
 
-  /**
-   * Map of top level destinations to be used in the TopBar, BottomBar and NavRail. The key is the
-   * route.
-   */
-  val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.entries
+    /**
+     * Map of top level destinations to be used in the TopBar, BottomBar and NavRail. The key is the
+     * route.
+     */
+    val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.entries
 
-  fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
-    trace("Navigation: ${topLevelDestination.name}") {
-      val topLevelNavOptions = navOptions {
-        // Pop up to the start destination of the graph to
-        // avoid building up a large stack of destinations
-        // on the back stack as users select items
-        popUpTo(navController.graph.findStartDestination().id) {
-          saveState = true
-        }
-        // Avoid multiple copies of the same destination when
-        // reselecting the same item
-        launchSingleTop = true
-        // Restore state when reselecting a previously selected item
-        restoreState = true
-      }
+    fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
+        trace("Navigation: ${topLevelDestination.name}") {
+            val topLevelNavOptions = navOptions {
+                // Pop up to the start destination of the graph to
+                // avoid building up a large stack of destinations
+                // on the back stack as users select items
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                // Avoid multiple copies of the same destination when
+                // reselecting the same item
+                launchSingleTop = true
+                // Restore state when reselecting a previously selected item
+                restoreState = true
+            }
 
 //      when (topLevelDestination) {
 //        TopLevelDestination.HOME -> navController.navigateToForYou(topLevelNavOptions)
 //      }
 
 
+        }
     }
-  }
 
 }
 

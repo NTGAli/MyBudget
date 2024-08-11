@@ -6,9 +6,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,37 +21,70 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.Country
 import com.ntg.core.designsystem.components.CountryItem
+import com.ntg.core.designsystem.model.AppbarItem
+import com.ntg.core.designsystem.theme.BudgetIcons
+import com.ntg.feature.login.R
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 
 @Composable
-fun CountriesRoute(loginViewModel: LoginViewModel, onBack:()->Unit){
+fun CountriesRoute(loginViewModel: LoginViewModel, onBack: () -> Unit) {
     SelectCountryScreen(loginViewModel, onBack)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectCountryScreen(
     loginViewModel: LoginViewModel,
-    onBack:()->Unit
+    onBack: () -> Unit
 ) {
 
-    var showSearch by remember {
+    val showSearch by remember {
         mutableStateOf(false)
     }
-
     var query by remember {
         mutableStateOf("")
     }
-
+    val enableSearchBar = remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            AppBar(
+                title = stringResource(id = R.string.choose_your_countries),
+                actions = listOf(
+                    AppbarItem(
+                        0,
+                        Icons.Rounded.Search,
+                        MaterialTheme.colorScheme.outline
+                    )
+                ),
+                enableSearchbar = enableSearchBar,
+                navigationOnClick = {
+                    onBack()
+                },
+                actionOnClick = {
+                    enableSearchBar.value = !enableSearchBar.value
+                },
+                onQueryChange = {
+                    query = it
+                },
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { paddingValues ->
         val context = LocalContext.current
         val countries = getCountries(context).sortedBy { it.name }
         LazyColumn(
@@ -58,13 +95,15 @@ fun SelectCountryScreen(
                 itemsIndexed(countries.filter {
                     it.name.orEmpty().lowercase().contains(query.lowercase())
                 }) { index, it ->
-                    CountryItem(country = it){
+                    CountryItem(country = it) {
                         loginViewModel.countrySelected.postValue(it.code)
                         onBack()
                     }
 
                     if (index != countries.size - 1 && query.isEmpty()) {
-                        if (countries[index + 1].name.orEmpty().first() != it.name.orEmpty().first()) {
+                        if (countries[index + 1].name.orEmpty().first() != it.name.orEmpty()
+                                .first()
+                        ) {
                             HorizontalDivider(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -80,7 +119,7 @@ fun SelectCountryScreen(
     }
 
 
-    if (showSearch){
+    if (showSearch) {
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()
         }

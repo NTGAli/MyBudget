@@ -38,8 +38,10 @@ fun LoginRoute(
     viewModel: LoginViewModel,
     sharedViewModel: SharedViewModel,
     navigateToDetail: () -> Unit = {},
-    navigateToCode: () -> Unit = {},
+    navigateToCode: (String) -> Unit = {},
 ){
+    sharedViewModel.setExpand.postValue(true)
+    sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.recieve_code))
     LoginScreen(
         viewModel,
         sharedViewModel,
@@ -54,7 +56,7 @@ private fun LoginScreen(
     loginViewModel: LoginViewModel,
     sharedViewModel: SharedViewModel,
     navigateToDetail: () -> Unit = {},
-    navigateToCode: () -> Unit = {},
+    navigateToCode: (String) -> Unit = {},
 ){
 
     val context = LocalContext.current
@@ -187,7 +189,7 @@ private fun LoginScreen(
                 wasWrong = false
             }, 500)
         } else {
-            navigateToCode()
+            navigateToCode("${code.value}${phone.value}")
         }
         onCLick = false
     }
