@@ -2,12 +2,12 @@ package com.ntg.core.model
 
 data class SourceExpenditure(
     val id: Int,
-    val sId: String,
+    val sId: String? = null,
     val accountId: Int,
     val name: String,
-    val icon: String,
-    val symbol: String,
-    val isoCode: String,
+    val icon: String?=null,
+    val symbol: String?=null,
+    val isoCode: String?=null,
     val precision: Int = 0,
     val isSelected: Boolean,
     val isCrypto: Boolean = false,
