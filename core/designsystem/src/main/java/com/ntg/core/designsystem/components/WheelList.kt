@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -104,7 +103,6 @@ fun <T> WheelList(
                     )
 
                     Text(
-                        modifier = Modifier.scale(1f, 1.1f),
                         text = item.toString(),
                         style = textStyle,
                         color = textColorAnimated,
