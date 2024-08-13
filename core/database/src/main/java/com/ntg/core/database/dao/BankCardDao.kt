@@ -7,7 +7,7 @@ import androidx.room.Query
 import com.ntg.core.database.model.BankCardEntity
 
 @Dao
-interface BankCardEntityDao {
+interface BankCardDao {
 
     @Insert
     suspend fun insert(cardEntity: BankCardEntity)
