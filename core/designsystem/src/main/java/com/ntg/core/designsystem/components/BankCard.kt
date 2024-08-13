@@ -51,6 +51,7 @@ fun BankCard(
     cardNumber: String,
     name: String,
     amount: String,
+    expiringDate: String,
     fullView: Boolean = false,
     onClick: () -> Unit = {},
 ) {
@@ -139,6 +140,7 @@ fun BankCard(
                 cardNumber = cardNumber,
                 amount = amount,
                 name = name,
+                expiringDate = expiringDate,
                 fullView = fullView,
             )
 
@@ -167,7 +169,7 @@ fun BankCard(
                     .alpha(animatedAlpha)
                     .size(48.dp),
                 text = "ملی",
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
             )
 
 
@@ -185,6 +187,7 @@ private fun CardInfo(
     cardNumber: String,
     name: String,
     amount: String,
+    expiringDate: String,
     fullView: Boolean,
 ) {
 
@@ -195,8 +198,6 @@ private fun CardInfo(
             500,
         ),
     )
-
-
 
 
     Column(
@@ -233,7 +234,7 @@ private fun CardInfo(
             )
 
             Text(
-                text = "04/08",
+                text = expiringDate,
                 style = MaterialTheme.typography.labelMedium.copy(color = Color.White)
             )
         }

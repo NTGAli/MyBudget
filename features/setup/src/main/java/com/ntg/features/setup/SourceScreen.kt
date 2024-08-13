@@ -79,7 +79,7 @@ private fun SourceScreen() {
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
                     .padding(top = 16.dp),
-                cardNumber = cardNumber.value, name = name.value, amount = "0"
+                cardNumber = cardNumber.value, name = name.value, amount = "0", expiringDate = expire.value
             )
 
 
