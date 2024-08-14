@@ -6,14 +6,16 @@ import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.model.AccountEntity
+import com.ntg.core.database.model.BankCardEntity
 import com.ntg.core.database.model.SourceExpenditureEntity
 
 @Database(
     entities = [
         AccountEntity::class,
-        SourceExpenditureEntity::class
+        SourceExpenditureEntity::class,
+        BankCardEntity::class
     ],
-    version = 3, exportSchema = true
+    version = 4, exportSchema = true
 )
 internal abstract class AppDatabase : RoomDatabase() {
     abstract fun accountDao(): AccountDao

@@ -8,7 +8,7 @@ import androidx.navigation.navArgument
 import com.ntg.core.mybudget.common.SharedViewModel
 
 const val Setup_Route = "SetupRoute"
-const val Source_Route = "SetupRoute"
+const val Source_Route = "SourceRoute"
 
 const val AccountId_Arg = "accountId"
 
@@ -44,5 +44,11 @@ fun NavGraphBuilder.setupScreen(
     ) {
         SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0)
     }
+
+//    composable(
+//        route = Source_Route
+//    ) {
+//        SourceRoute(sharedViewModel,  0)
+//    }
 
 }

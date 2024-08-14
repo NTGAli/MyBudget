@@ -56,7 +56,7 @@ fun BankCard(
     onClick: () -> Unit = {},
 ) {
 
-    var imageModifier by remember {
+    val imageModifier by remember {
         mutableStateOf(Modifier.fillMaxWidth())
     }
 

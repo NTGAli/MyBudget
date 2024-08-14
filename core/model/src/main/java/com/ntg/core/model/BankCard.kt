@@ -9,4 +9,5 @@ data class BankCard (
     val name: String,
     val isSynced: Boolean = false,
     val isDeleted: Boolean = false,
+    val updatedAt: String
 )

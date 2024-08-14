@@ -85,6 +85,7 @@ fun BudgetTextField(
     text: MutableState<String> = remember { mutableStateOf("") },
     setError: MutableState<Boolean> = remember { mutableStateOf(false) },
     supportText: String = "",
+    length: Int? = null,
     label: String? = null,
     fixText: String? = null,
     readOnly: Boolean = false,
@@ -119,6 +120,9 @@ fun BudgetTextField(
             .focusRequester(focusRequester),
         value = text.value,
         onValueChange = {
+            if (length != null){
+                if (length < it.length) return@OutlinedTextField
+            }
             text.value = it
             onChange.invoke(it)
         },
@@ -224,7 +228,7 @@ fun BudgetTextField(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Done
         ),
-        colors = OutlinedTextFieldDefaults.colors().copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+        colors = OutlinedTextFieldDefaults.colors().copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest),
     )
 
     LaunchedEffect(Unit) {

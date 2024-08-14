@@ -1,5 +1,6 @@
 package com.ntg.mybudget.ui
 
+import android.util.Log
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
 import com.ntg.features.setup.Setup_Route
+import com.ntg.features.setup.Source_Route
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.TopLevelDestination
 import kotlinx.coroutines.CoroutineScope
@@ -69,9 +71,15 @@ class BudgetAppState(
     val shouldShowBottomBar: Boolean
         @Composable get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
                 && when (currentDestination?.route) {
-            Login_Route -> true
-            Setup_Route -> true
-            else -> false
+            Login_Route,
+            Setup_Route,
+            Source_Route -> {
+                true
+            }
+            else -> {
+                val route = currentDestination?.route.orEmpty()
+                route.startsWith(Source_Route)
+            }
         }
 
     val shouldShowNavRail: Boolean

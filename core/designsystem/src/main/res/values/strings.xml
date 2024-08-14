@@ -12,4 +12,6 @@
     <string name="card_number">شماره کارت</string>
     <string name="first_last_name">نام و نام خانوادگی</string>
     <string name="expire">انقضاء</string>
+    <string name="select_expire_date">تاریخ انقضاء کارت خود را انتخاب نمایید.</string>
+    <string name="concurrency">واحد مالی</string>
 </resources>
