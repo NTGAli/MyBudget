@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.mybudget.common.Constants
 import com.ntg.mybudget.core.designsystem.R
 
 @Composable
@@ -74,7 +75,7 @@ fun AccountSection(
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
         items.forEach {
             Item(
-                painter = painterResource(id = BudgetIcons.BankLogo.icon(it.icon)),
+                painter = painterResource(id = BudgetIcons.BankLogo.icon(it.icon ?: Constants.SourceExpenseIcons.MELLI)),
                 title = it.name,
                 isChecked = isCheck,
                 canEdit = true
