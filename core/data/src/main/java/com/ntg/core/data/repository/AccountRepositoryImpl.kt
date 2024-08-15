@@ -5,6 +5,7 @@ import com.ntg.core.database.model.AccountEntity
 import com.ntg.core.database.model.asAccount
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Account
+import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -39,6 +40,14 @@ class AccountRepositoryImpl @Inject constructor(
         flow {
             emit(
                 accountDao.getAccount(id).asAccount()
+            )
+        }
+            .flowOn(ioDispatcher)
+
+    override fun getAccountsWithSources(): Flow<List<AccountWithSources>> =
+        flow {
+            emit(
+                accountDao.getAccountBySources()
             )
         }
             .flowOn(ioDispatcher)

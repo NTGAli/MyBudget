@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
@@ -30,13 +28,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.core.model.Account
+import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.SourceType
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
 
 @Composable
-fun ScreenRoute(
+fun SetupRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
     navigateToSource: (id: Int) -> Unit
@@ -54,7 +53,8 @@ fun ScreenRoute(
         }
     }
 
-    val accounts = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
+    val accounts = setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
+//    val sources = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
     SetupScreen(
         accounts,
         navigateToSource
@@ -63,7 +63,7 @@ fun ScreenRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: (id: Int) -> Unit) {
+private fun SetupScreen(accounts: State<List<AccountWithSources>?>, navigateToSource: (id: Int) -> Unit) {
 
 //    val test = listOf(
 //        Account(
@@ -91,10 +91,20 @@ private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: (id:
 
             items(accounts.value.orEmpty()){
                 if (it != null) {
+//                    Text(text = "AC ::: ${it.accountName}")
+//
+//                    it.sources.forEach{
+//                        Text(text = "SRC :::: ${it.name}")
+//                        if (it.sourceType is SourceType.BankCardSource){
+//                            Text(text = "* ${(it.sourceType as SourceType.BankCardSource).cardNumber}")
+//                        }
+//                    }
+//
+//                    Text(text = "--------------------------")
                     AccountSection(
-                        modifier = Modifier.padding(horizontal = 24.dp),
+                        modifier = Modifier.padding(horizontal = 24.dp).padding(top = 8.dp),
                         account = it, canEdit = true, insertNewItem = {
-                            navigateToSource(it.id)
+                            navigateToSource(it.accountId)
                         })
                 }
 
@@ -114,7 +124,7 @@ private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: (id:
                             color = MaterialTheme.colorScheme.surfaceContainerHighest
                         )
                         .clickable {
-
+                            navigateToSource(1)
                         }
                         .padding(vertical = 18.dp),
                     horizontalArrangement = Arrangement.Center,

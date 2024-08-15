@@ -5,6 +5,7 @@ import com.ntg.core.database.model.SourceExpenditureEntity
 import com.ntg.core.database.model.asSource
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -34,4 +35,11 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
             )
         }
             .flowOn(ioDispatcher)
+
+    override suspend fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>> =
+        flow {
+            emit(
+                sourceExpenditureDao.getSourceWithDetails(accountId)
+            )
+        }.flowOn(ioDispatcher)
 }

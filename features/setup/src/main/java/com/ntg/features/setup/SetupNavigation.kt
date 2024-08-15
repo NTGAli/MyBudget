@@ -30,7 +30,7 @@ fun NavGraphBuilder.setupScreen(
     composable(
         route = Setup_Route
     ) {
-        ScreenRoute(sharedViewModel, navigateToSource = navigateToSource)
+        SetupRoute(sharedViewModel, navigateToSource = navigateToSource)
     }
 
 
