@@ -76,7 +76,7 @@ fun AccountSection(
         items.forEach {
             Item(
                 painter = painterResource(id = BudgetIcons.BankLogo.icon(it.icon ?: Constants.SourceExpenseIcons.MELLI)),
-                title = it.name,
+                title = it.name ?: Constants.SourceExpenseIcons.MELLI,
                 isChecked = isCheck,
                 canEdit = true
             ) {

@@ -3,6 +3,7 @@ package com.ntg.core.model
 data class BankCard (
     val id: Int,
     val sId: String? = null,
+    var sourceId: Int? = null,
     val number: String,
     val date: String,
     val cvv: String? = null,

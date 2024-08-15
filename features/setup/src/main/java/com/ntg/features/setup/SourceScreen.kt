@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +37,10 @@ import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.model.BankCard
 import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.SourceTypes
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 
@@ -52,23 +55,25 @@ fun SourceRoute(
     var source by remember {
         mutableStateOf<SourceExpenditure?>(null)
     }
-
-    SourceScreen {
-        source = it
+    var bankCard by remember {
+        mutableStateOf<BankCard?>(null)
     }
 
-    DisposableEffect(Unit) {
-        val listener = object : LoginEventListener {
+    SourceScreen { sourceValue, card ->
+        source = sourceValue
+        bankCard = card
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
-                if (source != null){
+                if (source != null && bankCard != null){
                     source?.accountId = accountId
+                    bankCard?.sourceId = source?.id
                     setupViewModel.insertNewSource(source!!)
+                    setupViewModel.insertNewBankCard(bankCard!!)
                 }
             }
-        }
-        sharedViewModel.loginEventListener = listener
-        onDispose {
-            sharedViewModel.loginEventListener = null
         }
     }
 }
@@ -76,7 +81,8 @@ fun SourceRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SourceScreen(
-    onSubmit: (source: SourceExpenditure) -> Unit
+    onSubmit: (source: SourceExpenditure,
+            card: BankCard) -> Unit
 ) {
 
     val cardNumber = remember {
@@ -99,16 +105,34 @@ private fun SourceScreen(
         mutableStateOf<SourceExpenditure?>(null)
     }
 
+    var month by remember {
+        mutableIntStateOf(0)
+    }
+
+    var year by remember {
+        mutableIntStateOf(0)
+    }
+
     onSubmit.invoke(
         SourceExpenditure(
-            id = 0,
+            id = generateUniqueFiveDigitId(),
             accountId = 0,
             name = "تومن",
             symbol = "ت",
             isSelected = false,
+            type = SourceTypes.BankCard.ordinal,
             dateCreated = System.currentTimeMillis().toString()
+        ),
+        BankCard(
+            id = 0,
+            number = cardNumber.value,
+            date = "$year/$month",
+            name = name.value,
+            updatedAt = System.currentTimeMillis().toString()
         )
     )
+
+
 
 
 
@@ -204,14 +228,6 @@ private fun SourceScreen(
                     showBottomSheet = true
                 }
             )
-
-            var month by remember {
-                mutableIntStateOf(0)
-            }
-
-            var year by remember {
-                mutableIntStateOf(0)
-            }
 
             Spacer(modifier = Modifier.padding(24.dp))
 

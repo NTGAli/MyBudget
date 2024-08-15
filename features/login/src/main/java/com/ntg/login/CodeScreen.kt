@@ -99,10 +99,6 @@ private fun CodeScreen(
             ) { userInputCode, bool ->
                 code = userInputCode
                 wasWrong = false
-
-                Log.d("AWJHKWJAHDJWA", "$isSucceeded --- $bool")
-
-
             }
 
             if (code.length == 6){

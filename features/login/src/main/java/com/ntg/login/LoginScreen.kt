@@ -94,15 +94,11 @@ private fun LoginScreen(
         mutableStateOf("")
     }
 
-    DisposableEffect(Unit) {
-        val listener = object : LoginEventListener {
+    LaunchedEffect(key1 = Unit) {
+        sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
                 onCLick = true
             }
-        }
-        sharedViewModel.loginEventListener = listener
-        onDispose {
-            sharedViewModel.loginEventListener = null
         }
     }
 

@@ -2,6 +2,7 @@ package com.ntg.core.data.di
 
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.AccountRepositoryImpl
+import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.BankCardRepositoryImpl
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.SourceExpenditureRepositoryImpl
@@ -21,6 +22,6 @@ internal abstract class DataModule {
     internal abstract fun bindSourceRepository(impl: SourceExpenditureRepositoryImpl): SourceExpenditureRepository
 
     @Binds
-    internal abstract fun bindBankCardRepository(impl: BankCardRepositoryImpl): BankCardRepositoryImpl
+    internal abstract fun bindBankCardRepository(impl: BankCardRepositoryImpl): BankCardRepository
 
 }

@@ -8,9 +8,10 @@ import com.ntg.core.model.BankCard
     tableName = "bank_card_entity"
 )
 data class BankCardEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val id: Int,
     val sId: String? = null,
+    val sourceId: Int? = null,
     val number: String,
     val date: String,
     val cvv: String? = null,
@@ -26,6 +27,7 @@ fun BankCardEntity.asBank() =
     BankCard(
         id = id,
         sId = sId,
+        sourceId = sourceId,
         number = number,
         date = date,
         cvv = cvv,
@@ -40,6 +42,7 @@ fun BankCard.toEntity() =
     BankCardEntity(
         id = id,
         sId = sId,
+        sourceId = sourceId,
         number = number,
         date = date,
         cvv = cvv,

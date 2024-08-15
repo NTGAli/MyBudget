@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,15 +45,12 @@ fun ScreenRoute(
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.submit))
 
-    DisposableEffect(Unit) {
-        val listener = object : LoginEventListener {
+
+    LaunchedEffect(key1 = Unit) {
+        sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
 //                sharedViewModel.bottomNavTitle.postValue("HI")
             }
-        }
-        sharedViewModel.loginEventListener = listener
-        onDispose {
-            sharedViewModel.loginEventListener = null
         }
     }
 
@@ -67,14 +65,14 @@ fun ScreenRoute(
 @Composable
 private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: (id: Int) -> Unit) {
 
-    val test = listOf(
-        Account(
-            id = 0,
-            sId = null,
-            name = "حساب شخصی",
-            dateCreated = System.currentTimeMillis().toString()
-        )
-    )
+//    val test = listOf(
+//        Account(
+//            id = 0,
+//            sId = null,
+//            name = "حساب شخصی",
+//            dateCreated = System.currentTimeMillis().toString()
+//        )
+//    )
 
     Scaffold(
         topBar = {
@@ -91,7 +89,7 @@ private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: (id:
                 .padding(top = 16.dp)
         ) {
 
-            items(test.orEmpty()){
+            items(accounts.value.orEmpty()){
                 if (it != null) {
                     AccountSection(
                         modifier = Modifier.padding(horizontal = 24.dp),
@@ -110,7 +108,11 @@ private fun SetupScreen(accounts: State<List<Account?>?>, navigateToSource: (id:
                         .padding(top = 16.dp)
                         .padding(horizontal = 24.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .border(width = 1.dp, shape = RoundedCornerShape(16.dp),color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .border(
+                            width = 1.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
                         .clickable {
 
                         }

@@ -20,14 +20,14 @@ class LoginViewModel
 
     fun setDefaultAccount(){
         viewModelScope.launch {
-//            accountRepository.insert(
-//                Account(
-//                    id = 0,
-//                    sId = null,
-//                    name = "حساب شخصی",
-//                    dateCreated = System.currentTimeMillis().toString()
-//                )
-//            )
+            accountRepository.insert(
+                Account(
+                    id = 0,
+                    sId = null,
+                    name = "حساب شخصی",
+                    dateCreated = System.currentTimeMillis().toString()
+                )
+            )
         }
     }
 

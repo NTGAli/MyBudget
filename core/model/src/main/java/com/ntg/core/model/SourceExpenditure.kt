@@ -3,8 +3,9 @@ package com.ntg.core.model
 data class SourceExpenditure(
     val id: Int,
     val sId: String? = null,
+    val type: Int? = null,
     var accountId: Int,
-    val name: String,
+    val name: String? = null,
     val icon: String?=null,
     val symbol: String?=null,
     val isoCode: String?=null,

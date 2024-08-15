@@ -6,11 +6,12 @@ import com.ntg.core.model.SourceExpenditure
 
 @Entity("sourceExpenditures")
 data class SourceExpenditureEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val id: Int,
     val sId: String? = null,
     val accountId: Int,
-    val name: String,
+    val type: Int? = null,
+    val name: String? = null,
     val icon: String? = null,
     val symbol: String? = null,
     val isoCode: String? = null,
@@ -24,7 +25,6 @@ data class SourceExpenditureEntity(
 fun SourceExpenditureEntity.asSource() = SourceExpenditure(
     id = id,
     sId = sId,
-    name = name,
     symbol = symbol,
     isoCode = isoCode,
     precision = precision,
@@ -33,14 +33,15 @@ fun SourceExpenditureEntity.asSource() = SourceExpenditure(
     dateCreated = dateCreated,
     isSelected = isSelected,
     accountId = accountId,
-    icon = icon
+    icon = icon,
+    type = type,
+    name = name
 )
 
 
 fun SourceExpenditure.toEntity() = SourceExpenditureEntity(
     id = id,
     sId = sId,
-    name = name,
     symbol = symbol,
     isoCode = isoCode,
     precision = precision,
@@ -49,5 +50,7 @@ fun SourceExpenditure.toEntity() = SourceExpenditureEntity(
     dateCreated = dateCreated,
     isSelected = isSelected,
     accountId = accountId,
-    icon = icon
+    icon = icon,
+    type = type,
+    name = name
 )
