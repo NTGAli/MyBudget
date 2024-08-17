@@ -6,8 +6,9 @@ object Constants {
         const val DATABASE_NAME = "budgetApp"
     }
 
-    object SourceExpenseIcons{
-        const val MELLI = "melli"
+    object SourceExpenseTypes{
+        const val ACCOUNT = -1
+
     }
 
 

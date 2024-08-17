@@ -1,5 +1,6 @@
 package com.ntg.core.designsystem.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,20 +18,32 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
+import com.ntg.core.model.SourceTypes
 import com.ntg.core.mybudget.common.Constants
+import com.ntg.core.mybudget.common.getCardDetailsFromAssets
 import com.ntg.core.mybudget.common.mask
 import com.ntg.mybudget.core.designsystem.R
 
@@ -43,9 +56,11 @@ fun AccountSection(
     accountEndIconClick: (Int) -> Unit = {}
 ) {
 
+    val context = LocalContext.current
     val isCheck = remember {
         mutableStateOf(false)
     }
+
 
     Column(
         modifier = modifier
@@ -57,7 +72,7 @@ fun AccountSection(
     ) {
 
         Item(
-            painter = painterResource(id = BudgetIcons.wallet),
+            type = -1,
             title = account.accountName,
             isChecked = isCheck,
             canEdit = canEdit,
@@ -82,17 +97,25 @@ fun AccountSection(
             val subTitle = if (source.sourceType is SourceType.BankCardSource) (source.sourceType as SourceType.BankCardSource).cardNumber.mask("#### #### #### ####")
             else ""
 
-            val title = if (source.sourceType is SourceType.BankCardSource) "بانک ملی - 4106"
+            val title = if (source.sourceType is SourceType.BankCardSource){
+                val bandData = getCardDetailsFromAssets(context,
+                    (source.sourceType as SourceType.BankCardSource).cardNumber)
+                if (bandData != null){
+                    "${bandData.bank_title} - ${
+                        (source.sourceType as SourceType.BankCardSource).cardNumber.takeLast(4)
+                    }"
+                }else stringResource(id = R.string.bank_card)
+            }
             else ""
 
             if (title.isNotEmpty()){
                 Item(
-                    painter = painterResource(id = BudgetIcons.BankLogo.icon(Constants.SourceExpenseIcons.MELLI)),
                     isImage = true,
-                    title = title ?: Constants.SourceExpenseIcons.MELLI,
+                    title = title,
                     subtitle = subTitle,
                     isChecked = isCheck,
-                    canEdit = canEdit
+                    canEdit = canEdit,
+                    type = source.type
                 ) {
                     if (canEdit){
                         IconButton(
@@ -119,7 +142,7 @@ fun AccountSection(
 @Composable
 private fun Item(
     modifier: Modifier = Modifier,
-    painter: Painter,
+    type: Int,
     isImage: Boolean = false,
     title: String,
     subtitle: String? = null,
@@ -129,6 +152,8 @@ private fun Item(
     isHeader: Boolean = false,
     endItem: @Composable () -> Unit
 ) {
+
+    val context = LocalContext.current
 
     Row(
         modifier
@@ -146,17 +171,49 @@ private fun Item(
         }
 
         if (isImage){
-            Image(
-                modifier = modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(8.dp)
+            when(type){
+
+                SourceTypes.BankCard.ordinal -> {
+                    val bankData = getCardDetailsFromAssets(context, subtitle.orEmpty().replace(" ", ""))
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(bankData?.bank_logo)
+                            .crossfade(true)
+                            .decoderFactory(SvgDecoder.Factory())
+                            .build(),
+                        placeholder = painterResource(BudgetIcons.bank),
+                        error = painterResource(BudgetIcons.bank),
+                        contentDescription = "Bank Logo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+
+                            .background(
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(4.dp)
+                            .size(24.dp)
+
                     )
-                    .padding(8.dp)
-                    .size(24.dp),
-                painter = painter, contentDescription = "icon wallet"
-            )
+                }
+
+                else -> {
+                    Image(
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp)
+                            .size(24.dp),
+                        painter = painterResource(id = BudgetIcons.bank), contentDescription = "icon wallet",
+                    )
+                }
+
+            }
+
         }else{
+            // This is for Account
             Icon(
                 modifier = modifier
                     .background(
@@ -164,7 +221,7 @@ private fun Item(
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(8.dp),
-                painter = painter, contentDescription = "icon wallet"
+                painter = painterResource(id = BudgetIcons.wallet), contentDescription = "icon wallet"
             )
         }
 
@@ -188,7 +245,7 @@ private fun Item(
                 Text(
                     modifier = Modifier.padding(top = 4.dp),
                     text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.outline)
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.outline).copy(textDirection = TextDirection.Ltr)
                 )
             }
         }

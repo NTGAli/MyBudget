@@ -45,10 +45,8 @@ import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.core.mybudget.common.detectCardType
 import com.ntg.core.mybudget.common.getCardDetailsFromAssets
 import com.ntg.core.mybudget.common.mask
-import com.ntg.mybudget.core.designsystem.R
 
 @Composable
 fun BankCard(

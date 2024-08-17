@@ -155,9 +155,9 @@ fun String.mask(mask: String): String {
     return maskedString
 }
 
-fun detectCardType(cardNumber: String): String {
-    val cleanCardNumber = cardNumber.replace("\\D".toRegex(), "")
-    return Constants.SourceExpenseIcons.MELLI
+//fun detectCardType(cardNumber: String): String {
+//    val cleanCardNumber = cardNumber.replace("\\D".toRegex(), "")
+//    return Constants.SourceExpenseIcons.MELLI
 //    return when {
 //        cleanCardNumber.startsWith("4") && (cleanCardNumber.length == 13 || cleanCardNumber.length == 16 || cleanCardNumber.length == 19) -> R.drawable.visa
 //        cleanCardNumber.startsWith("5") && cleanCardNumber.length == 16 -> R.drawable.master
@@ -167,7 +167,7 @@ fun detectCardType(cardNumber: String): String {
 //        cleanCardNumber.matches("^35(2[89]|[3-8][0-9])[0-9]{12}\$".toRegex()) -> R.drawable.jcb
 //        else -> -1
 //    }
-}
+//}
 
 fun generateUniqueFiveDigitId(): Int {
     val timestamp = System.currentTimeMillis()
