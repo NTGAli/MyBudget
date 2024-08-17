@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -82,36 +83,18 @@ fun SourceRoute(
 @Composable
 private fun SourceScreen(
     onSubmit: (source: SourceExpenditure,
-            card: BankCard) -> Unit
+            card: BankCard?) -> Unit
 ) {
 
-    val cardNumber = remember {
+
+    var sourceType by remember {
         mutableStateOf("")
     }
 
-    val concurrency = remember {
-        mutableStateOf("تومن")
+    var bankCard by remember {
+        mutableStateOf<BankCard?>(null)
     }
 
-    val name = remember {
-        mutableStateOf("")
-    }
-
-    val expire = remember {
-        mutableStateOf("")
-    }
-
-    val source by remember {
-        mutableStateOf<SourceExpenditure?>(null)
-    }
-
-    var month by remember {
-        mutableIntStateOf(0)
-    }
-
-    var year by remember {
-        mutableIntStateOf(0)
-    }
 
     onSubmit.invoke(
         SourceExpenditure(
@@ -123,22 +106,9 @@ private fun SourceScreen(
             type = SourceTypes.BankCard.ordinal,
             dateCreated = System.currentTimeMillis().toString()
         ),
-        BankCard(
-            id = generateUniqueFiveDigitId(),
-            number = cardNumber.value,
-            date = "$year/$month",
-            name = name.value,
-            updatedAt = System.currentTimeMillis().toString()
-        )
+        bankCard
     )
 
-
-
-
-
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -158,148 +128,213 @@ private fun SourceScreen(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
                     .padding(top = 8.dp)
-            )
-
-            BudgetTextField(
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                text = concurrency,
-                label = stringResource(id = R.string.concurrency),
-                readOnly = true
-            )
-
-            TextDivider(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 16.dp),
-                title = stringResource(id = R.string.bank_card)
-            )
-
-
-
-            BankCard(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 16.dp),
-                cardNumber = cardNumber.value,
-                name = name.value,
-                amount = "0",
-                expiringDate = expire.value
-            )
-
-
-            TextDivider(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 24.dp),
-                title = stringResource(id = R.string.card_info)
-            )
-
-            BudgetTextField(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                text = cardNumber,
-                label = stringResource(id = R.string.card_number),
-                length = 16
-            )
-
-            BudgetTextField(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                text = name,
-                label = stringResource(id = R.string.first_last_name)
-            )
-
-            BudgetTextField(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                text = expire,
-                label = stringResource(id = R.string.expire),
-                readOnly = true,
-                onClick = {
-                    showBottomSheet = true
-                }
-            )
-
-            Spacer(modifier = Modifier.padding(24.dp))
-
-            if (showBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        showBottomSheet = false
-                    },
-                    sheetState = sheetState
-                ) {
-
-                    Column {
-
-                        Text(
-                            modifier = Modifier.padding(start = 24.dp),
-                            text = stringResource(id = R.string.select_expire_date), style = MaterialTheme.typography.titleSmall)
-
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 32.dp)
-                                .padding(bottom = 32.dp, top = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            WheelList(
-                                modifier = Modifier.weight(1f),
-                                items = (1..12).toList(),
-                                initialItem = month,
-                                onItemSelected = { i, item ->
-                                    month = item
-                                    expire.value = "$year/$month"
-                                }
-                            )
-
-                            Text(
-                                style = MaterialTheme.typography.titleLarge,
-                                text = "/")
-
-                            WheelList(
-                                modifier = Modifier.weight(1f),
-                                items = (1403..1408).toList(),
-                                initialItem = year,
-                                onItemSelected = { i, item ->
-                                    year = item
-                                    expire.value = "$year/$month"
-                                }
-                            )
-                        }
-
-                        BudgetButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            text = stringResource(id = com.ntg.feature.setup.R.string.submit),
-                            size = ButtonSize.MD){
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    showBottomSheet = false
-                                }
-                            }
-                        }
-
-                    }
-
-                }
+            ){
+                sourceType = it
             }
+
+
+            when(sourceType){
+
+                stringResource(id = R.string.bank_card) -> {
+                    BankCardView{
+                        bankCard = it
+                    }
+                }
+
+                stringResource(id = R.string.foreign_currency) -> {
+
+                }
+
+                stringResource(id = R.string.gold) -> {
+
+                }
+
+            }
+
 
         }
 
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BankCardView(
+    bankCard: (BankCard) -> Unit
+){
 
 
 
+    val concurrency = remember {
+        mutableStateOf("تومن")
+    }
 
+    val name = remember {
+        mutableStateOf("")
+    }
+
+    val expire = remember {
+        mutableStateOf("")
+    }
+
+    var month by remember {
+        mutableIntStateOf(0)
+    }
+
+    var year by remember {
+        mutableIntStateOf(0)
+    }
+
+    val cardNumber = remember {
+        mutableStateOf("")
+    }
+
+    bankCard(
+        BankCard(
+            id = generateUniqueFiveDigitId(),
+            number = cardNumber.value,
+            date = "$year/$month",
+            name = name.value,
+            updatedAt = System.currentTimeMillis().toString()
+        )
+    )
+
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    BudgetTextField(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        text = concurrency,
+        label = stringResource(id = R.string.concurrency),
+        readOnly = true
+    )
+
+    TextDivider(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(top = 16.dp),
+        title = stringResource(id = R.string.bank_card)
+    )
+
+
+
+    BankCard(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(top = 16.dp),
+        cardNumber = cardNumber.value,
+        name = name.value,
+        amount = "0",
+        expiringDate = expire.value
+    )
+
+
+    TextDivider(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(top = 24.dp),
+        title = stringResource(id = R.string.card_info)
+    )
+
+    BudgetTextField(
+        modifier = Modifier
+            .padding(top = 16.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        text = cardNumber,
+        label = stringResource(id = R.string.card_number),
+        length = 16
+    )
+
+    BudgetTextField(
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        text = name,
+        label = stringResource(id = R.string.first_last_name)
+    )
+
+    BudgetTextField(
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        text = expire,
+        label = stringResource(id = R.string.expire),
+        readOnly = true,
+        onClick = {
+            showBottomSheet = true
+        }
+    )
+
+    Spacer(modifier = Modifier.padding(24.dp))
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            sheetState = sheetState
+        ) {
+
+            Column {
+
+                Text(
+                    modifier = Modifier.padding(start = 24.dp),
+                    text = stringResource(id = R.string.select_expire_date), style = MaterialTheme.typography.titleSmall)
+
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .padding(bottom = 32.dp, top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    WheelList(
+                        modifier = Modifier.weight(1f),
+                        items = (1..12).toList(),
+                        initialItem = month,
+                        onItemSelected = { i, item ->
+                            month = item
+                            expire.value = "$year/$month"
+                        }
+                    )
+
+                    Text(
+                        style = MaterialTheme.typography.titleLarge,
+                        text = "/")
+
+                    WheelList(
+                        modifier = Modifier.weight(1f),
+                        items = (1403..1408).toList(),
+                        initialItem = year,
+                        onItemSelected = { i, item ->
+                            year = item
+                            expire.value = "$year/$month"
+                        }
+                    )
+                }
+
+                BudgetButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    text = stringResource(id = com.ntg.feature.setup.R.string.submit),
+                    size = ButtonSize.MD){
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showBottomSheet = false
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
 }
 

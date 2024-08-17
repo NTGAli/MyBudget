@@ -27,11 +27,14 @@ import com.ntg.mybudget.core.designsystem.R
 @Composable
 fun ExposedDropdownMenuSample(
     modifier: Modifier = Modifier,
+    defaultText:String = stringResource(id = R.string.select_one),
     onItemSelect:(String) -> Unit = {}
 ) {
-    val options = listOf("کارت بانکی", "ارز", "طلا")
+    val options = listOf(stringResource(id = R.string.bank_card), stringResource(id = R.string.foreign_currency), stringResource(
+        id = R.string.gold
+    ))
     var expanded by remember { mutableStateOf(false) }
-    val text = remember { mutableStateOf(options[0]) }
+    val text = remember { mutableStateOf(defaultText) }
     var icon by remember {
         mutableIntStateOf(BudgetIcons.directionUp)
     }
