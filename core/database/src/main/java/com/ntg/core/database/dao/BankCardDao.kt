@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.ntg.core.database.model.BankCardEntity
 
 @Dao
@@ -15,6 +16,9 @@ interface BankCardDao {
 
     @Delete
     suspend fun delete(cardEntity: BankCardEntity)
+
+    @Update
+    suspend fun update(cardEntity: BankCardEntity)
 
     @Query("SELECT * FROM bank_card_entity")
     suspend fun getAll(): List<BankCardEntity>

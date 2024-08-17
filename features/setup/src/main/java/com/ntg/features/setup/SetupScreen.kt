@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,12 +15,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,7 +40,7 @@ import com.ntg.feature.setup.R
 fun SetupRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
-    navigateToSource: (id: Int) -> Unit,
+    navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
 ){
 
@@ -69,17 +72,20 @@ fun SetupRoute(
 @Composable
 private fun SetupScreen(
     accounts: State<List<AccountWithSources>?>,
-    navigateToSource: (id: Int) -> Unit,
+    navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
 ) {
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppBar(
                 enableNavigation = false,
-                title = stringResource(id = R.string.createAccount)
+                title = stringResource(id = R.string.createAccount),
+                scrollBehavior = scrollBehavior
             )
         }
     ) {
@@ -87,19 +93,24 @@ private fun SetupScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(it)
-                .padding(top = 16.dp)
         ) {
 
-            items(accounts.value.orEmpty()){
-                if (it != null) {
-                    AccountSection(
-                        modifier = Modifier.padding(horizontal = 24.dp).padding(top = 8.dp),
-                        account = it, canEdit = true, insertNewItem = {
-                            navigateToSource(it.accountId)
-                        }, accountEndIconClick = {
-                            editAccount(it)
-                        })
-                }
+            item {
+                Spacer(modifier = Modifier.padding(8.dp))
+            }
+
+            items(accounts.value.orEmpty()){ account ->
+                AccountSection(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 8.dp),
+                    account = account, canEdit = true, insertNewItem = {
+                        navigateToSource(account.accountId, null)
+                    }, accountEndIconClick = {
+                        editAccount(it)
+                    }, onSourceEdit = {
+                        navigateToSource(account.accountId, it)
+                    })
 
             }
 
@@ -129,6 +140,10 @@ private fun SetupScreen(
                         painter = painterResource(id = BudgetIcons.Add), contentDescription = "add account")
                 }
 
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(24.dp))
             }
 
         }

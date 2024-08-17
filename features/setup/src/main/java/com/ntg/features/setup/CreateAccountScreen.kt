@@ -28,7 +28,8 @@ import com.ntg.feature.setup.R
 fun CreateAccountRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
-    id: Int? = null
+    id: Int? = null,
+    onBack:()-> Unit
 ) {
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.save))
@@ -38,7 +39,7 @@ fun CreateAccountRoute(
     var upsertAccount by remember {
         mutableStateOf<Account?>(null)
     }
-    CreateAccountScreen(account?.name.orEmpty()){
+    CreateAccountScreen(account?.name.orEmpty(), onBack = onBack){
         upsertAccount = it
     }
 
@@ -64,6 +65,7 @@ fun CreateAccountRoute(
 @Composable
 private fun CreateAccountScreen(
     name: String,
+    onBack: () -> Unit,
     account: (Account) -> Unit
 ) {
 
@@ -83,7 +85,7 @@ private fun CreateAccountScreen(
 
     Scaffold(
         topBar = {
-            AppBar(title = stringResource(id = R.string.account))
+            AppBar(title = stringResource(id = R.string.account), navigationOnClick = {onBack.invoke()})
         }
     ) {
         BudgetTextField(

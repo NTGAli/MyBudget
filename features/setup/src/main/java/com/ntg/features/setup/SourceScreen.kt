@@ -13,9 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,9 +25,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BankCard
 import com.ntg.core.designsystem.components.BudgetButton
@@ -36,9 +38,10 @@ import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ExposedDropdownMenuSample
 import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
-import com.ntg.core.model.BankCard
 import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceTypes
+import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
@@ -49,7 +52,9 @@ import kotlinx.coroutines.launch
 fun SourceRoute(
     sharedViewModel: SharedViewModel,
     accountId: Int,
-    setupViewModel: SetupViewModel = hiltViewModel()
+    sourceId: Int? = null,
+    setupViewModel: SetupViewModel = hiltViewModel(),
+    onBack:() -> Unit
 ) {
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
@@ -57,18 +62,25 @@ fun SourceRoute(
         mutableStateOf<SourceExpenditure?>(null)
     }
     var bankCard by remember {
-        mutableStateOf<BankCard?>(null)
+        mutableStateOf<SourceType.BankCard?>(null)
     }
 
-    SourceScreen { sourceValue, card ->
+    val editSource = setupViewModel.getSourcesById(sourceId ?: -1).collectAsStateWithLifecycle(
+        initialValue = null
+    ).value
+
+    SourceScreen(editSource, onBack = onBack) { sourceValue, card ->
         source = sourceValue
         bankCard = card
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = bankCard) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
-                if (source != null && bankCard != null){
+                if (editSource != null){
+                    bankCard?.sourceId = sourceId
+                    setupViewModel.updateBankCard(bankCard!!)
+                } else if (source != null && bankCard != null){
                     source?.accountId = accountId
                     bankCard?.sourceId = source?.id
                     setupViewModel.insertNewSource(source!!)
@@ -82,8 +94,9 @@ fun SourceRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SourceScreen(
-    onSubmit: (source: SourceExpenditure,
-            card: BankCard?) -> Unit
+    editSource: SourceWithDetail?,
+    onBack:()-> Unit,
+    onSubmit: (source: SourceExpenditure, card: SourceType.BankCard?) -> Unit
 ) {
 
 
@@ -92,9 +105,12 @@ private fun SourceScreen(
     }
 
     var bankCard by remember {
-        mutableStateOf<BankCard?>(null)
+        mutableStateOf<SourceType.BankCard?>(null)
     }
 
+    var editMode by remember {
+        mutableStateOf(false)
+    }
 
     onSubmit.invoke(
         SourceExpenditure(
@@ -110,10 +126,26 @@ private fun SourceScreen(
     )
 
 
+    if (editSource != null){
+        editMode = true
+        when(editSource.sourceType){
+            is SourceType.BankCard -> sourceType = stringResource(id = R.string.bank_card)
+            is SourceType.Gold -> sourceType = stringResource(id = R.string.gold)
+            null -> editMode = false
+        }
+    }
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppBar(
-                title = stringResource(id = R.string.source_expenditure)
+                title = stringResource(id = R.string.source_expenditure),
+                scrollBehavior = scrollBehavior,
+                navigationOnClick = {
+                    onBack.invoke()
+                }
             )
         }
     ) { paddingValues ->
@@ -124,19 +156,24 @@ private fun SourceScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            ExposedDropdownMenuSample(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 8.dp)
-            ){
-                sourceType = it
+            if (!editMode){
+                ExposedDropdownMenuSample(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 8.dp)
+                ){
+                    sourceType = it
+                }
             }
 
 
             when(sourceType){
 
                 stringResource(id = R.string.bank_card) -> {
-                    BankCardView{
+
+                    BankCardView(
+                        if (editMode) editSource?.sourceType as SourceType.BankCard else null
+                    ){
                         bankCard = it
                     }
                 }
@@ -160,10 +197,9 @@ private fun SourceScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BankCardView(
-    bankCard: (BankCard) -> Unit
+    editBankCard: SourceType.BankCard? = null,
+    bankCard: (SourceType.BankCard) -> Unit
 ){
-
-
 
     val concurrency = remember {
         mutableStateOf("تومن")
@@ -190,8 +226,8 @@ private fun BankCardView(
     }
 
     bankCard(
-        BankCard(
-            id = generateUniqueFiveDigitId(),
+        SourceType.BankCard(
+            id = editBankCard?.id ?: generateUniqueFiveDigitId(),
             number = cardNumber.value,
             date = "$year/$month",
             name = name.value,
@@ -199,19 +235,33 @@ private fun BankCardView(
         )
     )
 
+    LaunchedEffect(key1 = editBankCard) {
+        if (editBankCard != null && cardNumber.value.isEmpty()){
+            name.value = editBankCard.name
+            cardNumber.value = editBankCard.number
+            if (editBankCard.date.isNotEmpty()){
+                year = editBankCard.date.split("/")[0].toInt()
+                month = editBankCard.date.split("/")[1].toInt()
+                expire.value = editBankCard.date
+            }
+        }
+    }
+
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    BudgetTextField(
-        modifier = Modifier
-            .padding(top = 24.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        text = concurrency,
-        label = stringResource(id = R.string.concurrency),
-        readOnly = true
-    )
+    if (editBankCard == null){
+        BudgetTextField(
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            text = concurrency,
+            label = stringResource(id = R.string.concurrency),
+            readOnly = true
+        )
+    }
 
     TextDivider(
         modifier = Modifier

@@ -45,7 +45,7 @@ interface AccountDao {
         """
         SELECT ae.id as accountId, ae.name as accountName, 
                se.id as sourceId, se.type, se.name,
-               bc.number, bc.cvv, bc.date
+               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name
         FROM accounts ae
         LEFT JOIN sourceExpenditures se ON ae.id = se.accountId
         LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0
@@ -65,10 +65,12 @@ interface AccountDao {
                 accountName = sources.first().accountName,
                 sources = sources.map { row ->
                     val sourceType = when (row.type) {
-                        0 -> SourceType.BankCardSource(
-                            cardNumber = row.number ?: "",
+                        0 -> SourceType.BankCard(
+                            id = row.bankId ?: -1,
+                            number = row.number ?: "",
                             cvv = row.cvv ?: "",
-                            expire = row.expire ?: ""
+                            date = row.expire ?: "",
+                            name = row.name.orEmpty()
                         )
 
                         1 -> SourceType.Gold(

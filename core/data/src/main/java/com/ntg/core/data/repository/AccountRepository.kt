@@ -17,7 +17,7 @@ interface AccountRepository {
 
     fun getAll(): Flow<List<Account?>>
 
-    fun getAccount(id: Int): Flow<Account?>
+    fun getAccountByAccount(id: Int): Flow<Account?>
 
     fun getAccountsWithSources(): Flow<List<AccountWithSources>>
 

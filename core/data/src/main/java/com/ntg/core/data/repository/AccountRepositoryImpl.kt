@@ -45,7 +45,7 @@ class AccountRepositoryImpl @Inject constructor(
             .flowOn(ioDispatcher)
 
 
-    override fun getAccount(id: Int): Flow<Account?> {
+    override fun getAccountByAccount(id: Int): Flow<Account?> {
         Log.d("wdawd", "wadawd $id")
         return flow {
             emit(

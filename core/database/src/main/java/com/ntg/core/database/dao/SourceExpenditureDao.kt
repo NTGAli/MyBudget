@@ -23,10 +23,14 @@ interface SourceExpenditureDao {
     @Query("SELECT * FROM sourceExpenditures")
     suspend fun getAll(): List<SourceExpenditureEntity>
 
+    @Query("SELECT * FROM sourceExpenditures WHERE id=:id")
+    suspend fun getSource(id: Int): SourceExpenditureEntity?
+
+
     @Transaction
     @Query(
         "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.date, bc.name\n" +
+                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
 //                "            ge.value, ge.weight\n" +
                 "        FROM sourceExpenditures se\n" +
                 "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n"
@@ -35,18 +39,22 @@ interface SourceExpenditureDao {
     suspend fun getSourcesByAccount(): List<RawSourceDetail>
 
     @Transaction
-    suspend fun getSourceWithDetails(accountId: Int): List<SourceWithDetail> {
+    suspend fun getSourcesWithDetails(accountId: Int): List<SourceWithDetail> {
         return getSourcesByAccount().map { row ->
             val sourceType = when (row.type) {
-                0 -> SourceType.BankCardSource(
-                    cardNumber = row.number?: "",
+                0 -> SourceType.BankCard(
+                    id = row.bankId ?: -1,
+                    number = row.number ?: "",
                     cvv = row.cvv ?: "",
-                    expire = row.date ?: ""
+                    date = row.expire ?: "",
+                    name = row.cardName.orEmpty()
                 )
+
                 1 -> SourceType.Gold(
                     value = row.value ?: 0.0,
                     weight = row.weight ?: 0.0
                 )
+
                 else -> throw IllegalArgumentException("Unknown type")
             }
             SourceWithDetail(
@@ -56,6 +64,50 @@ interface SourceExpenditureDao {
                 name = row.name,
                 sourceType = sourceType
             )
+        }
+    }
+
+
+    @Transaction
+    @Query(
+        "SELECT se.id, se.accountId, se.type, se.name,\n" +
+                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
+                "        FROM sourceExpenditures se\n" +
+                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
+                " WHERE se.id=:id"
+    )
+    suspend fun getSourceWithDetails(id: Int): RawSourceDetail?
+
+    @Transaction
+    suspend fun getSourceDetails(id: Int): SourceWithDetail? {
+
+        val row = getSourceWithDetails(id)
+        if (row != null) {
+            val sourceType = when (row.type) {
+                0 -> SourceType.BankCard(
+                    id = row.bankId ?: -1,
+                    number = row.number ?: "",
+                    cvv = row.cvv ?: "",
+                    date = row.expire ?: "",
+                    name = row.cardName.orEmpty()
+                )
+
+                1 -> SourceType.Gold(
+                    value = row.value ?: 0.0,
+                    weight = row.weight ?: 0.0
+                )
+
+                else -> throw IllegalArgumentException("Unknown type")
+            }
+            return SourceWithDetail(
+                id = row.id,
+                accountId = row.accountId,
+                type = row.type,
+                name = row.name,
+                sourceType = sourceType
+            )
+        } else {
+            return null
         }
     }
 

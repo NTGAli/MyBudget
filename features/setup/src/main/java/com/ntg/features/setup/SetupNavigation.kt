@@ -12,13 +12,14 @@ const val Source_Route = "SourceRoute"
 const val Create_Account_Route = "CreateAccountRoute"
 
 const val AccountId_Arg = "accountId"
+const val SourceId_Arg = "accountId"
 
 fun NavController.navigateToSetup() {
     navigate(Setup_Route)
 }
 
-fun NavController.navigateToSource(id: Int) {
-    val finalRoute = "$Source_Route/$id"
+fun NavController.navigateToSource(id: Int, sourceId: Int?) {
+    val finalRoute = "$Source_Route/$id/${sourceId ?: -1}"
     navigate(finalRoute)
 }
 
@@ -30,8 +31,9 @@ fun NavController.navigateToCreateAccount(id: Int?) {
 
 fun NavGraphBuilder.setupScreen(
     sharedViewModel: SharedViewModel,
-    navigateToSource: (id: Int) -> Unit,
+    navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
+    onBack:() -> Unit
 ) {
 
     composable(
@@ -42,14 +44,17 @@ fun NavGraphBuilder.setupScreen(
 
 
     composable(
-        route = "$Source_Route/{$AccountId_Arg}",
+        route = "$Source_Route/{$AccountId_Arg}/{$SourceId_Arg}?",
         arguments = listOf(
             navArgument(AccountId_Arg) {
+                type = NavType.IntType
+            },
+            navArgument(SourceId_Arg) {
                 type = NavType.IntType
             }
         )
     ) {
-        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0)
+        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg), onBack = onBack)
     }
 
     composable(
@@ -60,7 +65,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        CreateAccountRoute(sharedViewModel, id =  it.arguments?.getInt(AccountId_Arg) ?: 0)
+        CreateAccountRoute(sharedViewModel, id =  it.arguments?.getInt(AccountId_Arg) ?: 0, onBack=onBack)
     }
 
 }

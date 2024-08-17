@@ -3,6 +3,7 @@ package com.ntg.core.model
 data class RawAccountWithSource(
     val accountId: Int,
     val accountName: String,
+    val bankId: Int? = null,
     val sourceId: Int?,
     val type: Int?,
     val name: String?,

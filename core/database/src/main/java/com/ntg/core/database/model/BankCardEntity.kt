@@ -2,7 +2,7 @@ package com.ntg.core.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.ntg.core.model.BankCard
+import com.ntg.core.model.SourceType
 
 @Entity(
     tableName = "bank_card_entity"
@@ -24,7 +24,7 @@ data class BankCardEntity(
 
 
 fun BankCardEntity.asBank() =
-    BankCard(
+    SourceType.BankCard(
         id = id,
         sId = sId,
         sourceId = sourceId,
@@ -38,7 +38,7 @@ fun BankCardEntity.asBank() =
     )
 
 
-fun BankCard.toEntity() =
+fun SourceType.BankCard.toEntity() =
     BankCardEntity(
         id = id,
         sId = sId,
@@ -49,5 +49,5 @@ fun BankCard.toEntity() =
         name = name,
         isSynced = isSynced,
         isDeleted = isDeleted,
-        updatedAt = updatedAt,
+        updatedAt = updatedAt.orEmpty(),
     )

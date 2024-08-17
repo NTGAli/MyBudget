@@ -27,7 +27,7 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
         sourceExpenditureDao.delete(sourceExpenditure.toEntity())
     }
 
-    override suspend fun getAll(): Flow<List<SourceExpenditure>> =
+    override fun getAll(): Flow<List<SourceExpenditure>> =
         flow {
             emit(
                 sourceExpenditureDao.getAll()
@@ -36,10 +36,25 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
         }
             .flowOn(ioDispatcher)
 
-    override suspend fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>> =
+    override fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>> =
         flow {
             emit(
-                sourceExpenditureDao.getSourceWithDetails(accountId)
+                sourceExpenditureDao.getSourcesWithDetails(accountId)
+            )
+        }.flowOn(ioDispatcher)
+
+    override fun getSourcesById(accountId: Int): Flow<SourceExpenditure?> =
+        flow {
+            emit(
+                sourceExpenditureDao.getSource(accountId)
+                    ?.asSource()
+            )
+        }.flowOn(ioDispatcher)
+
+    override fun getSourceDetails(id: Int): Flow<SourceWithDetail?> =
+        flow {
+            emit(
+                sourceExpenditureDao.getSourceDetails(id)
             )
         }.flowOn(ioDispatcher)
 }

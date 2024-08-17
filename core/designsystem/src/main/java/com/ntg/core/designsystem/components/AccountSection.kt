@@ -54,6 +54,7 @@ fun AccountSection(
     account: AccountWithSources,
     canEdit: Boolean,
     insertNewItem: () -> Unit = {},
+    onSourceEdit: (Int) -> Unit = {},
     accountEndIconClick: (Int) -> Unit = {}
 ) {
 
@@ -95,15 +96,15 @@ fun AccountSection(
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
         account.sources.forEach { source ->
 
-            val subTitle = if (source.sourceType is SourceType.BankCardSource) (source.sourceType as SourceType.BankCardSource).cardNumber.mask("#### #### #### ####")
+            val subTitle = if (source.sourceType is SourceType.BankCard) (source.sourceType as SourceType.BankCard).number.mask("#### #### #### ####")
             else ""
 
-            val title = if (source.sourceType is SourceType.BankCardSource){
+            val title = if (source.sourceType is SourceType.BankCard){
                 val bandData = getCardDetailsFromAssets(context,
-                    (source.sourceType as SourceType.BankCardSource).cardNumber)
+                    (source.sourceType as SourceType.BankCard).number)
                 if (bandData != null){
                     "${bandData.bank_title} - ${
-                        (source.sourceType as SourceType.BankCardSource).cardNumber.takeLast(4)
+                        (source.sourceType as SourceType.BankCard).number.takeLast(4)
                     }"
                 }else stringResource(id = R.string.bank_card)
             }
@@ -120,7 +121,9 @@ fun AccountSection(
                 ) {
                     if (canEdit){
                         IconButton(
-                            onClick = {}) {
+                            onClick = {
+                                onSourceEdit(source.id)
+                            }) {
                             Icon(
                                 painter = painterResource(
                                     id = BudgetIcons.Pen

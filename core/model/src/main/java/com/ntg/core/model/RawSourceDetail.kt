@@ -9,5 +9,8 @@ data class RawSourceDetail(
     val cvv: String?,
     val date: String?,
     val value: Double?,
-    val weight: Double?
+    val weight: Double?,
+    val bankId: Int?=null,
+    val expire: String? = null,
+    val cardName: String? = null,
 )

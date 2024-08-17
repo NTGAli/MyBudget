@@ -1,14 +1,16 @@
 package com.ntg.core.data.repository
 
-import com.ntg.core.model.BankCard
+import com.ntg.core.model.SourceType
 import kotlinx.coroutines.flow.Flow
 
 interface BankCardRepository {
 
-    suspend fun insert(card: BankCard)
+    suspend fun insert(card: SourceType.BankCard)
 
-    suspend fun delete(card: BankCard)
+    suspend fun update(card: SourceType.BankCard)
 
-    fun getAll(): Flow<List<BankCard>>
+    suspend fun delete(card: SourceType.BankCard)
+
+    fun getAll(): Flow<List<SourceType.BankCard>>
 
 }
