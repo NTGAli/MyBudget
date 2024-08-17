@@ -35,4 +35,5 @@ object BudgetIcons {
   val Pen = R.drawable.pen
   val bankCard = R.drawable.bank_card
   val chip = R.drawable.emv_chip
+  val bank = R.drawable.bank
 }

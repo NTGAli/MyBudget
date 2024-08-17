@@ -24,8 +24,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     api(libs.androidx.compose.runtime)
     api(libs.androidx.compose.ui.util)
+    implementation(libs.coil.kt)
 
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.svg)
 
 
     testImplementation(libs.androidx.compose.ui.test)

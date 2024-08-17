@@ -2,6 +2,9 @@ package com.ntg.core.mybudget.common
 
 import android.content.Context
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.ntg.core.model.DataBank
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -172,4 +175,20 @@ fun generateUniqueFiveDigitId(): Int {
     val digest = MessageDigest.getInstance("SHA-256").digest(input)
     val hash = digest.fold(0) { acc, byte -> (acc shl 8) + byte.toInt() }
     return hash and 0x7FFFFFFF % 90000 + 10000 // Ensures 5-digit ID
+}
+
+
+fun getCardDetailsFromAssets(context: Context, cardNumber: String): DataBank? {
+    if (cardNumber.isEmpty()) return null
+    val jsonString = context.assets.open("iran_banks.json").bufferedReader().use { it.readText() }
+
+    val listType = object : TypeToken<List<DataBank>>() {}.type
+    val bankCardList: List<DataBank> = Gson().fromJson(jsonString, listType)
+
+    for (card in bankCardList) {
+        if (cardNumber.startsWith(card.card_no.toString())) {
+            return card
+        }
+    }
+    return null
 }

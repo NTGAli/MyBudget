@@ -29,9 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -39,8 +41,12 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.detectCardType
+import com.ntg.core.mybudget.common.getCardDetailsFromAssets
 import com.ntg.core.mybudget.common.mask
 import com.ntg.mybudget.core.designsystem.R
 
@@ -64,7 +70,14 @@ fun BankCard(
         mutableStateOf(0.dp)
     }
 
+    var defaultTint by remember {
+        mutableStateOf<ColorFilter?>(ColorFilter.tint(Color.White))
+    }
+
+    val context = LocalContext.current
     val localDensity = LocalDensity.current
+
+
 
 
     val animatedHeight = if (height != 0.dp) {
@@ -111,6 +124,7 @@ fun BankCard(
                 },
         ) {
 
+            // image background
             Image(
                 modifier = imageModifier
                     .clip(RoundedCornerShape(16.dp))
@@ -144,31 +158,39 @@ fun BankCard(
                 fullView = fullView,
             )
 
-            if (detectCardType(cardNumber).isNotEmpty() && !fullView) {
-                Image(
+            if (!fullView) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(getCardDetailsFromAssets(context, cardNumber)?.bank_logo)
+                        .crossfade(true)
+                        .decoderFactory(SvgDecoder.Factory())
+                        .build(),
+                    placeholder = painterResource(BudgetIcons.bank),
+                    error = painterResource(BudgetIcons.bank),
+                    contentDescription = "Bank Logo",
+                    contentScale = ContentScale.Crop,
+                    colorFilter = defaultTint,
+                    onSuccess = {
+                        defaultTint = null
+                    },
+                    onError = {
+                        defaultTint = ColorFilter.tint(Color.White)
+                    },
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(24.dp)
                         .alpha(animatedAlpha)
-                        .size(48.dp),
-                    painter = painterResource(
-                        id = BudgetIcons.BankLogo.icon(
-                            detectCardType(
-                                cardNumber
-                            )
-                        )
-                    ),
-                    contentDescription = null,
+                        .size(48.dp)
+
                 )
             }
 
             Text(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(24.dp)
-                    .alpha(animatedAlpha)
-                    .size(48.dp),
-                text = "ملی",
+                    .padding(32.dp)
+                    .alpha(animatedAlpha),
+                text = getCardDetailsFromAssets(context, cardNumber)?.bank_title ?: "",
                 style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
             )
 
