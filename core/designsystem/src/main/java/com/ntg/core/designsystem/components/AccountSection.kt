@@ -187,7 +187,7 @@ private fun Item(
                             .decoderFactory(SvgDecoder.Factory())
                             .build(),
                         placeholder = painterResource(BudgetIcons.bank),
-                        error = painterResource(BudgetIcons.bank),
+                        error = painterResource(BudgetIcons.card),
                         onSuccess = {defaultTint = null},
                         contentDescription = "Bank Logo",
                         contentScale = ContentScale.Crop,
@@ -212,7 +212,7 @@ private fun Item(
                             )
                             .padding(8.dp)
                             .size(24.dp),
-                        painter = painterResource(id = BudgetIcons.bank), contentDescription = "icon wallet",
+                        painter = painterResource(id = BudgetIcons.card), contentDescription = "icon wallet",
                     )
                 }
 
