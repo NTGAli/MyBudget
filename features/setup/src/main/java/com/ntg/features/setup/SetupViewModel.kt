@@ -22,6 +22,8 @@ class SetupViewModel
 
     fun accounts() = accountRepository.getAll()
 
+    fun getAccount(id: Int) = accountRepository.getAccount(id)
+
     fun accountWithSources() = accountRepository.getAccountsWithSources()
 
     fun getSourcesById(accountId: Int) = accountRepository.getAccount(accountId)
