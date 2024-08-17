@@ -21,6 +21,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -175,6 +176,10 @@ private fun Item(
 
                 SourceTypes.BankCard.ordinal -> {
                     val bankData = getCardDetailsFromAssets(context, subtitle.orEmpty().replace(" ", ""))
+                    val onSurface = MaterialTheme.colorScheme.onSurface
+                    var defaultTint by remember {
+                        mutableStateOf<ColorFilter?>(ColorFilter.tint(onSurface))
+                    }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(bankData?.bank_logo)
@@ -183,10 +188,11 @@ private fun Item(
                             .build(),
                         placeholder = painterResource(BudgetIcons.bank),
                         error = painterResource(BudgetIcons.bank),
+                        onSuccess = {defaultTint = null},
                         contentDescription = "Bank Logo",
                         contentScale = ContentScale.Crop,
+                        colorFilter = defaultTint,
                         modifier = Modifier
-
                             .background(
                                 color = MaterialTheme.colorScheme.surface,
                                 shape = RoundedCornerShape(8.dp)
