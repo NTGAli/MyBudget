@@ -42,6 +42,7 @@ fun SetupRoute(
     setupViewModel: SetupViewModel = hiltViewModel(),
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
 ){
 
     sharedViewModel.setExpand.postValue(true)
@@ -49,10 +50,11 @@ fun SetupRoute(
 
 
     LaunchedEffect(key1 = Unit) {
-        sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+    }
+    sharedViewModel.loginEventListener = object : LoginEventListener {
+        override fun onLoginEvent() {
+
 //                sharedViewModel.bottomNavTitle.postValue("HI")
-            }
         }
     }
 

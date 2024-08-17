@@ -33,13 +33,14 @@ fun NavGraphBuilder.setupScreen(
     sharedViewModel: SharedViewModel,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
-    onBack:() -> Unit
+    onBack:() -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
 ) {
 
     composable(
         route = Setup_Route
     ) {
-        SetupRoute(sharedViewModel, navigateToSource = navigateToSource, navigateToAccount = navigateToAccount)
+        SetupRoute(sharedViewModel, navigateToSource = navigateToSource, navigateToAccount = navigateToAccount, onShowSnackbar = onShowSnackbar)
     }
 
 

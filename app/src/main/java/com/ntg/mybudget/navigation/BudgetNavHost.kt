@@ -46,7 +46,8 @@ fun BudgetNavHost(
             sharedViewModel,
             navigateToSource = navController::navigateToSource,
             navigateToAccount = navController::navigateToCreateAccount,
-            onBack = navController::popBackStack
+            onBack = navController::popBackStack,
+            onShowSnackbar = onShowSnackbar
         )
 
     }
