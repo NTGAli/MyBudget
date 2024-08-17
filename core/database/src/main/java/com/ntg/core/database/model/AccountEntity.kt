@@ -12,17 +12,19 @@ data class AccountEntity(
     val name: String,
     val isSelected: Boolean = false,
     val isSynced: Boolean = false,
-    val dateCreated: String
+    val dateCreated: String? = null,
+    val dateModified: String?= null,
 )
 
 
-fun AccountEntity?.asAccount() = Account(
-    id = this?.id ?: -1,
-    sId = this?.sId,
-    name = this?.name ?: "",
-    isSynced = this?.isSynced ?: false,
-    isSelected = this?.isSelected ?: false,
-    dateCreated = this?.dateCreated ?: ""
+fun AccountEntity.asAccount() = Account(
+    id = this.id,
+    sId = this.sId,
+    name = this.name,
+    isSynced = this.isSynced,
+    isSelected = this.isSelected,
+    dateCreated = this.dateCreated,
+    dateModified = this.dateModified
 )
 
 fun Account?.toEntity() = AccountEntity(
@@ -31,5 +33,6 @@ fun Account?.toEntity() = AccountEntity(
     name = this?.name ?: "",
     isSynced = this?.isSynced ?: false,
     isSelected = this?.isSelected ?: false,
-    dateCreated = this?.dateCreated ?: ""
+    dateCreated = this?.dateCreated,
+    dateModified = this?.dateModified
 )

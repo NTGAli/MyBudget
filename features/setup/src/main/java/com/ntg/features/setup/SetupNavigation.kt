@@ -30,13 +30,14 @@ fun NavController.navigateToCreateAccount(id: Int?) {
 
 fun NavGraphBuilder.setupScreen(
     sharedViewModel: SharedViewModel,
-    navigateToSource: (id: Int) -> Unit
+    navigateToSource: (id: Int) -> Unit,
+    navigateToAccount: (id: Int) -> Unit,
 ) {
 
     composable(
         route = Setup_Route
     ) {
-        SetupRoute(sharedViewModel, navigateToSource = navigateToSource)
+        SetupRoute(sharedViewModel, navigateToSource = navigateToSource, navigateToAccount = navigateToAccount)
     }
 
 

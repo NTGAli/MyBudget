@@ -40,7 +40,7 @@ fun AccountSection(
     account: AccountWithSources,
     canEdit: Boolean,
     insertNewItem: () -> Unit = {},
-    onItemClick: (SourceExpenditure) -> Unit = {}
+    accountEndIconClick: (Int) -> Unit = {}
 ) {
 
     val isCheck = remember {
@@ -64,7 +64,7 @@ fun AccountSection(
             isHeader = true
         ) {
             IconButton(onClick = {
-
+                accountEndIconClick(account.accountId)
             }) {
                 Icon(
                     painter = painterResource(

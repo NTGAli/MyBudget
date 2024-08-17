@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.features.setup.navigateToCreateAccount
 import com.ntg.features.setup.navigateToSetup
 import com.ntg.features.setup.navigateToSource
 import com.ntg.features.setup.setupScreen
@@ -43,7 +44,8 @@ fun BudgetNavHost(
 
         setupScreen(
             sharedViewModel,
-            navigateToSource = navController::navigateToSource
+            navigateToSource = navController::navigateToSource,
+            navigateToAccount = navController::navigateToCreateAccount
         )
 
     }

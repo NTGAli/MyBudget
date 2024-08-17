@@ -124,7 +124,7 @@ private fun SourceScreen(
             dateCreated = System.currentTimeMillis().toString()
         ),
         BankCard(
-            id = 0,
+            id = generateUniqueFiveDigitId(),
             number = cardNumber.value,
             date = "$year/$month",
             name = name.value,

@@ -6,6 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
+import androidx.room.Upsert
 import com.ntg.core.database.model.AccountEntity
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.RawAccountWithSource
@@ -15,11 +17,17 @@ import com.ntg.core.model.SourceWithDetail
 @Dao
 interface AccountDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(account: AccountEntity)
 
     @Delete
     suspend fun delete(account: AccountEntity)
+
+    @Upsert
+    suspend fun upsert(account: AccountEntity)
+
+    @Update
+    suspend fun update(account: AccountEntity)
 
     @Query("SELECT * FROM accounts WHERE id=:id")
     suspend fun getAccount(id: Int): AccountEntity?

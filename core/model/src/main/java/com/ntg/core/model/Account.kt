@@ -1,10 +1,11 @@
 package com.ntg.core.model
 
 data class Account(
-    val id: Int,
-    val sId: String? = null,
-    val name: String,
-    val isSelected: Boolean = false,
-    val isSynced: Boolean = false,
-    val dateCreated: String
+    var id: Int,
+    var sId: String? = null,
+    var name: String,
+    var isSelected: Boolean = false,
+    var isSynced: Boolean = false,
+    var dateCreated: String? = null,
+    var dateModified: String? = null ,
 )

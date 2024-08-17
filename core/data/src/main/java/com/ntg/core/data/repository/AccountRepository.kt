@@ -11,6 +11,10 @@ interface AccountRepository {
 
     suspend fun delete(account: Account)
 
+    suspend fun upsert(account: Account)
+
+    suspend fun update(account: Account)
+
     fun getAll(): Flow<List<Account?>>
 
     fun getAccount(id: Int): Flow<Account?>

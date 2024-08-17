@@ -5,4 +5,5 @@
     <string name="submit">ثبت</string>
     <string name="account">حساب</string>
     <string name="save">ذخیره</string>
+    <string name="account_name">اسم حساب</string>
 </resources>

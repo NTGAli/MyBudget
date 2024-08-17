@@ -28,6 +28,24 @@ class SetupViewModel
 
     fun getSourcesById(accountId: Int) = accountRepository.getAccount(accountId)
 
+    fun upsertAccount(account: Account) {
+        viewModelScope.launch {
+            account.dateModified = System.currentTimeMillis().toString()
+            if (account.dateCreated.orEmpty().isEmpty()){
+                account.dateCreated = System.currentTimeMillis().toString()
+            }
+            accountRepository.update(account)
+        }
+    }
+
+    fun updateAccount(account: Account){
+        viewModelScope.launch {
+            account.dateModified = System.currentTimeMillis().toString()
+            account.dateCreated = System.currentTimeMillis().toString()
+            accountRepository.update(account)
+        }
+    }
+
     fun insertNewAccount(
         account: Account
     ){

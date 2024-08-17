@@ -1,5 +1,6 @@
 package com.ntg.core.data.repository
 
+import android.util.Log
 import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.model.AccountEntity
 import com.ntg.core.database.model.asAccount
@@ -26,6 +27,14 @@ class AccountRepositoryImpl @Inject constructor(
         accountDao.delete(account.toEntity())
     }
 
+    override suspend fun upsert(account: Account) {
+        accountDao.upsert(account.toEntity())
+    }
+
+    override suspend fun update(account: Account) {
+        accountDao.insert(account.toEntity())
+    }
+
     override fun getAll(): Flow<List<Account?>> =
         flow {
             emit(
@@ -36,13 +45,17 @@ class AccountRepositoryImpl @Inject constructor(
             .flowOn(ioDispatcher)
 
 
-    override fun getAccount(id: Int): Flow<Account?> =
-        flow {
+    override fun getAccount(id: Int): Flow<Account?> {
+        Log.d("wdawd", "wadawd $id")
+        return flow {
             emit(
-                accountDao.getAccount(id).asAccount()
+                accountDao.getAccount(id)?.asAccount()
             )
         }
             .flowOn(ioDispatcher)
+    }
+
+
 
     override fun getAccountsWithSources(): Flow<List<AccountWithSources>> =
         flow {
@@ -56,7 +69,7 @@ class AccountRepositoryImpl @Inject constructor(
         flow {
             emit(
                 accountDao.currentAccount()
-                    .asAccount()
+                    ?.asAccount()
             )
         }
             .flowOn(ioDispatcher)

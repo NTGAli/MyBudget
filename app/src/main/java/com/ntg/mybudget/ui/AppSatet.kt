@@ -14,6 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.ntg.features.setup.Create_Account_Route
 import com.ntg.features.setup.Setup_Route
 import com.ntg.features.setup.Source_Route
 import com.ntg.login.Login_Route
@@ -78,7 +79,7 @@ class BudgetAppState(
             }
             else -> {
                 val route = currentDestination?.route.orEmpty()
-                route.startsWith(Source_Route)
+                route.startsWith(Source_Route) || route.startsWith(Create_Account_Route)
             }
         }
 

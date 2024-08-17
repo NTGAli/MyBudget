@@ -29,7 +29,6 @@ import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
-import com.ntg.core.model.SourceType
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
@@ -38,7 +37,8 @@ import com.ntg.feature.setup.R
 fun SetupRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
-    navigateToSource: (id: Int) -> Unit
+    navigateToSource: (id: Int) -> Unit,
+    navigateToAccount: (id: Int) -> Unit,
 ){
 
     sharedViewModel.setExpand.postValue(true)
@@ -57,22 +57,23 @@ fun SetupRoute(
 //    val sources = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
     SetupScreen(
         accounts,
-        navigateToSource
+        navigateToSource,
+        navigateToAccount,
+        editAccount = {
+            navigateToAccount(it)
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SetupScreen(accounts: State<List<AccountWithSources>?>, navigateToSource: (id: Int) -> Unit) {
+private fun SetupScreen(
+    accounts: State<List<AccountWithSources>?>,
+    navigateToSource: (id: Int) -> Unit,
+    navigateToAccount: (id: Int) -> Unit,
+    editAccount: (id: Int) -> Unit,
+) {
 
-//    val test = listOf(
-//        Account(
-//            id = 0,
-//            sId = null,
-//            name = "حساب شخصی",
-//            dateCreated = System.currentTimeMillis().toString()
-//        )
-//    )
 
     Scaffold(
         topBar = {
@@ -91,20 +92,12 @@ private fun SetupScreen(accounts: State<List<AccountWithSources>?>, navigateToSo
 
             items(accounts.value.orEmpty()){
                 if (it != null) {
-//                    Text(text = "AC ::: ${it.accountName}")
-//
-//                    it.sources.forEach{
-//                        Text(text = "SRC :::: ${it.name}")
-//                        if (it.sourceType is SourceType.BankCardSource){
-//                            Text(text = "* ${(it.sourceType as SourceType.BankCardSource).cardNumber}")
-//                        }
-//                    }
-//
-//                    Text(text = "--------------------------")
                     AccountSection(
                         modifier = Modifier.padding(horizontal = 24.dp).padding(top = 8.dp),
                         account = it, canEdit = true, insertNewItem = {
                             navigateToSource(it.accountId)
+                        }, accountEndIconClick = {
+                            editAccount(it)
                         })
                 }
 
@@ -124,7 +117,7 @@ private fun SetupScreen(accounts: State<List<AccountWithSources>?>, navigateToSo
                             color = MaterialTheme.colorScheme.surfaceContainerHighest
                         )
                         .clickable {
-                            navigateToSource(1)
+                            navigateToAccount(0)
                         }
                         .padding(vertical = 18.dp),
                     horizontalArrangement = Arrangement.Center,
