@@ -45,7 +45,7 @@ fun SetupRoute(
     setupViewModel: SetupViewModel = hiltViewModel(),
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
-    onShowSnackbar: suspend (String, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
 ){
 
     sharedViewModel.setExpand.postValue(true)
@@ -56,7 +56,6 @@ fun SetupRoute(
     sharedViewModel.loginEventListener = object : LoginEventListener {
         override fun onLoginEvent() {
             scope.launch {
-                onShowSnackbar("TST", "button")
             }
         }
     }

@@ -15,11 +15,12 @@ import com.ntg.login.loginScreen
 import com.ntg.login.navigateToCode
 import com.ntg.login.navigateToCountries
 import com.ntg.mybudget.ui.BudgetAppState
+import javax.annotation.Untainted
 
 @Composable
 fun BudgetNavHost(
     appState: BudgetAppState,
-    onShowSnackbar: suspend (String, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
     modifier: Modifier = Modifier,
     startDestination: String = Login_Route,
     sharedViewModel: SharedViewModel

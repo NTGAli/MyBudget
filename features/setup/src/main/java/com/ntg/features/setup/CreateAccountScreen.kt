@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,10 +12,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
@@ -23,19 +26,20 @@ import com.ntg.core.model.Account
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun CreateAccountRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
     id: Int? = null,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
     onBack:()-> Unit
 ) {
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.save))
 
     val account = setupViewModel.getAccount(id ?: 0).collectAsState(initial = null).value
-    Log.d("AWJKDKLJWADKLJWAD", "$id ------ $account")
     var upsertAccount by remember {
         mutableStateOf<Account?>(null)
     }
@@ -43,18 +47,29 @@ fun CreateAccountRoute(
         upsertAccount = it
     }
 
+    val scope = rememberCoroutineScope()
     LaunchedEffect(key1 = account) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
                 if (upsertAccount != null){
-
-                    if (account != null){
-                        account.name = upsertAccount?.name.orEmpty()
-                        setupViewModel.upsertAccount(account)
+                    if (upsertAccount?.name.orEmpty().isNotEmpty()){
+                        if (account != null){
+                            account.name = upsertAccount?.name.orEmpty()
+                            setupViewModel.upsertAccount(account)
+                            onBack()
+                        }else{
+                            setupViewModel.insertNewAccount(upsertAccount!!)
+                            onBack()
+                        }
                     }else{
-                        setupViewModel.insertNewAccount(upsertAccount!!)
+                        scope.launch {
+                            onShowSnackbar(R.string.err_empty_account_name, null)
+                        }
                     }
-
+                }else{
+                    scope.launch {
+                        onShowSnackbar(R.string.err_in_submit, null)
+                    }
                 }
             }
         }
