@@ -55,7 +55,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg), onBack = onBack)
+        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack)
     }
 
     composable(

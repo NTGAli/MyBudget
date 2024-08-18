@@ -54,6 +54,7 @@ fun SourceRoute(
     accountId: Int,
     sourceId: Int? = null,
     setupViewModel: SetupViewModel = hiltViewModel(),
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
     onBack:() -> Unit
 ) {
     sharedViewModel.setExpand.postValue(true)
@@ -74,18 +75,47 @@ fun SourceRoute(
         bankCard = card
     }
 
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(key1 = bankCard) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
+
+                if (bankCard?.number.orEmpty().isEmpty()){
+                    scope.launch {
+                        onShowSnackbar(R.string.err_empty_card_number, null)
+                    }
+                    return
+                }else if (bankCard?.number.orEmpty().length != 16){
+                    scope.launch {
+                        onShowSnackbar(R.string.err_length_number, null)
+                    }
+                    return
+                }
+
+                if (bankCard?.name.orEmpty().isEmpty()){
+                    scope.launch {
+                        onShowSnackbar(R.string.err_empty_name, null)
+                    }
+                    return
+                }
+
                 if (editSource != null){
                     bankCard?.sourceId = sourceId
                     setupViewModel.updateBankCard(bankCard!!)
+                    onBack()
                 } else if (source != null && bankCard != null){
                     source?.accountId = accountId
                     bankCard?.sourceId = source?.id
                     setupViewModel.insertNewSource(source!!)
                     setupViewModel.insertNewBankCard(bankCard!!)
+                    onBack()
+                }else{
+                    scope.launch {
+                        onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null)
+                    }
                 }
+
             }
         }
     }

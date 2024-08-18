@@ -17,4 +17,7 @@
     <string name="select_one">یک مورد را انتخاب نمایید.</string>
     <string name="foreign_currency">ارز</string>
     <string name="gold">طلا</string>
+    <string name="err_empty_name">اسم صاحب کارت نمی تواند خالی باشد.</string>
+    <string name="err_empty_card_number">شماره کارتی وارد نشده</string>
+    <string name="err_length_number">شماره کارت وارد شده کامل نمی باشد</string>
 </resources>
