@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,8 @@ import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun SetupRoute(
@@ -48,13 +51,13 @@ fun SetupRoute(
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.submit))
 
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = Unit) {
-    }
     sharedViewModel.loginEventListener = object : LoginEventListener {
         override fun onLoginEvent() {
-
-//                sharedViewModel.bottomNavTitle.postValue("HI")
+            scope.launch {
+                onShowSnackbar("TST", "button")
+            }
         }
     }
 

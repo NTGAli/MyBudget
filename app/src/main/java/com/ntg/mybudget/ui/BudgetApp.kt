@@ -33,12 +33,12 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ntg.core.designsystem.components.BottomNavigation
+import com.ntg.core.designsystem.components.BudgetSnackBar
 import com.ntg.core.designsystem.components.scrollbar.BudgetBackground
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.setup.Setup_Route
-import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
 
@@ -78,7 +78,7 @@ internal fun BudgetApp(
     sharedViewModel: SharedViewModel = hiltViewModel()
 ) {
 
-    var lifecycle = LocalLifecycleOwner.current
+    val lifecycle = LocalLifecycleOwner.current
     var bottomNavTitle by remember {
         mutableStateOf("")
     }
@@ -105,7 +105,10 @@ internal fun BudgetApp(
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(
+            snackbarHostState,){
+            BudgetSnackBar(data = it)
+        } },
         bottomBar = {
             if (appState.shouldShowBottomBar) {
                 AppBottomBar(
@@ -151,7 +154,7 @@ internal fun BudgetApp(
                         snackbarHostState.showSnackbar(
                             message = message,
                             actionLabel = action,
-                            duration = SnackbarDuration.Short,
+                            duration = SnackbarDuration.Short
                         ) == SnackbarResult.ActionPerformed
                     },
                     modifier = if (shouldShowTopAppBar) {
