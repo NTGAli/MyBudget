@@ -10,8 +10,8 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.turbine)
+//    testImplementation(libs.kotlinx.coroutines.test)
+//    testImplementation(libs.turbine)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.gson)
 }

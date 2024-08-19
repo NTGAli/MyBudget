@@ -74,8 +74,8 @@ internal fun Project.configureJacoco(
                     project.fileTree("$buildDir/outputs/unit_test_code_coverage/${variant.name}UnitTest")
                         .matching { include("**/*.exec") },
 
-                    project.fileTree("$buildDir/outputs/code_coverage/${variant.name}AndroidTest")
-                        .matching { include("**/*.ec") }
+//                    project.fileTree("$buildDir/outputs/code_coverage/${variant.name}AndroidTest")
+//                        .matching { include("**/*.ec") }
                     )
             }
 

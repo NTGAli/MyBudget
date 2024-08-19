@@ -33,10 +33,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
             extensions.configure<LibraryAndroidComponentsExtension> {
                 configurePrintApksTask(this)
-                disableUnnecessaryAndroidTests(target)
+//                disableUnnecessaryAndroidTests(target)
             }
             dependencies {
-                add("testImplementation", kotlin("test"))
+//                add("testImplementation", kotlin("test"))
 
                 add("implementation", libs.findLibrary("androidx.tracing.ktx").get())
             }

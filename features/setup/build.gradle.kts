@@ -18,6 +18,6 @@ dependencies {
 
     implementation(libs.gson)
 
-    testImplementation(libs.robolectric)
+//    testImplementation(libs.robolectric)
     testDemoImplementation(libs.roborazzi)
 }

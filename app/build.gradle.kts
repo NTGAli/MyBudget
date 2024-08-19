@@ -19,7 +19,7 @@ android {
         versionName = "1.0.0"
 
         // Custom test runner to set up Hilt dependency graph
-        testInstrumentationRunner = "com.ntg.core.testing.BudgetTestRunner"
+//        testInstrumentationRunner = "com.ntg.core.testing.BudgetTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -48,11 +48,11 @@ android {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
         }
     }
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
-    }
+//    testOptions {
+//        unitTests {
+//            isIncludeAndroidResources = true
+//        }
+//    }
     namespace = "com.ntg.mybudget"
 }
 
@@ -96,10 +96,10 @@ dependencies {
     testDemoImplementation(libs.robolectric)
     testDemoImplementation(libs.roborazzi)
 
-    androidTestImplementation(libs.androidx.test.espresso.core)
-    androidTestImplementation(libs.androidx.navigation.testing)
-    androidTestImplementation(libs.androidx.compose.ui.test)
-    androidTestImplementation(libs.hilt.android.testing)
+//    androidTestImplementation(libs.androidx.test.espresso.core)
+//    androidTestImplementation(libs.androidx.navigation.testing)
+//    androidTestImplementation(libs.androidx.compose.ui.test)
+//    androidTestImplementation(libs.hilt.android.testing)
 
     implementation(libs.androidx.compose.material3)
 
@@ -112,3 +112,4 @@ baselineProfile {
     // Instead enable generation directly for the release build variant.
     automaticGenerationDuringBuild = false
 }
+

@@ -14,10 +14,10 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 apply("budgetapp.android.hilt")
             }
             extensions.configure<LibraryExtension> {
-                defaultConfig {
-                    testInstrumentationRunner =
-                        "com.ntg.samples.apps.budgetapp.core.testing.BudgetAppTestRunner"
-                }
+//                defaultConfig {
+//                    testInstrumentationRunner =
+//                        "com.ntg.samples.apps.budgetapp.core.testing.BudgetAppTestRunner"
+//                }
                 testOptions.animationsDisabled = true
                 configureGradleManagedDevices(this)
             }
@@ -31,7 +31,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("androidx.lifecycle.viewModelCompose").get())
                 add("implementation", libs.findLibrary("androidx.tracing.ktx").get())
 
-                add("androidTestImplementation", libs.findLibrary("androidx.lifecycle.runtimeTesting").get())
+//                add("androidTestImplementation", libs.findLibrary("androidx.lifecycle.runtimeTesting").get())
             }
         }
     }

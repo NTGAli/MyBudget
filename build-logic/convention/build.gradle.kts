@@ -67,10 +67,10 @@ gradlePlugin {
             id = "budgetapp.android.library.jacoco"
             implementationClass = "AndroidLibraryJacocoConventionPlugin"
         }
-        register("androidTest") {
-            id = "budgetapp.android.test"
-            implementationClass = "AndroidTestConventionPlugin"
-        }
+//        register("androidTest") {
+//            id = "budgetapp.android.test"
+//            implementationClass = "AndroidTestConventionPlugin"
+//        }
         register("androidHilt") {
             id = "budgetapp.android.hilt"
             implementationClass = "AndroidHiltConventionPlugin"

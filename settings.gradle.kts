@@ -16,6 +16,8 @@ dependencyResolutionManagement {
 
 
 rootProject.name = "MyBudget"
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(":app")
 include(":core:designsystem")
 include(":features:login")
@@ -24,3 +26,5 @@ include(":features:setup")
 include(":core:database")
 include(":core:model")
 include(":core:data")
+include(":core:datastore")
+include(":core:datastore-proto")

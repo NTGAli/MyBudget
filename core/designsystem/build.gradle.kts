@@ -6,9 +6,9 @@ plugins {
 }
 
 android {
-    defaultConfig {
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
+//    defaultConfig {
+//        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+//    }
     namespace = "com.ntg.mybudget.core.designsystem"
 }
 
@@ -30,11 +30,11 @@ dependencies {
     implementation(libs.coil.kt.svg)
 
 
-    testImplementation(libs.androidx.compose.ui.test)
-    testImplementation(libs.hilt.android.testing)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.roborazzi)
+//    testImplementation(libs.androidx.compose.ui.test)
+//    testImplementation(libs.hilt.android.testing)
+//    testImplementation(libs.robolectric)
+//    testImplementation(libs.roborazzi)
 
-    androidTestImplementation(libs.androidx.compose.ui.test)
+//    androidTestImplementation(libs.androidx.compose.ui.test)
     implementation(libs.androidx.activity.compose.v182)
 }

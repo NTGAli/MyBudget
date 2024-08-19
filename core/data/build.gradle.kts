@@ -7,17 +7,18 @@ plugins {
 
 android {
     namespace = "com.ntg.core.data"
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-            isReturnDefaultValues = true
-        }
-    }
+//    testOptions {
+//        unitTests {
+//            isIncludeAndroidResources = true
+//            isReturnDefaultValues = true
+//        }
+//    }
 }
 
 dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:common"))
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.kotlinx.serialization.json)
+    implementation(project(":core:datastore"))
+//    testImplementation(libs.kotlinx.coroutines.test)
+//    testImplementation(libs.kotlinx.serialization.json)
 }

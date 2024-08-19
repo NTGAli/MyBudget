@@ -92,6 +92,7 @@ androidx-compose-runtime-tracing = { group = "androidx.compose.runtime", name = 
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "androidxComposeUiGraphic" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "androidxComposeUiTest" }
 androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-dataStore = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }

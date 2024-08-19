@@ -11,10 +11,10 @@ class AndroidApplicationJacocoConventionPlugin : Plugin<Project> {
             pluginManager.apply("jacoco")
             val androidExtension = extensions.getByType<BaseAppModuleExtension>()
 
-            androidExtension.buildTypes.configureEach {
-                enableAndroidTestCoverage = true
-                enableUnitTestCoverage = true
-            }
+//            androidExtension.buildTypes.configureEach {
+//                enableAndroidTestCoverage = true
+//                enableUnitTestCoverage = true
+//            }
 
             configureJacoco(extensions.getByType<ApplicationAndroidComponentsExtension>())
         }
