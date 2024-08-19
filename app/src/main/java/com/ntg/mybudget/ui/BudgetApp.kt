@@ -19,6 +19,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.firebase.crashlytics.internal.model.CrashlyticsReport.Session.User
+import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.designsystem.components.BottomNavigation
 import com.ntg.core.designsystem.components.BudgetSnackBar
 import com.ntg.core.designsystem.components.scrollbar.BudgetBackground
@@ -41,12 +44,14 @@ import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.setup.Setup_Route
+import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
 
 @Composable
 fun BudgetApp(
     appState: BudgetAppState, modifier: Modifier = Modifier,
+    userDataRepository: UserDataRepository
 //    setupViewModel: SetupViewModel = hiltViewModel(),
 ) {
 
@@ -62,6 +67,7 @@ fun BudgetApp(
             showSettingsDialog = showSettingsDialog,
             onSettingsDismissed = { showSettingsDialog = false },
             onTopAppBarActionClick = { showSettingsDialog = true },
+            userDataRepository = userDataRepository
         )
     }
 
@@ -76,12 +82,15 @@ internal fun BudgetApp(
     showSettingsDialog: Boolean,
     onSettingsDismissed: () -> Unit,
     onTopAppBarActionClick: () -> Unit,
+    userDataRepository: UserDataRepository,
     modifier: Modifier = Modifier,
     sharedViewModel: SharedViewModel = hiltViewModel()
 ) {
 
     val lifecycle = LocalLifecycleOwner.current
     val context = LocalContext.current
+    val isUserLogged = userDataRepository.userData.collectAsState(initial = null).value?.isLogged
+
     var bottomNavTitle by remember {
         mutableStateOf("")
     }
@@ -107,7 +116,7 @@ internal fun BudgetApp(
             },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+//        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(
             snackbarHostState,){
             BudgetSnackBar(data = it)
@@ -167,7 +176,7 @@ internal fun BudgetApp(
                     } else {
                         Modifier
                     },
-                    startDestination = Setup_Route,
+                    startDestination = if (isUserLogged == true) Setup_Route else Login_Route,
                     sharedViewModel
                 )
             }
