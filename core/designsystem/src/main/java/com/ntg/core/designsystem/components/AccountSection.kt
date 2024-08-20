@@ -90,10 +90,10 @@ fun AccountSection(
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
         account.sources.forEach { source ->
 
-            val subTitle = if (source.sourceType is SourceType.BankCard) (source.sourceType as SourceType.BankCard).number.mask("#### #### #### ####")
+            val subTitle = if (source?.sourceType is SourceType.BankCard) (source.sourceType as SourceType.BankCard).number.mask("#### #### #### ####")
             else ""
 
-            val title = if (source.sourceType is SourceType.BankCard){
+            val title = if (source?.sourceType is SourceType.BankCard){
                 val bandData = getCardDetailsFromAssets(context,
                     (source.sourceType as SourceType.BankCard).number)
                 if (bandData != null){
@@ -111,12 +111,12 @@ fun AccountSection(
                     subtitle = subTitle,
                     isChecked = isCheck,
                     canEdit = canEdit,
-                    type = source.type
+                    type = source?.type ?: 0
                 ) {
                     if (canEdit){
                         IconButton(
                             onClick = {
-                                onSourceEdit(source.id)
+                                onSourceEdit(source?.id ?: -1)
                             }) {
                             Icon(
                                 painter = painterResource(

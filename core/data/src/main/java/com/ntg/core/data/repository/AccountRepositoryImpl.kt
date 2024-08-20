@@ -46,7 +46,6 @@ class AccountRepositoryImpl @Inject constructor(
 
 
     override fun getAccountByAccount(id: Int): Flow<Account?> {
-        Log.d("wdawd", "wadawd $id")
         return flow {
             emit(
                 accountDao.getAccount(id)?.asAccount()

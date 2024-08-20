@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -19,7 +20,8 @@ fun NavController.navigateToSetup() {
 }
 
 fun NavController.navigateToSource(id: Int, sourceId: Int?) {
-    val finalRoute = "$Source_Route/$id/${sourceId ?: -1}"
+    val finalRoute = if (sourceId == null) "$Source_Route/$id"
+    else "$Source_Route/$id/${sourceId}"
     navigate(finalRoute)
 }
 
@@ -56,6 +58,17 @@ fun NavGraphBuilder.setupScreen(
         )
     ) {
         SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack)
+    }
+
+    composable(
+        route = "$Source_Route/{$AccountId_Arg}",
+        arguments = listOf(
+            navArgument(AccountId_Arg) {
+                type = NavType.IntType
+            }
+        )
+    ) {
+        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack)
     }
 
     composable(

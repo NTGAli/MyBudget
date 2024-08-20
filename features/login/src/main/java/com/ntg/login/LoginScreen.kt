@@ -163,7 +163,6 @@ private fun LoginScreen(
                 modifier = Modifier.padding(top = 16.dp),
                 code, phone, wasWrong
             ) {
-                Log.d("phoneWasWrongChecker", "$it")
                 if (it){
 //                    wasWrong = false
                 }

@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,21 +47,14 @@ fun SetupRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-){
+) {
 
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.submit))
 
     val scope = rememberCoroutineScope()
-
-    sharedViewModel.loginEventListener = object : LoginEventListener {
-        override fun onLoginEvent() {
-            scope.launch {
-            }
-        }
-    }
-
-    val accounts = setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
+    val accounts =
+        setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
 //    val sources = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
     SetupScreen(
         accounts,
@@ -70,6 +64,24 @@ fun SetupRoute(
             navigateToAccount(it)
         }
     )
+
+    LaunchedEffect(key1 = accounts) {
+        sharedViewModel.loginEventListener = object : LoginEventListener {
+            override fun onLoginEvent() {
+                scope.launch {
+                    if (accounts.value.orEmpty().isEmpty()) {
+                        onShowSnackbar.invoke(R.string.err_no_aacount, null)
+                    } else if (accounts.value.orEmpty().none {
+                            it.sources.isNotEmpty()
+                        }) {
+                        onShowSnackbar.invoke(R.string.err_no_sources, null)
+                    }else{
+
+                    }
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,7 +115,7 @@ private fun SetupScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
             }
 
-            items(accounts.value.orEmpty()){ account ->
+            items(accounts.value.orEmpty()) { account ->
                 AccountSection(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
@@ -138,10 +150,15 @@ private fun SetupScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = stringResource(id = R.string.add_new_account), style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.outlineVariant))
+                    Text(
+                        text = stringResource(id = R.string.add_new_account),
+                        style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.outlineVariant)
+                    )
                     Icon(
                         modifier = Modifier.padding(start = 8.dp),
-                        painter = painterResource(id = BudgetIcons.Add), contentDescription = "add account")
+                        painter = painterResource(id = BudgetIcons.Add),
+                        contentDescription = "add account"
+                    )
                 }
 
             }

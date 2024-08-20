@@ -1,5 +1,6 @@
 package com.ntg.core.database.dao
 
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -63,33 +64,40 @@ interface AccountDao {
             AccountWithSources(
                 accountId = accountId,
                 accountName = sources.first().accountName,
-                sources = sources.map { row ->
-                    val sourceType = when (row.type) {
-                        0 -> SourceType.BankCard(
-                            id = row.bankId ?: -1,
-                            number = row.number ?: "",
-                            cvv = row.cvv ?: "",
-                            date = row.expire ?: "",
-                            name = row.name.orEmpty()
-                        )
+                sources = if (sources.first().sourceId != null){
+                    sources.map { row ->
+                        val sourceType = when (row.type) {
+                            0 -> {
+                                if (row.number != null){
+                                    SourceType.BankCard(
+                                        id = row.bankId ?: -1,
+                                        number = row.number ?: "",
+                                        cvv = row.cvv ?: "",
+                                        date = row.expire ?: "",
+                                        name = row.name.orEmpty()
+                                    )
+                                }else null
+                            }
 
-                        1 -> SourceType.Gold(
-                            value = row.value ?: 0.0,
-                            weight = row.weight ?: 0.0
-                        )
+                            1 -> SourceType.Gold(
+                                value = row.value ?: 0.0,
+                                weight = row.weight ?: 0.0
+                            )
 
-                        else -> null
+                            else -> null
 
-//                        else -> throw IllegalArgumentException("Unknown type")
+                        }
+                        if (sourceType != null){
+                            SourceWithDetail(
+                                id = row.sourceId ?: 0,
+                                accountId = row.accountId,
+                                type = row.type ?: 0,
+                                name = row.name ?: "",
+                                sourceType = sourceType
+                            )
+                        }else null
                     }
-                    SourceWithDetail(
-                        id = row.sourceId ?: 0,
-                        accountId = row.accountId,
-                        type = row.type ?: 0,
-                        name = row.name ?: "",
-                        sourceType = sourceType
-                    )
-                }
+                }else emptyList()
             )
         }
     }
