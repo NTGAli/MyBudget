@@ -97,6 +97,7 @@ fun BudgetTextField(
     trailingIconOnClick: (String) -> Unit = {},
     searchMode: Boolean = false,
     singleLine: Boolean = true,
+    keyboardType: KeyboardType = KeyboardType.Text,
     onClick: () -> Unit = {},
     onChange: (String) -> Unit = {}
 
@@ -225,7 +226,7 @@ fun BudgetTextField(
         } else null,
         maxLines = 1,
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
+            keyboardType = keyboardType,
             imeAction = ImeAction.Done
         ),
         colors = OutlinedTextFieldDefaults.colors().copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest),

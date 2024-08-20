@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -327,7 +328,8 @@ private fun BankCardView(
             .padding(horizontal = 24.dp),
         text = cardNumber,
         label = stringResource(id = R.string.card_number),
-        length = 16
+        length = 16,
+        keyboardType = KeyboardType.NumberPassword
     )
 
     BudgetTextField(

@@ -90,6 +90,7 @@ internal fun BudgetApp(
     val lifecycle = LocalLifecycleOwner.current
     val context = LocalContext.current
     val isUserLogged = userDataRepository.userData.collectAsState(initial = null).value?.isLogged
+        ?: return
 
     var bottomNavTitle by remember {
         mutableStateOf("")
@@ -176,7 +177,7 @@ internal fun BudgetApp(
                     } else {
                         Modifier
                     },
-                    startDestination = if (isUserLogged == true) Setup_Route else Login_Route,
+                    startDestination = if (isUserLogged) Setup_Route else Login_Route,
                     sharedViewModel
                 )
             }

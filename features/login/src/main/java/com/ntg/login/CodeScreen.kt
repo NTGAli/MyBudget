@@ -39,7 +39,9 @@ fun CodeRoute(
         setDefaultAccount = {
             loginViewModel.setDefaultAccount()
         },
-        navigateToSetup = navigateToSetup
+        navigateToSetup = {
+            loginViewModel.saveUserLogin()
+        }
     )
 }
 
@@ -101,8 +103,8 @@ private fun CodeScreen(
                 wasWrong = false
             }
 
-            if (code.length == 6){
-                wasWrong = code != "123456"
+            if (code.length == 5){
+                wasWrong = code != "12345"
                 isSucceeded = !wasWrong
                 if (isSucceeded){
                     LaunchedEffect(key1 = Unit) {
@@ -113,7 +115,6 @@ private fun CodeScreen(
                     }
                 }
             }
-
         }
     }
 

@@ -55,8 +55,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun OtpField(
     modifier: Modifier = Modifier,
-    otpText: String = "123456",
-    otpCount: Int = 6,
+    otpText: String = "12345",
+    otpCount: Int = 5,
     wasWrong: Boolean,
     isSucceeded: Boolean,
     defaultBorderColor: Color = MaterialTheme.colorScheme.surfaceDim,
