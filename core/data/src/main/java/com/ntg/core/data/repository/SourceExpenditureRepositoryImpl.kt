@@ -1,5 +1,6 @@
 package com.ntg.core.data.repository
 
+import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.model.SourceExpenditureEntity
 import com.ntg.core.database.model.asSource
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 class SourceExpenditureRepositoryImpl@Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
-    private val sourceExpenditureDao: SourceExpenditureDao
+    private val sourceExpenditureDao: SourceExpenditureDao,
+    private val cardDao: BankCardDao
 ): SourceExpenditureRepository{
 
     override suspend fun insert(sourceExpenditure: SourceExpenditure) {
@@ -25,6 +27,14 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
 
     override suspend fun delete(sourceExpenditure: SourceExpenditure) {
         sourceExpenditureDao.delete(sourceExpenditure.toEntity())
+    }
+
+    override suspend fun tempRemove(sourceId: Int) {
+        val source = sourceExpenditureDao.getSource(sourceId)
+        sourceExpenditureDao.tempRemove(sourceId)
+        if (source?.type == 0){
+            cardDao.tempRemove(sourceId)
+        }
     }
 
     override fun getAll(): Flow<List<SourceExpenditure>> =

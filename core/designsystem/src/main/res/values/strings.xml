@@ -20,4 +20,8 @@
     <string name="err_empty_name">اسم صاحب کارت نمی تواند خالی باشد.</string>
     <string name="err_empty_card_number">شماره کارتی وارد نشده</string>
     <string name="err_length_number">شماره کارت وارد شده کامل نمی باشد</string>
+    <string name="delete_card">حذف کارت بانکی</string>
+    <string name="sure_delete_bank_card">تمام نراکنش های ثبت شده مربوط به این کارت پاک خواهد شد.</string>
+    <string name="delete">حذف</string>
+    <string name="cancel">لغو</string>
 </resources>

@@ -10,6 +10,8 @@ interface SourceExpenditureRepository {
 
     suspend fun delete(sourceExpenditure: SourceExpenditure)
 
+    suspend fun tempRemove(sourceId: Int)
+
     fun getAll(): Flow<List<SourceExpenditure>>
 
     fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>>

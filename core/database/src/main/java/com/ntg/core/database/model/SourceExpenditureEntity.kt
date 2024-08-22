@@ -19,6 +19,7 @@ data class SourceExpenditureEntity(
     val isSelected: Boolean,
     val isCrypto: Boolean = false,
     val isSynced: Boolean = false,
+    val isRemoved: Boolean = false,
     val dateCreated: String,
 )
 

@@ -77,4 +77,10 @@ class SetupViewModel
         }
     }
 
+    fun tempRemove(sourceId: Int) {
+        viewModelScope.launch {
+            sourceRepository.tempRemove(sourceId)
+        }
+    }
+
 }

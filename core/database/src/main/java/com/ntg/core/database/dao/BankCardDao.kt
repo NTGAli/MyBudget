@@ -26,4 +26,7 @@ interface BankCardDao {
     @Query("SELECT * FROM bank_card_entity WHERE id = :id")
     suspend fun getById(id: Long): BankCardEntity
 
+    @Query("UPDATE bank_card_entity SET isDeleted=1 WHERE sourceId = :sourceId")
+    suspend fun tempRemove(sourceId: Int)
+
 }

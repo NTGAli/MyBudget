@@ -26,6 +26,8 @@ interface SourceExpenditureDao {
     @Query("SELECT * FROM sourceExpenditures WHERE id=:id")
     suspend fun getSource(id: Int): SourceExpenditureEntity?
 
+    @Query("UPDATE sourceExpenditures SET isRemoved=1 WHERE id=:id")
+    suspend fun tempRemove(id: Int)
 
     @Transaction
     @Query(
@@ -33,7 +35,8 @@ interface SourceExpenditureDao {
                 "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
 //                "            ge.value, ge.weight\n" +
                 "        FROM sourceExpenditures se\n" +
-                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n"
+                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
+        "WHERE se.isRemoved != 1"
 //                "        LEFT JOIN gold_entity ge ON se.id = ge.sourceId AND se.type = 1 "
     )
     suspend fun getSourcesByAccount(): List<RawSourceDetail>

@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -36,9 +36,12 @@ import com.ntg.core.designsystem.components.BankCard
 import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.ButtonSize
+import com.ntg.core.designsystem.components.ButtonStyle
+import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.ExposedDropdownMenuSample
 import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
+import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceTypes
@@ -71,7 +74,12 @@ fun SourceRoute(
         initialValue = null
     ).value
 
-    SourceScreen(editSource, onBack = onBack) { sourceValue, card ->
+    SourceScreen(editSource, onBack = onBack, deleteSource = {
+        if (sourceId != null){
+            setupViewModel.tempRemove(sourceId)
+            onBack()
+        }
+    }) { sourceValue, card ->
         source = sourceValue
         bankCard = card
     }
@@ -127,6 +135,7 @@ fun SourceRoute(
 private fun SourceScreen(
     editSource: SourceWithDetail?,
     onBack:()-> Unit,
+    deleteSource:()-> Unit,
     onSubmit: (source: SourceExpenditure, card: SourceType.BankCard?) -> Unit
 ) {
 
@@ -203,7 +212,10 @@ private fun SourceScreen(
                 stringResource(id = R.string.bank_card) -> {
 
                     BankCardView(
-                        if (editMode) editSource?.sourceType as SourceType.BankCard else null
+                        if (editMode) editSource?.sourceType as SourceType.BankCard else null,
+                        deleteCard = {
+                            deleteSource()
+                        }
                     ){
                         bankCard = it
                     }
@@ -229,6 +241,7 @@ private fun SourceScreen(
 @Composable
 private fun BankCardView(
     editBankCard: SourceType.BankCard? = null,
+    deleteCard: () -> Unit,
     bankCard: (SourceType.BankCard) -> Unit
 ){
 
@@ -279,8 +292,10 @@ private fun BankCardView(
     }
 
     val sheetState = rememberModalBottomSheetState()
+    val deleteSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showDeleteSheet by remember { mutableStateOf(false) }
 
     if (editBankCard == null){
         BudgetTextField(
@@ -354,6 +369,18 @@ private fun BankCardView(
         }
     )
 
+    if (editBankCard != null){
+        BudgetButton(
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            iconStart = painterResource(id = BudgetIcons.trash),
+            text = stringResource(id = R.string.delete_card), type = ButtonType.Error, style = ButtonStyle.TextOnly, size = ButtonSize.MD){
+            showDeleteSheet = true
+        }
+    }
+
     Spacer(modifier = Modifier.padding(24.dp))
 
     if (showBottomSheet) {
@@ -415,6 +442,43 @@ private fun BankCardView(
                 }
 
             }
+
+        }
+    }
+
+
+    if (showDeleteSheet){
+        ModalBottomSheet(
+            onDismissRequest = {
+                showDeleteSheet = false
+            },
+            sheetState = deleteSheetState
+        ) {
+
+            Text(
+                modifier = Modifier.padding(start = 24.dp),
+                text = stringResource(id = R.string.delete_card), style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.error))
+
+            Text(
+                modifier = Modifier.padding(start = 24.dp, top = 4.dp),
+                text = stringResource(id = R.string.sure_delete_bank_card), style = MaterialTheme.typography.titleSmall)
+
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp).padding(top = 8.dp, bottom = 16.dp)
+            ) {
+                BudgetButton(
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.SM){
+                    deleteCard()
+                }
+
+                BudgetButton(
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    text = stringResource(id = R.string.cancel), style = ButtonStyle.Outline, size = ButtonSize.SM){
+                    showDeleteSheet = false
+                }
+            }
+
 
         }
     }

@@ -48,8 +48,9 @@ interface AccountDao {
                se.id as sourceId, se.type, se.name,
                bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name
         FROM accounts ae
-        LEFT JOIN sourceExpenditures se ON ae.id = se.accountId
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0
+        LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        WHERE ae.isRemoved = 0
         """
     )
     suspend fun getAccountsWithSourcesRaw(): List<RawAccountWithSource>

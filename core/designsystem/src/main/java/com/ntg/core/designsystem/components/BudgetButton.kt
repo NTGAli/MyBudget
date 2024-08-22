@@ -25,9 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ntg.core.designsystem.theme.BudgetIcons
 
 @Composable
 fun BudgetButton(
@@ -184,9 +186,12 @@ fun BudgetButton(
             .clip(RoundedCornerShape(radius))
 
             .background(background)
-            .clickable(enabled = enable, interactionSource = remember { MutableInteractionSource() }, indication = rememberRipple(
-                color = textColor.copy(alpha = 0.4f)
-            )
+            .clickable(
+                enabled = enable,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(
+                    color = textColor.copy(alpha = 0.4f)
+                )
             ) {
                 onClick()
             }
@@ -197,12 +202,15 @@ fun BudgetButton(
     {
         Row(modifier = Modifier
             .align(Alignment.Center)
-            .padding(innerPadding)
+            .padding(innerPadding),
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
 
             if (iconStart != null){
-                Icon(painter = iconStart, contentDescription = "icon start",tint = textColor)
+                Icon(
+                    modifier = Modifier.size(18.dp),
+                    painter = iconStart, contentDescription = "icon start",tint = textColor)
                 Spacer(modifier = Modifier.padding(start = 8.dp))
             }
 

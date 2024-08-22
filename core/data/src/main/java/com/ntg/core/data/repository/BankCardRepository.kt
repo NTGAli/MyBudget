@@ -11,6 +11,8 @@ interface BankCardRepository {
 
     suspend fun delete(card: SourceType.BankCard)
 
+    suspend fun tempRemove(id: Int)
+
     fun getAll(): Flow<List<SourceType.BankCard>>
 
 }

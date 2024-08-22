@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "30d4f87f082e59256dbae975c80f6607",
+    "identityHash": "aca51f6fa5d715eeed21f9b7236926b7",
     "entities": [
       {
         "tableName": "accounts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sId` TEXT, `name` TEXT NOT NULL, `isSelected` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `dateCreated` TEXT, `dateModified` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sId` TEXT, `name` TEXT NOT NULL, `isSelected` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `isRemoved` INTEGER NOT NULL, `dateCreated` TEXT, `dateModified` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -39,6 +39,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "isRemoved",
+            "columnName": "isRemoved",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "dateCreated",
             "columnName": "dateCreated",
             "affinity": "TEXT",
@@ -62,7 +68,7 @@
       },
       {
         "tableName": "sourceExpenditures",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `accountId` INTEGER NOT NULL, `type` INTEGER, `name` TEXT, `icon` TEXT, `symbol` TEXT, `isoCode` TEXT, `precision` INTEGER NOT NULL, `isSelected` INTEGER NOT NULL, `isCrypto` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `accountId` INTEGER NOT NULL, `type` INTEGER, `name` TEXT, `icon` TEXT, `symbol` TEXT, `isoCode` TEXT, `precision` INTEGER NOT NULL, `isSelected` INTEGER NOT NULL, `isCrypto` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `isRemoved` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -133,6 +139,12 @@
           {
             "fieldPath": "isSynced",
             "columnName": "isSynced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRemoved",
+            "columnName": "isRemoved",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -236,7 +248,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '30d4f87f082e59256dbae975c80f6607')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aca51f6fa5d715eeed21f9b7236926b7')"
     ]
   }
 }
