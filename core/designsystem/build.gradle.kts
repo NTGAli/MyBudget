@@ -9,6 +9,9 @@ android {
 //    defaultConfig {
 //        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 //    }
+    defaultConfig {
+        consumerProguardFiles("consumer-proguard-rules.pro")
+    }
     namespace = "com.ntg.mybudget.core.designsystem"
 }
 
