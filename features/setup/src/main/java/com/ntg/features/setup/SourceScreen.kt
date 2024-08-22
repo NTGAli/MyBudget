@@ -464,7 +464,7 @@ private fun BankCardView(
                 text = stringResource(id = R.string.sure_delete_bank_card), style = MaterialTheme.typography.titleSmall)
 
             Row(
-                modifier = Modifier.padding(horizontal = 24.dp).padding(top = 8.dp, bottom = 16.dp)
+                modifier = Modifier.padding(horizontal = 24.dp).padding(vertical = 16.dp)
             ) {
                 BudgetButton(
                     modifier = Modifier.weight(1f).padding(end = 4.dp),

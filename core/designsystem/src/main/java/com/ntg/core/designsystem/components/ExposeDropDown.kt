@@ -30,8 +30,8 @@ fun ExposedDropdownMenuSample(
     defaultText:String = stringResource(id = R.string.select_one),
     onItemSelect:(String) -> Unit = {}
 ) {
-    val options = listOf(stringResource(id = R.string.bank_card), stringResource(id = R.string.foreign_currency), stringResource(
-        id = R.string.gold
+    val options = listOf(stringResource(id = R.string.bank_card), stringResource(id = R.string.cash), stringResource(
+        id = R.string.crypto
     ))
     var expanded by remember { mutableStateOf(false) }
     val text = remember { mutableStateOf(defaultText) }
