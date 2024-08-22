@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -253,6 +255,18 @@ private fun BankCardView(
         mutableStateOf("")
     }
 
+    val accountNumber = remember {
+        mutableStateOf("")
+    }
+
+    val sheba = remember {
+        mutableStateOf("")
+    }
+
+    val cvv = remember {
+        mutableStateOf("")
+    }
+
     val expire = remember {
         mutableStateOf("")
     }
@@ -275,7 +289,10 @@ private fun BankCardView(
             number = cardNumber.value,
             date = "$year/$month",
             name = name.value,
-            updatedAt = System.currentTimeMillis().toString()
+            updatedAt = System.currentTimeMillis().toString(),
+            cvv = cvv.value,
+            sheba = sheba.value,
+            accountNumber = accountNumber.value
         )
     )
 
@@ -283,6 +300,9 @@ private fun BankCardView(
         if (editBankCard != null && cardNumber.value.isEmpty()){
             name.value = editBankCard.name
             cardNumber.value = editBankCard.number
+            sheba.value = editBankCard.sheba.orEmpty()
+            accountNumber.value = editBankCard.accountNumber.orEmpty()
+            cvv.value = editBankCard.cvv.orEmpty()
             if (editBankCard.date.isNotEmpty()){
                 year = editBankCard.date.split("/")[0].toInt()
                 month = editBankCard.date.split("/")[1].toInt()
@@ -296,6 +316,7 @@ private fun BankCardView(
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var showDeleteSheet by remember { mutableStateOf(false) }
+    var showMore by remember { mutableStateOf(false) }
 
     if (editBankCard == null){
         BudgetTextField(
@@ -369,10 +390,62 @@ private fun BankCardView(
         }
     )
 
+    BudgetButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        text = stringResource(id = if (showMore) R.string.show_less else R.string.show_more),
+        style = ButtonStyle.TextOnly,
+        size = ButtonSize.MD,
+        type = ButtonType.Neutral,
+        iconEnd = painterResource(id = if (showMore) BudgetIcons.directionUp else BudgetIcons.directionDown)){
+        showMore = !showMore
+    }
+
+
+    AnimatedVisibility(
+        modifier = Modifier.padding(bottom = 16.dp),
+        visible = showMore){
+        Column {
+            BudgetTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                text = accountNumber,
+                label = stringResource(id = R.string.account_number),
+                keyboardType = KeyboardType.Number
+            )
+
+            BudgetTextField(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                text = sheba,
+                label = stringResource(id = R.string.sheba_number),
+                keyboardType = KeyboardType.Number
+            )
+
+            BudgetTextField(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                text = cvv,
+                label = stringResource(id = R.string.cvv2),
+                keyboardType = KeyboardType.Number
+            )
+        }
+    }
+
+
+
+
     if (editBankCard != null){
+        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest)
         BudgetButton(
             modifier = Modifier
-                .padding(top = 24.dp)
+                .padding(top = 16.dp)
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             iconStart = painterResource(id = BudgetIcons.trash),
@@ -464,16 +537,23 @@ private fun BankCardView(
                 text = stringResource(id = R.string.sure_delete_bank_card), style = MaterialTheme.typography.titleSmall)
 
             Row(
-                modifier = Modifier.padding(horizontal = 24.dp).padding(vertical = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(vertical = 16.dp)
             ) {
                 BudgetButton(
-                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
                     text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.SM){
+                    showDeleteSheet = false
                     deleteCard()
                 }
 
                 BudgetButton(
-                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
                     text = stringResource(id = R.string.cancel), style = ButtonStyle.Outline, size = ButtonSize.SM){
                     showDeleteSheet = false
                 }

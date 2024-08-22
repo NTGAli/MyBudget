@@ -32,7 +32,7 @@ interface SourceExpenditureDao {
     @Transaction
     @Query(
         "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
+                "            bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
 //                "            ge.value, ge.weight\n" +
                 "        FROM sourceExpenditures se\n" +
                 "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
@@ -50,7 +50,9 @@ interface SourceExpenditureDao {
                     number = row.number ?: "",
                     cvv = row.cvv ?: "",
                     date = row.expire ?: "",
-                    name = row.cardName.orEmpty()
+                    name = row.cardName.orEmpty(),
+                    sheba = row.sheba.orEmpty(),
+                    accountNumber = row.accountNumber.orEmpty(),
                 )
 
                 1 -> SourceType.Gold(
@@ -74,7 +76,7 @@ interface SourceExpenditureDao {
     @Transaction
     @Query(
         "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
+                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
                 "        FROM sourceExpenditures se\n" +
                 "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
                 " WHERE se.id=:id"
@@ -91,6 +93,8 @@ interface SourceExpenditureDao {
                     id = row.bankId ?: -1,
                     number = row.number ?: "",
                     cvv = row.cvv ?: "",
+                    sheba = row.sheba ?: "",
+                    accountNumber = row.accountNumber ?: "",
                     date = row.expire ?: "",
                     name = row.cardName.orEmpty()
                 )

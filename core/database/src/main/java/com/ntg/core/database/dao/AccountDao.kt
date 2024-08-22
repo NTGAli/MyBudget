@@ -46,7 +46,7 @@ interface AccountDao {
         """
         SELECT ae.id as accountId, ae.name as accountName, 
                se.id as sourceId, se.type, se.name,
-               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name
+               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
         FROM accounts ae
         LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
         LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
@@ -75,7 +75,9 @@ interface AccountDao {
                                         number = row.number ?: "",
                                         cvv = row.cvv ?: "",
                                         date = row.expire ?: "",
-                                        name = row.name.orEmpty()
+                                        name = row.name.orEmpty(),
+                                        sheba = row.sheba.orEmpty(),
+                                        accountNumber = row.accountNumber.orEmpty()
                                     )
                                 }else null
                             }
