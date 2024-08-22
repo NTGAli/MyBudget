@@ -65,6 +65,7 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":features:login"))
     implementation(project(":features:setup"))
+    implementation(project(":features:home"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3.adaptive)
