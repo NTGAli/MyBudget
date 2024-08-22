@@ -70,6 +70,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -140,7 +141,7 @@ fun BudgetTextField(
         } else null,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         readOnly = readOnly,
-        textStyle = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.onSurfaceVariant),
+        textStyle = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.onSurfaceVariant).copy(textDirection = if (keyboardType == KeyboardType.Number || keyboardType == KeyboardType.Phone || keyboardType == KeyboardType.NumberPassword) TextDirection.Ltr else TextDirection.Rtl),
         enabled = enabled,
         shape = RoundedCornerShape(8.dp),
         trailingIcon =
