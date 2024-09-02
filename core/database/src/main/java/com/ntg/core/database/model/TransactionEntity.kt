@@ -9,9 +9,11 @@ data class TransactionEntity(
     val id: Int,
     val sId: String?=null,
     val walletId: Int,
-    val type: String,
-    val categoryId: Int,
+    val type: String? = null,
+    val categoryId: Int? = null,
     val amount: Long,
+    val isSynced: Boolean = false,
+    val isDeleted: Boolean = false,
     val createdAt: Long,
     val updatedAt: Long,
 )
