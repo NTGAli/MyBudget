@@ -1,5 +1,8 @@
 package com.ntg.core.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class DataBank(
     val card_no: Long,
     val bank_name: String,

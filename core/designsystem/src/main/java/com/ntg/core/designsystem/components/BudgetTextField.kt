@@ -1,6 +1,6 @@
 package com.ntg.core.designsystem.components
 
-import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.background
@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,11 +29,12 @@ import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -48,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -61,6 +65,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -70,13 +75,24 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ntg.core.designsystem.util.sanitizeInput
 import com.ntg.core.mybudget.common.getCountryName
 import com.ntg.core.mybudget.common.getCountryPattern
+import com.ntg.core.mybudget.common.number.numToText
 import com.ntg.mybudget.core.designsystem.R
+import java.math.BigDecimal
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.text.NumberFormat
+import java.text.ParseException
+import java.util.Locale
+import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,7 +103,8 @@ fun BudgetTextField(
     supportText: String = "",
     length: Int? = null,
     label: String? = null,
-    fixText: String? = null,
+    fixLeadingText: String? = null,
+    fixTrailingText: String? = null,
     readOnly: Boolean = false,
     enabled: Boolean = true,
     isPassword: Boolean = false,
@@ -121,7 +138,7 @@ fun BudgetTextField(
             .focusRequester(focusRequester),
         value = text.value,
         onValueChange = {
-            if (length != null){
+            if (length != null) {
                 if (length < it.length) return@OutlinedTextField
             }
             text.value = it
@@ -140,13 +157,33 @@ fun BudgetTextField(
         } else null,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         readOnly = readOnly,
-        textStyle = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.onSurfaceVariant),
+        textStyle = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.onSurfaceVariant)
+            .copy(textDirection = if (keyboardType == KeyboardType.Number || keyboardType == KeyboardType.Phone || keyboardType == KeyboardType.NumberPassword) TextDirection.Ltr else TextDirection.Rtl),
         enabled = enabled,
         shape = RoundedCornerShape(8.dp),
         trailingIcon =
-        if (trailingIcon != null || isPassword) {
+        if (trailingIcon != null || isPassword || fixTrailingText != null) {
             {
-                if (trailingIcon != null) {
+
+                if (fixTrailingText != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        VerticalDivider(
+                            Modifier
+                                .width(1.dp)
+                                .height(20.dp)
+                                .fillMaxHeight(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            text = fixTrailingText,
+                            style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline)
+                        )
+
+                    }
+                } else if (trailingIcon != null) {
                     IconButton(onClick = {
                         trailingIconOnClick.invoke(text.value)
                     }) {
@@ -191,15 +228,15 @@ fun BudgetTextField(
             }
         } else null,
         singleLine = searchMode || singleLine,
-        leadingIcon = if (leadingIcon != null || fixText != null) {
+        leadingIcon = if (leadingIcon != null || fixLeadingText != null) {
             {
-                if (fixText != null) {
+                if (fixLeadingText != null) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            text = fixText,
+                            text = fixLeadingText,
                             style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline)
                         )
                         VerticalDivider(
@@ -229,7 +266,8 @@ fun BudgetTextField(
             keyboardType = keyboardType,
             imeAction = ImeAction.Done
         ),
-        colors = OutlinedTextFieldDefaults.colors().copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+        colors = OutlinedTextFieldDefaults.colors()
+            .copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest),
     )
 
     LaunchedEffect(Unit) {
@@ -499,6 +537,169 @@ fun BudgetTextField(
 }
 
 
+@Composable
+fun CurrencyTextField(
+    onChange: ((String) -> Unit),
+    modifier: Modifier = Modifier,
+    locale: Locale = Locale.getDefault(),
+    initialText: String = "",
+    keyboardOptions: KeyboardOptions =
+        KeyboardOptions(keyboardType = KeyboardType.Number),
+    maxLines: Int = 1,
+    maxNoOfDecimal: Int = 2,
+    currencySymbol: String,
+    currencyName: String,
+    divider: String = ",",
+    limit: Int = Int.MAX_VALUE,
+    label: String? = null,
+    errorColor: Color = LocalTextStyle.current.color,
+    errorText: String? = null,
+    fixTrailingText: String? = null,
+    fixLeadingText: String? = null,
+) {
+    var textFieldState by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = initialText
+            )
+        )
+    }
+
+    val decimalFormatter: DecimalFormat =
+        (NumberFormat.getNumberInstance(locale) as DecimalFormat)
+            .apply {
+                isDecimalSeparatorAlwaysShown = true
+            }
+
+    val decimalFormatSymbols: DecimalFormatSymbols =
+        decimalFormatter.decimalFormatSymbols
+
+    val isError by remember(textFieldState.text) {
+        mutableStateOf(
+            isLimitExceeded(
+                limit,
+                textFieldState.text,
+                currencySymbol,
+                decimalFormatter
+            )
+        )
+    }
+
+    var oldText = ""
+
+    Column(
+        horizontalAlignment = Alignment.End
+    ) {
+        OutlinedTextField(
+            value = textFieldState,
+            label = if (!label.isNullOrEmpty()) {
+                {
+                    Text(
+                        text = label, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            } else null,
+            modifier = modifier
+                .height(80.dp)
+                .wrapContentSize(align = Alignment.CenterStart)
+                .fillMaxWidth(),
+            onValueChange = {
+                if (it.text.length > 19) return@OutlinedTextField
+                textFieldState = formatUserInput(
+                    oldText,
+                    sanitizeInput(
+                        currencySymbol,
+                        decimalFormatSymbols,
+                        it
+                    ),
+                    decimalFormatSymbols,
+                    maxNoOfDecimal,
+                    currencySymbol,
+                    decimalFormatter,
+                    divider
+                )
+                oldText = textFieldState.text
+                onChange(oldText)
+            },
+            keyboardOptions = keyboardOptions,
+            maxLines = maxLines,
+            singleLine = true,
+            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Left),
+            isError = isError,
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors()
+                .copy(unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+            leadingIcon = if (fixLeadingText != null) {
+                {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        VerticalDivider(
+                            Modifier
+                                .width(1.dp)
+                                .height(20.dp)
+                                .fillMaxHeight(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            text = fixLeadingText,
+                            style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline)
+                        )
+
+                    }
+                }
+            } else null,
+            trailingIcon = if (fixTrailingText != null) {
+                {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        VerticalDivider(
+                            Modifier
+                                .width(1.dp)
+                                .height(20.dp)
+                                .fillMaxHeight(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            text = fixTrailingText,
+                            style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline)
+                        )
+
+                    }
+                }
+            } else null
+        )
+
+        AnimatedVisibility(visible = isError && errorText?.isNotEmpty() == true) {
+            Text(
+                text = errorText ?: "",
+                modifier = Modifier
+                    .padding(end = 10.dp),
+                fontSize = 16.sp,
+                color = if (isError) errorColor else LocalTextStyle.current.color
+            )
+        }
+
+        AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
+            Text(
+                text = "${numToText(textFieldState.text)} $currencyName",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+        }
+    }
+
+}
+
+
 class PhoneVisualTransformation(val mask: String, val maskNumber: Char) : VisualTransformation {
 
     private val maxLength = mask.count { it == maskNumber }
@@ -557,6 +758,135 @@ private class PhoneOffsetMapper(val mask: String, val numberChar: Char) : Offset
 
     override fun transformedToOriginal(offset: Int): Int =
         offset - mask.take(offset).count { it != numberChar }
+}
+
+private fun isLimitExceeded(
+    limit: Int,
+    currentAmount: String,
+    currencySymbol: String,
+    decimalFormatter: DecimalFormat
+): Boolean {
+    val cleanedInput = currentAmount.replace(currencySymbol, "")
+    if (cleanedInput.isEmpty()) {
+        return false
+    }
+    return (decimalFormatter.parse(cleanedInput)?.toInt() ?: 0) > limit
+}
+
+private fun formatUserInput(
+    oldText: String,
+    textFieldValue: TextFieldValue,
+    decimalFormatSymbols: DecimalFormatSymbols,
+    maxNoOfDecimal: Int,
+    currencySymbol: String,
+    decimalFormatter: DecimalFormat,
+    divider: String
+): TextFieldValue {
+    if (oldText == textFieldValue.text)
+        return TextFieldValue(
+            text = oldText,
+            selection = TextRange(oldText.length)
+        )
+
+    if (textFieldValue.text.length < currencySymbol.length) {
+        return TextFieldValue(
+            text = currencySymbol,
+            selection = TextRange(currencySymbol.length)
+        )
+    }
+
+    if (textFieldValue.text == currencySymbol) {
+        return TextFieldValue(
+            text = currencySymbol,
+            selection = TextRange(currencySymbol.length)
+        )
+    }
+
+    var userInput = textFieldValue.text
+    var finalSelection: Int = 0
+
+    if (userInput.last().toString() == "." &&
+        decimalFormatSymbols.decimalSeparator.toString() != userInput.last().toString()
+    ) {
+        userInput = userInput.dropLast(1)
+        userInput.plus(decimalFormatSymbols.decimalSeparator.toString())
+    }
+
+    if (checkDecimalSizeExceeded(
+            userInput,
+            decimalFormatSymbols,
+            maxNoOfDecimal
+        ).not()
+    ) {
+
+        userInput = userInput.replace(currencySymbol, "")
+        val startLength = textFieldValue.text.length
+
+        try {
+            val parsedNumber = decimalFormatter.parse(userInput)
+            decimalFormatter.applyPattern(
+                setDecimalFormatterSensitivity(
+                    userInput, decimalFormatSymbols, maxNoOfDecimal, divider
+                )
+            )
+
+            val startPoint = textFieldValue.selection.start
+            userInput = "$currencySymbol${decimalFormatter.format(parsedNumber)}"
+            val finalLength = userInput.length
+            val selection = startPoint + (finalLength - startLength)
+
+            finalSelection = if (selection > 0 && selection <= userInput.length) {
+                selection
+            } else {
+                userInput.length - 1
+            }
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        }
+
+    } else {
+        finalSelection = userInput.length - 1
+        userInput = userInput.substring(0, userInput.length - 1)
+    }
+
+    return TextFieldValue(
+        text = userInput,
+        selection = TextRange(finalSelection)
+    )
+}
+
+private fun setDecimalFormatterSensitivity(
+    userInput: String,
+    decimalFormatSymbols: DecimalFormatSymbols,
+    maxNoOfDecimal: Int,
+    divider: String = ","
+): String {
+
+    val decimalSeparatorIndex = userInput.indexOf(decimalFormatSymbols.decimalSeparator)
+    if (decimalSeparatorIndex == -1)
+        return "#$divider##0"
+
+    val noOfCharactersAfterDecimalPoint =
+        userInput.length - decimalSeparatorIndex - 1
+
+    val zeros = "0".repeat(
+        min(
+            noOfCharactersAfterDecimalPoint,
+            maxNoOfDecimal
+        )
+    )
+    return "#$divider##0.$zeros"
+
+}
+
+private fun checkDecimalSizeExceeded(
+    input: String,
+    decimalFormatSymbols: DecimalFormatSymbols,
+    maxNoOfDecimal: Int
+): Boolean {
+    return (input.split(decimalFormatSymbols.decimalSeparator)
+        .getOrNull(1)?.length ?: Int.MIN_VALUE) > maxNoOfDecimal
+
 }
 
 

@@ -25,15 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ntg.core.designsystem.theme.BudgetIcons
 
 @Composable
 fun BudgetButton(
     modifier: Modifier = Modifier,
     text: String,
     iconStart: Painter? = null,
+    iconEnd: Painter? = null,
     type: ButtonType = ButtonType.Primary,
     size: ButtonSize = ButtonSize.LG,
     style: ButtonStyle = ButtonStyle.Contained,
@@ -137,6 +140,26 @@ fun BudgetButton(
             }
         }
 
+        ButtonType.Neutral -> {
+            when (style) {
+                ButtonStyle.Contained -> {
+                    background = MaterialTheme.colorScheme.surfaceContainer
+                    borderColor = MaterialTheme.colorScheme.surfaceContainer
+                    textColor = MaterialTheme.colorScheme.outlineVariant
+                    loadingColor = MaterialTheme.colorScheme.outlineVariant
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = MaterialTheme.colorScheme.surfaceContainer
+                    textColor = MaterialTheme.colorScheme.outlineVariant
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = MaterialTheme.colorScheme.outlineVariant
+                }
+            }
+        }
     }
 
 
@@ -184,9 +207,12 @@ fun BudgetButton(
             .clip(RoundedCornerShape(radius))
 
             .background(background)
-            .clickable(enabled = enable, interactionSource = remember { MutableInteractionSource() }, indication = rememberRipple(
-                color = textColor.copy(alpha = 0.4f)
-            )
+            .clickable(
+                enabled = enable,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(
+                    color = textColor.copy(alpha = 0.4f)
+                )
             ) {
                 onClick()
             }
@@ -197,13 +223,17 @@ fun BudgetButton(
     {
         Row(modifier = Modifier
             .align(Alignment.Center)
-            .padding(innerPadding)
+            .padding(innerPadding),
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
 
             if (iconStart != null){
-                Icon(painter = iconStart, contentDescription = "icon start",tint = textColor)
-                Spacer(modifier = Modifier.padding(start = 8.dp))
+                Icon(
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(18.dp),
+                    painter = iconStart, contentDescription = "icon start",tint = textColor)
             }
 
             Text(
@@ -212,6 +242,14 @@ fun BudgetButton(
                 color = if (!loading) textColor else background,
                 style = textStyle
             )
+
+            if (iconEnd != null){
+                Icon(
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .size(18.dp),
+                    painter = iconEnd, contentDescription = "icon end",tint = textColor)
+            }
 
         }
 
@@ -234,7 +272,8 @@ enum class ButtonType{
     Primary,
     Secondary,
     Success,
-    Error
+    Error,
+    Neutral
 }
 
 enum class ButtonSize{

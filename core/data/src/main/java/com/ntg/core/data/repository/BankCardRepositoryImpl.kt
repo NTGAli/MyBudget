@@ -29,6 +29,10 @@ class BankCardRepositoryImpl @Inject constructor(
         bankCardDao.delete(card.toEntity())
     }
 
+    override suspend fun tempRemove(id: Int) {
+        TODO("Not yet implemented")
+    }
+
     override fun getAll(): Flow<List<SourceType.BankCard>> =
         flow {
             emit(

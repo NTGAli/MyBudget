@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     api(libs.kotlinx.datetime)
+    implementation(libs.androidx.annotation.jvm)
 }

@@ -4,11 +4,13 @@ import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.ntg.core.common.R
 import com.ntg.core.model.DataBank
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.security.MessageDigest
+import java.util.zip.ZipInputStream
 
 fun getCountryFromPhoneNumber(context: Context, phone_number: String?): String? {
     if (phone_number == null) return null

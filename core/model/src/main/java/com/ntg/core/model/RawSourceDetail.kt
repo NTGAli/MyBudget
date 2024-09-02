@@ -13,4 +13,6 @@ data class RawSourceDetail(
     val bankId: Int?=null,
     val expire: String? = null,
     val cardName: String? = null,
+    val accountNumber: String? = null,
+    val sheba: String? = null,
 )

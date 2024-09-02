@@ -53,7 +53,7 @@ fun SetupRoute(
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.submit))
 
     val scope = rememberCoroutineScope()
-    val accounts =
+        val accounts =
         setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
 //    val sources = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
     SetupScreen(

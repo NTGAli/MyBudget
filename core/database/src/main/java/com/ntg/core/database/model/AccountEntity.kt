@@ -12,6 +12,7 @@ data class AccountEntity(
     val name: String,
     val isSelected: Boolean = false,
     val isSynced: Boolean = false,
+    val isRemoved: Boolean = false,
     val dateCreated: String? = null,
     val dateModified: String?= null,
 )
