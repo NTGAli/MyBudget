@@ -147,6 +147,10 @@ fun SourceRoute(
                             bankCard?.sourceId = source?.id
                             setupViewModel.insertNewSource(source!!)
                             setupViewModel.insertNewBankCard(bankCard!!)
+
+                            // insert balance value
+                            setupViewModel.initCardTransactions(cardBalance.replace(",", "").toLong(), source?.id!!, accountId)
+
                             onBack()
                         } else {
                             scope.launch {
@@ -443,33 +447,36 @@ private fun BankCardView(
         }
     )
 
-    TextDivider(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp),
-        title = stringResource(id = R.string.balance)
-    )
+
+    if (editBankCard == null) {
+        TextDivider(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .padding(top = 16.dp),
+            title = stringResource(id = R.string.balance)
+        )
 
 
 
-    CurrencyTextField(
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        onChange = {
-            balance.value = it
-        },
-        currencySymbol = "",
-        currencyName = concurrency.value,
-        maxNoOfDecimal = 2,
-        label = stringResource(id = R.string.balance),
-        maxLines = 1,
-        divider = ",",
-        fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
-        fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-    )
+        CurrencyTextField(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            onChange = {
+                balance.value = it
+            },
+            currencySymbol = "",
+            currencyName = concurrency.value,
+            maxNoOfDecimal = 2,
+            label = stringResource(id = R.string.balance),
+            maxLines = 1,
+            divider = ",",
+            fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
+            fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        )
+    }
 
 
     BudgetButton(

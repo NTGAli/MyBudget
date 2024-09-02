@@ -2,18 +2,52 @@ package com.ntg.core.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.ntg.core.model.Transaction
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val sId: String?=null,
-    val walletId: Int,
+    val accountId: Int,
+    val sourceId: Int,
     val type: String? = null,
     val categoryId: Int? = null,
     val amount: Long,
     val isSynced: Boolean = false,
     val isDeleted: Boolean = false,
+    val note: String? = null,
+    val date: Long,
     val createdAt: Long,
     val updatedAt: Long,
 )
+
+fun TransactionEntity.asTransaction() =
+    Transaction(
+        id = id,
+        sId = sId,
+        accountId = accountId,
+        type = type,
+        categoryId = categoryId,
+        amount = amount,
+        note = note,
+        sourceId = sourceId,
+        date = date
+    )
+
+fun Transaction.toEntity() =
+    TransactionEntity(
+        id = id,
+        sId = sId,
+        accountId = accountId,
+        sourceId = sourceId,
+        type = type,
+        categoryId = categoryId,
+        amount = amount,
+        note = note,
+        date = date,
+        isSynced = false,
+        isDeleted = false,
+        createdAt = System.currentTimeMillis(),
+        updatedAt = System.currentTimeMillis()
+    )

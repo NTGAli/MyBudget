@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.transaction.TransactionsRepository
 import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
+import com.ntg.core.model.Transaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,7 +19,8 @@ class SetupViewModel
 @Inject constructor(
     private val accountRepository: AccountRepository,
     private val sourceRepository: SourceExpenditureRepository,
-    private val bankCardRepository: BankCardRepository
+    private val bankCardRepository: BankCardRepository,
+    private val transactionRepository: TransactionsRepository
 ) : ViewModel() {
 
     fun accounts() = accountRepository.getAll()
@@ -80,6 +83,20 @@ class SetupViewModel
     fun tempRemove(sourceId: Int) {
         viewModelScope.launch {
             sourceRepository.tempRemove(sourceId)
+        }
+    }
+
+    fun initCardTransactions(
+        initAmount: Long,
+        sourceId: Int,
+        accountId: Int
+    ){
+        viewModelScope.launch {
+            transactionRepository.insertNewTransaction(
+                Transaction(
+                    0, amount = initAmount, accountId = accountId, sourceId = sourceId, date = System.currentTimeMillis()
+                )
+            )
         }
     }
 
