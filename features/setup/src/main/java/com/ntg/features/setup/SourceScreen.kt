@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,10 +28,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +46,7 @@ import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
+import com.ntg.core.designsystem.components.CurrencyTextField
 import com.ntg.core.designsystem.components.ExposedDropdownMenuSample
 import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
@@ -53,6 +60,7 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun SourceRoute(
@@ -61,8 +69,9 @@ fun SourceRoute(
     sourceId: Int? = null,
     setupViewModel: SetupViewModel = hiltViewModel(),
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-    onBack:() -> Unit
+    onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
     var source by remember {
@@ -71,19 +80,32 @@ fun SourceRoute(
     var bankCard by remember {
         mutableStateOf<SourceType.BankCard?>(null)
     }
+    var sourceType by remember {
+        mutableStateOf("")
+    }
+    var cardBalance by remember {
+        mutableStateOf("")
+    }
+
 
     val editSource = setupViewModel.getSourcesById(sourceId ?: -1).collectAsStateWithLifecycle(
         initialValue = null
     ).value
 
-    SourceScreen(editSource, onBack = onBack, deleteSource = {
-        if (sourceId != null){
-            setupViewModel.tempRemove(sourceId)
-            onBack()
-        }
-    }) { sourceValue, card ->
+    SourceScreen(
+        editSource, onBack = onBack,
+        deleteSource = {
+            if (sourceId != null) {
+                setupViewModel.tempRemove(sourceId)
+                onBack()
+            }
+        },
+        selectedSource = {
+            sourceType = it
+        }) { sourceValue, card, balance ->
         source = sourceValue
         bankCard = card
+        cardBalance = balance
     }
 
     val scope = rememberCoroutineScope()
@@ -92,41 +114,56 @@ fun SourceRoute(
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
 
-                if (bankCard?.number.orEmpty().isEmpty()){
-                    scope.launch {
-                        onShowSnackbar(R.string.err_empty_card_number, null)
-                    }
-                    return
-                }else if (bankCard?.number.orEmpty().length != 16){
-                    scope.launch {
-                        onShowSnackbar(R.string.err_length_number, null)
-                    }
-                    return
-                }
+                when (sourceType) {
+                    context.getString(R.string.bank_card) -> {
+                        if (bankCard?.number.orEmpty().isEmpty()) {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_empty_card_number, null)
+                            }
+                            return
+                        } else if (bankCard?.number.orEmpty().length != 16) {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_length_number, null)
+                            }
+                            return
+                        } else if (bankCard?.name.orEmpty().isEmpty()) {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_empty_name, null)
+                            }
+                            return
+                        }else if (cardBalance.isEmpty()){
+                            scope.launch {
+                                onShowSnackbar(R.string.err_balance_empty, null)
+                            }
+                            return
+                        }
 
-                if (bankCard?.name.orEmpty().isEmpty()){
-                    scope.launch {
-                        onShowSnackbar(R.string.err_empty_name, null)
+                        if (editSource != null) {
+                            bankCard?.sourceId = sourceId
+                            setupViewModel.updateBankCard(bankCard!!)
+                            onBack()
+                        } else if (source != null && bankCard != null) {
+                            source?.accountId = accountId
+                            bankCard?.sourceId = source?.id
+                            setupViewModel.insertNewSource(source!!)
+                            setupViewModel.insertNewBankCard(bankCard!!)
+                            onBack()
+                        } else {
+                            scope.launch {
+                                onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null)
+                            }
+                        }
                     }
-                    return
-                }
 
-                if (editSource != null){
-                    bankCard?.sourceId = sourceId
-                    setupViewModel.updateBankCard(bankCard!!)
-                    onBack()
-                } else if (source != null && bankCard != null){
-                    source?.accountId = accountId
-                    bankCard?.sourceId = source?.id
-                    setupViewModel.insertNewSource(source!!)
-                    setupViewModel.insertNewBankCard(bankCard!!)
-                    onBack()
-                }else{
-                    scope.launch {
-                        onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null)
+                    context.getString(R.string.foreign_currency) -> {
+
                     }
-                }
 
+                    context.getString(R.string.gold) -> {
+
+                    }
+
+                }
             }
         }
     }
@@ -136,9 +173,10 @@ fun SourceRoute(
 @Composable
 private fun SourceScreen(
     editSource: SourceWithDetail?,
-    onBack:()-> Unit,
-    deleteSource:()-> Unit,
-    onSubmit: (source: SourceExpenditure, card: SourceType.BankCard?) -> Unit
+    onBack: () -> Unit,
+    deleteSource: () -> Unit,
+    selectedSource: (String) -> Unit,
+    submitCard: (source: SourceExpenditure, card: SourceType.BankCard?, balance: String) -> Unit
 ) {
 
 
@@ -154,7 +192,11 @@ private fun SourceScreen(
         mutableStateOf(false)
     }
 
-    onSubmit.invoke(
+    var balance by remember {
+        mutableStateOf("")
+    }
+
+    submitCard.invoke(
         SourceExpenditure(
             id = generateUniqueFiveDigitId(),
             accountId = 0,
@@ -164,13 +206,14 @@ private fun SourceScreen(
             type = SourceTypes.BankCard.ordinal,
             dateCreated = System.currentTimeMillis().toString()
         ),
-        bankCard
+        bankCard,
+        balance
     )
 
 
-    if (editSource != null){
+    if (editSource != null) {
         editMode = true
-        when(editSource.sourceType){
+        when (editSource.sourceType) {
             is SourceType.BankCard -> sourceType = stringResource(id = R.string.bank_card)
             is SourceType.Gold -> sourceType = stringResource(id = R.string.gold)
             null -> editMode = false
@@ -198,18 +241,19 @@ private fun SourceScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            if (!editMode){
+            if (!editMode) {
                 ExposedDropdownMenuSample(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
                         .padding(top = 8.dp)
-                ){
+                ) {
                     sourceType = it
+                    selectedSource.invoke(it)
                 }
             }
 
 
-            when(sourceType){
+            when (sourceType) {
 
                 stringResource(id = R.string.bank_card) -> {
 
@@ -218,8 +262,9 @@ private fun SourceScreen(
                         deleteCard = {
                             deleteSource()
                         }
-                    ){
-                        bankCard = it
+                    ) {card, finalBalance ->
+                        bankCard = card
+                        balance = finalBalance
                     }
                 }
 
@@ -244,8 +289,10 @@ private fun SourceScreen(
 private fun BankCardView(
     editBankCard: SourceType.BankCard? = null,
     deleteCard: () -> Unit,
-    bankCard: (SourceType.BankCard) -> Unit
-){
+    bankCard: (SourceType.BankCard, String) -> Unit
+) {
+
+    val layoutDirection = LocalLayoutDirection.current
 
     val concurrency = remember {
         mutableStateOf("تومن")
@@ -283,6 +330,10 @@ private fun BankCardView(
         mutableStateOf("")
     }
 
+    val balance = remember {
+        mutableStateOf("")
+    }
+
     bankCard(
         SourceType.BankCard(
             id = editBankCard?.id ?: generateUniqueFiveDigitId(),
@@ -293,17 +344,18 @@ private fun BankCardView(
             cvv = cvv.value,
             sheba = sheba.value,
             accountNumber = accountNumber.value
-        )
+        ),
+        balance.value
     )
 
     LaunchedEffect(key1 = editBankCard) {
-        if (editBankCard != null && cardNumber.value.isEmpty()){
+        if (editBankCard != null && cardNumber.value.isEmpty()) {
             name.value = editBankCard.name
             cardNumber.value = editBankCard.number
             sheba.value = editBankCard.sheba.orEmpty()
             accountNumber.value = editBankCard.accountNumber.orEmpty()
             cvv.value = editBankCard.cvv.orEmpty()
-            if (editBankCard.date.isNotEmpty()){
+            if (editBankCard.date.isNotEmpty()) {
                 year = editBankCard.date.split("/")[0].toInt()
                 month = editBankCard.date.split("/")[1].toInt()
                 expire.value = editBankCard.date
@@ -316,9 +368,10 @@ private fun BankCardView(
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var showDeleteSheet by remember { mutableStateOf(false) }
+    var isFinalSubmit by remember { mutableStateOf(false) }
     var showMore by remember { mutableStateOf(false) }
 
-    if (editBankCard == null){
+    if (editBankCard == null) {
         BudgetTextField(
             modifier = Modifier
                 .padding(top = 24.dp)
@@ -390,6 +443,35 @@ private fun BankCardView(
         }
     )
 
+    TextDivider(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(top = 16.dp),
+        title = stringResource(id = R.string.balance)
+    )
+
+
+
+    CurrencyTextField(
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        onChange = {
+            balance.value = it
+        },
+        currencySymbol = "",
+        currencyName = concurrency.value,
+        maxNoOfDecimal = 2,
+        label = stringResource(id = R.string.balance),
+        maxLines = 1,
+        divider = ",",
+        fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
+        fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    )
+
+
     BudgetButton(
         modifier = Modifier
             .fillMaxWidth()
@@ -398,14 +480,16 @@ private fun BankCardView(
         style = ButtonStyle.TextOnly,
         size = ButtonSize.MD,
         type = ButtonType.Neutral,
-        iconEnd = painterResource(id = if (showMore) BudgetIcons.directionUp else BudgetIcons.directionDown)){
+        iconEnd = painterResource(id = if (showMore) BudgetIcons.directionUp else BudgetIcons.directionDown)
+    ) {
         showMore = !showMore
     }
 
 
     AnimatedVisibility(
         modifier = Modifier.padding(bottom = 16.dp),
-        visible = showMore){
+        visible = showMore
+    ) {
         Column {
             BudgetTextField(
                 modifier = Modifier
@@ -441,7 +525,7 @@ private fun BankCardView(
 
 
 
-    if (editBankCard != null){
+    if (editBankCard != null) {
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest)
         BudgetButton(
             modifier = Modifier
@@ -449,7 +533,11 @@ private fun BankCardView(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             iconStart = painterResource(id = BudgetIcons.trash),
-            text = stringResource(id = R.string.delete_card), type = ButtonType.Error, style = ButtonStyle.TextOnly, size = ButtonSize.MD){
+            text = stringResource(id = R.string.delete_card),
+            type = ButtonType.Error,
+            style = ButtonStyle.TextOnly,
+            size = ButtonSize.MD
+        ) {
             showDeleteSheet = true
         }
     }
@@ -468,7 +556,9 @@ private fun BankCardView(
 
                 Text(
                     modifier = Modifier.padding(start = 24.dp),
-                    text = stringResource(id = R.string.select_expire_date), style = MaterialTheme.typography.titleSmall)
+                    text = stringResource(id = R.string.select_expire_date),
+                    style = MaterialTheme.typography.titleSmall
+                )
 
                 Row(
                     modifier = Modifier
@@ -488,7 +578,8 @@ private fun BankCardView(
 
                     Text(
                         style = MaterialTheme.typography.titleLarge,
-                        text = "/")
+                        text = "/"
+                    )
 
                     WheelList(
                         modifier = Modifier.weight(1f),
@@ -506,7 +597,8 @@ private fun BankCardView(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     text = stringResource(id = com.ntg.feature.setup.R.string.submit),
-                    size = ButtonSize.MD){
+                    size = ButtonSize.MD
+                ) {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
                             showBottomSheet = false
@@ -520,7 +612,7 @@ private fun BankCardView(
     }
 
 
-    if (showDeleteSheet){
+    if (showDeleteSheet) {
         ModalBottomSheet(
             onDismissRequest = {
                 showDeleteSheet = false
@@ -530,11 +622,15 @@ private fun BankCardView(
 
             Text(
                 modifier = Modifier.padding(start = 24.dp),
-                text = stringResource(id = R.string.delete_card), style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.error))
+                text = stringResource(id = R.string.delete_card),
+                style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.error)
+            )
 
             Text(
                 modifier = Modifier.padding(start = 24.dp, top = 4.dp),
-                text = stringResource(id = R.string.sure_delete_bank_card), style = MaterialTheme.typography.titleSmall)
+                text = stringResource(id = R.string.sure_delete_bank_card),
+                style = MaterialTheme.typography.titleSmall
+            )
 
             Row(
                 modifier = Modifier
@@ -545,7 +641,10 @@ private fun BankCardView(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 4.dp),
-                    text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.SM){
+                    text = stringResource(id = R.string.delete),
+                    type = ButtonType.Error,
+                    size = ButtonSize.SM
+                ) {
                     showDeleteSheet = false
                     deleteCard()
                 }
@@ -554,7 +653,10 @@ private fun BankCardView(
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp),
-                    text = stringResource(id = R.string.cancel), style = ButtonStyle.Outline, size = ButtonSize.SM){
+                    text = stringResource(id = R.string.cancel),
+                    style = ButtonStyle.Outline,
+                    size = ButtonSize.SM
+                ) {
                     showDeleteSheet = false
                 }
             }

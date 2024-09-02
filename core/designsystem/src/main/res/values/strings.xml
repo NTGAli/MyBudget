@@ -31,4 +31,9 @@
     <string name="sheba_number">شماره شبا</string>
     <string name="cvv2">CVV2</string>
     <string name="show_less">نمایش کمتر</string>
+    <string name="current_inventory">موجودی</string>
+    <string name="enter_your_inventory">موجودی این کارت را وارد نمایید. توجه داشته باشید این مقدار قابل ویرایش نیست.</string>
+    <string name="balance">موجودی</string>
+    <string name="submit">ثبت</string>
+    <string name="err_balance_empty">موجودی نمی تواند خالی باشد</string>
 </resources>
