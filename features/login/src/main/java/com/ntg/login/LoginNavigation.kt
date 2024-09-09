@@ -29,20 +29,21 @@ fun NavController.navigateToCode(phone: String) {
 fun NavGraphBuilder.loginScreen(
     loginViewModel: LoginViewModel,
     sharedViewModel: SharedViewModel,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
     navigateToCountries: () -> Unit = {},
     navigateToCode: (String) -> Unit = {},
     navigateToSetup: () -> Unit = {},
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
 ) {
 
     composable(
         route = Login_Route,
     ) {
         LoginRoute(
-            loginViewModel,
             sharedViewModel,
             navigateToDetail = navigateToCountries,
-            navigateToCode = navigateToCode
+            navigateToCode = navigateToCode,
+            onShowSnackbar = onShowSnackbar
         )
     }
 
@@ -66,7 +67,7 @@ fun NavGraphBuilder.loginScreen(
         CodeRoute(
             it.arguments?.getString(PHONE).orEmpty(),
             navigateToSetup,
-            onBack
+            onBack,
         )
     }
 }

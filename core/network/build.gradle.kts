@@ -48,7 +48,11 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit.core)
+    implementation(libs.retrofit.convertor)
+    implementation(libs.retrofit.scalars)
     implementation(libs.retrofit.kotlin.serialization)
+    debugImplementation (libs.chucker)
+    releaseImplementation (libs.chucker.no.op)
 
     testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -12,12 +12,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.OtpField
 import com.ntg.feature.login.R
+import kotlin.math.log
 
 @Composable
 fun CodeRoute(
@@ -41,6 +44,8 @@ fun CodeRoute(
         },
         navigateToSetup = {
             loginViewModel.saveUserLogin()
+        },
+        sendCode = {
         }
     )
 }
@@ -52,6 +57,7 @@ private fun CodeScreen(
     onBack: () -> Unit,
     setDefaultAccount: () -> Unit,
     navigateToSetup: () -> Unit,
+    sendCode: (String) -> Unit,
 ) {
 
     var wasWrong by remember {
@@ -104,16 +110,17 @@ private fun CodeScreen(
             }
 
             if (code.length == 5){
-                wasWrong = code != "12345"
-                isSucceeded = !wasWrong
-                if (isSucceeded){
-                    LaunchedEffect(key1 = Unit) {
-                        setDefaultAccount()
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            navigateToSetup()
-                        }, 1400)
-                    }
-                }
+                sendCode("$phone")
+//                wasWrong = code != "12345"
+//                isSucceeded = !wasWrong
+//                if (isSucceeded){
+//                    LaunchedEffect(key1 = Unit) {
+//                        setDefaultAccount()
+//                        Handler(Looper.getMainLooper()).postDelayed({
+//                            navigateToSetup()
+//                        }, 1400)
+//                    }
+//                }
             }
         }
     }

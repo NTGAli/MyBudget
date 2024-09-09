@@ -40,7 +40,8 @@ fun BudgetNavHost(
             navigateToCountries = navController::navigateToCountries,
             navigateToCode = navController::navigateToCode,
             navigateToSetup = navController::navigateToSetup,
-            onBack = navController::popBackStack
+            onBack = navController::popBackStack,
+            onShowSnackbar = onShowSnackbar
         )
 
         setupScreen(
