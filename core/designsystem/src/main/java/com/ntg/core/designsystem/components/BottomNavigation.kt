@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -39,6 +42,7 @@ fun BottomNavigation(
     items: List<NavigationItem>,
     txtButton: String? = null,
     expandButton: Boolean = false,
+    isLoading: Boolean = false,
     onCLick: (Int) -> Unit,
 ) {
 
@@ -55,11 +59,13 @@ fun BottomNavigation(
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val animatedWidth by animateDpAsState(targetValue = if (expandButton) screenWidth else 100.dp,
+    val animatedWidth by animateDpAsState(
+        targetValue = if (expandButton) screenWidth else 100.dp,
         label = ""
     )
 
-    val padding by animateDpAsState(targetValue = if (expandButton) 12.dp else 4.dp,
+    val padding by animateDpAsState(
+        targetValue = if (expandButton) 10.dp else 4.dp,
         label = ""
     )
 
@@ -69,8 +75,10 @@ fun BottomNavigation(
             .background(MaterialTheme.colorScheme.background)
     ) {
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
-        Box(modifier = Modifier
-            .fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -95,8 +103,8 @@ fun BottomNavigation(
                         )
                         .padding(vertical = 16.dp),
                     painter =
-                    if (itemSelected == 1) firstItem.selectedPainter else firstItem.painter
-                    , contentDescription = firstItem.title,
+                    if (itemSelected == 1) firstItem.selectedPainter else firstItem.painter,
+                    contentDescription = firstItem.title,
                 )
 
 
@@ -124,8 +132,8 @@ fun BottomNavigation(
                         )
                         .padding(vertical = 16.dp),
                     painter =
-                    if (itemSelected == 2) secondItem.selectedPainter else secondItem.painter
-                    , contentDescription = secondItem.title,
+                    if (itemSelected == 2) secondItem.selectedPainter else secondItem.painter,
+                    contentDescription = secondItem.title,
                 )
             }
 
@@ -146,11 +154,28 @@ fun BottomNavigation(
 
                     .padding(horizontal = 24.dp, vertical = padding)
             ) {
-                if (txtButton != null){
+
+                if (txtButton != null) {
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = txtButton, style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onPrimary))
-                }else{
+                        text = txtButton, style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold, color =
+                            if (isLoading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
+
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .progressSemantics()
+                                .size(16.dp)
+                                .align(Alignment.Center),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            strokeWidth = 2.dp
+                        )
+                    }
+
+                } else {
                     Icon(
                         modifier = Modifier.align(Alignment.Center),
                         painter = painterResource(id = BudgetIcons.Transaction),

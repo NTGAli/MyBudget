@@ -66,7 +66,6 @@ fun NavGraphBuilder.loginScreen(
     ) {
         CodeRoute(
             it.arguments?.getString(PHONE).orEmpty(),
-            navigateToSetup,
             onBack,
             onShowSnackbar = onShowSnackbar
         )

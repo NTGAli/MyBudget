@@ -100,7 +100,9 @@ fun LoginRoute(
                     }
                 }
                 is Result.Loading -> {
-                    sharedViewModel.setLoading.postValue(true)
+                    if (it.loading){
+                        sharedViewModel.setLoading.postValue(true)
+                    }
                 }
                 is Result.Success -> {
                     sharedViewModel.setLoading.postValue(false)

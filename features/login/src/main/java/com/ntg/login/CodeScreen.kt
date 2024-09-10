@@ -36,7 +36,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun CodeRoute(
     phone: String,
-    navigateToSetup: () -> Unit,
     onBack: () -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel(),
     onShowSnackbar: suspend (Int, String?) -> Boolean,
@@ -163,7 +162,7 @@ private fun CodeScreen(
             OtpField(
                 modifier = Modifier.padding(top = 32.dp),
                 wasWrong = wasWrong.value, isSucceeded = isSucceeded.value, isLoading = isLoading.value
-            ) { userInputCode, bool ->
+            ) { userInputCode, _ ->
                 code = userInputCode
                 wasWrong.value = false
             }
@@ -174,8 +173,6 @@ private fun CodeScreen(
                     sendCode(code)
                 }
             }
-
-
         }
     }
 
