@@ -68,6 +68,7 @@ fun NavGraphBuilder.loginScreen(
             it.arguments?.getString(PHONE).orEmpty(),
             navigateToSetup,
             onBack,
+            onShowSnackbar = onShowSnackbar
         )
     }
 }

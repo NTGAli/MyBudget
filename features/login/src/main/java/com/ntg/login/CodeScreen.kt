@@ -2,7 +2,6 @@ package com.ntg.login
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,6 +15,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,24 +31,30 @@ import com.ntg.core.designsystem.components.OtpField
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.network.model.Result
 import com.ntg.feature.login.R
-import kotlin.math.log
+import kotlinx.coroutines.launch
 
 @Composable
 fun CodeRoute(
     phone: String,
     navigateToSetup: () -> Unit,
     onBack: () -> Unit,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    loginViewModel: LoginViewModel = hiltViewModel(),
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentLifecycleState = lifecycleOwner.lifecycle
+    val scope = rememberCoroutineScope()
 
     val wasWrong = remember {
         mutableStateOf(false)
     }
 
     val isSucceeded = remember {
+        mutableStateOf(false)
+    }
+
+    val isLoading = remember {
         mutableStateOf(false)
     }
 
@@ -59,10 +65,16 @@ fun CodeRoute(
                 when (it) {
                     is Result.Error -> {
                         wasWrong.value = true
+                        scope.launch {
+                            onShowSnackbar.invoke(R.string.err_invalid_code, null)
+                        }
+                        isLoading.value = false
                     }
 
                     is Result.Loading -> {
-
+                        if (it.loading){
+                            isLoading.value = true
+                        }
                     }
 
                     is Result.Success -> {
@@ -77,9 +89,8 @@ fun CodeRoute(
                                     it.data?.expiresAt.orEmpty()
                                 )
                             }, 1400)
-
-
                         }
+                        isLoading.value = false
                     }
                 }
 
@@ -92,6 +103,7 @@ fun CodeRoute(
         onBack = onBack,
         wasWrong = wasWrong,
         isSucceeded = isSucceeded,
+        isLoading = isLoading,
         sendCode = {
             loginViewModel.verifyCode(
                 VerifyOtp(
@@ -110,6 +122,7 @@ private fun CodeScreen(
     onBack: () -> Unit,
     wasWrong: MutableState<Boolean>,
     isSucceeded: MutableState<Boolean>,
+    isLoading: MutableState<Boolean>,
     sendCode: (String) -> Unit,
 ) {
 
@@ -149,7 +162,7 @@ private fun CodeScreen(
 
             OtpField(
                 modifier = Modifier.padding(top = 32.dp),
-                wasWrong = wasWrong.value, isSucceeded = isSucceeded.value
+                wasWrong = wasWrong.value, isSucceeded = isSucceeded.value, isLoading = isLoading.value
             ) { userInputCode, bool ->
                 code = userInputCode
                 wasWrong.value = false

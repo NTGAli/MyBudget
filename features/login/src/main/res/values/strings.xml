@@ -9,4 +9,5 @@
     <string name="recieve_code">دریافت کد</string>
     <string name="choose_your_countries">کشور خود را انتخاب کنید</string>
     <string name="err">خطایی رخ داده است.</string>
+    <string name="err_invalid_code">کد وارد شده اشتباه است!</string>
 </resources>
