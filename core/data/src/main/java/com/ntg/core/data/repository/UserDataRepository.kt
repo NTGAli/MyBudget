@@ -7,6 +7,6 @@ interface UserDataRepository {
 
     val userData: Flow<UserData>
 
-    suspend fun setUserLogged()
+    suspend fun setUserLogged(token: String, expire: String)
 
 }

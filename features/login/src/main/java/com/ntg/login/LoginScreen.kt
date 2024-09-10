@@ -28,6 +28,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.currentStateAsState
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.mybudget.common.LoginEventListener
@@ -51,8 +55,9 @@ fun LoginRoute(
 
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.recieve_code))
-    val owner = LocalLifecycleOwner.current
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentLifecycleState = lifecycleOwner.lifecycle
     val scope = rememberCoroutineScope()
 
 
@@ -63,7 +68,7 @@ fun LoginRoute(
 
     LaunchedEffect(key1 = Unit) {
 
-        loginViewModel.countrySelected.observe(owner){
+        loginViewModel.countrySelected.observe(lifecycleOwner){
             code.value = it
         }
 
@@ -84,8 +89,9 @@ fun LoginRoute(
                 }
             }
         }
-        loginViewModel.sendCodeState.collect{
-            Log.d("sendCodeState", "$it")
+        loginViewModel.sendCodeState
+            .flowWithLifecycle(currentLifecycleState, Lifecycle.State.STARTED)
+            .collect{
             when(it){
                 is Result.Error -> {
                     sharedViewModel.setLoading.postValue(false)

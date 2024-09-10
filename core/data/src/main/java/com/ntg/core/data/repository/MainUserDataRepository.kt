@@ -12,7 +12,7 @@ internal class MainUserDataRepository @Inject constructor(
     override val userData: Flow<UserData> =
         budgetPreferencesDataSource.userData
 
-    override suspend fun setUserLogged() {
-        budgetPreferencesDataSource.setUserLogged()
+    override suspend fun setUserLogged(token: String, expire: String) {
+        budgetPreferencesDataSource.setUserLogged(token, expire)
     }
 }

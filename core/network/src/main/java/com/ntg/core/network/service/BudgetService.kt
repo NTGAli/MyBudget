@@ -1,5 +1,6 @@
 package com.ntg.core.network.service
 
+import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.network.model.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
@@ -15,5 +16,11 @@ interface BudgetService {
     ): Response<ResponseBody<String?>>
 
 
+    @FormUrlEncoded
+    @POST(value = "/api/verify_otp")
+    suspend fun verifyOtp(
+        @Field("otp") otp: Int,
+        @Field("query") query: String,
+    ): Response<CodeVerification?>
 
 }

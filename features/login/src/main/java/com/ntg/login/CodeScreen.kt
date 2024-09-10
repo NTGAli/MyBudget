@@ -12,7 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,28 +24,81 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.OtpField
+import com.ntg.core.model.req.VerifyOtp
+import com.ntg.core.network.model.Result
 import com.ntg.feature.login.R
 import kotlin.math.log
 
 @Composable
 fun CodeRoute(
     phone: String,
-    navigateToSetup:() -> Unit,
-    onBack:() -> Unit,
+    navigateToSetup: () -> Unit,
+    onBack: () -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentLifecycleState = lifecycleOwner.lifecycle
+
+    val wasWrong = remember {
+        mutableStateOf(false)
+    }
+
+    val isSucceeded = remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(Unit) {
+        loginViewModel.codeVerificationState
+            .flowWithLifecycle(currentLifecycleState, Lifecycle.State.STARTED)
+            .collect {
+                when (it) {
+                    is Result.Error -> {
+                        wasWrong.value = true
+                    }
+
+                    is Result.Loading -> {
+
+                    }
+
+                    is Result.Success -> {
+                        if (it.data?.accessToken.orEmpty()
+                                .isNotEmpty() && it.data?.expiresAt.orEmpty().isNotEmpty()
+                        ) {
+                            isSucceeded.value = true
+                            loginViewModel.setDefaultAccount()
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                loginViewModel.saveUserLogin(
+                                    it.data?.accessToken.orEmpty(),
+                                    it.data?.expiresAt.orEmpty()
+                                )
+                            }, 1400)
+
+
+                        }
+                    }
+                }
+
+            }
+    }
+
+
     CodeScreen(
         phone,
         onBack = onBack,
-        setDefaultAccount = {
-            loginViewModel.setDefaultAccount()
-        },
-        navigateToSetup = {
-            loginViewModel.saveUserLogin()
-        },
+        wasWrong = wasWrong,
+        isSucceeded = isSucceeded,
         sendCode = {
+            loginViewModel.verifyCode(
+                VerifyOtp(
+                    query = phone,
+                    otp = it.toInt()
+                )
+            )
         }
     )
 }
@@ -55,18 +108,10 @@ fun CodeRoute(
 private fun CodeScreen(
     phone: String,
     onBack: () -> Unit,
-    setDefaultAccount: () -> Unit,
-    navigateToSetup: () -> Unit,
+    wasWrong: MutableState<Boolean>,
+    isSucceeded: MutableState<Boolean>,
     sendCode: (String) -> Unit,
 ) {
-
-    var wasWrong by remember {
-        mutableStateOf(false)
-    }
-
-    var isSucceeded by remember {
-        mutableStateOf(false)
-    }
 
     var code by remember {
         mutableStateOf("")
@@ -98,30 +143,26 @@ private fun CodeScreen(
                     .padding(horizontal = 24.dp)
                     .padding(top = 8.dp),
                 text = stringResource(id = R.string.sent_code_format, phone),
-                style = MaterialTheme.typography.bodySmall.copy(MaterialTheme.colorScheme.outline).copy(textAlign = TextAlign.Center)
+                style = MaterialTheme.typography.bodySmall.copy(MaterialTheme.colorScheme.outline)
+                    .copy(textAlign = TextAlign.Center)
             )
 
             OtpField(
                 modifier = Modifier.padding(top = 32.dp),
-                wasWrong = wasWrong, isSucceeded = isSucceeded
+                wasWrong = wasWrong.value, isSucceeded = isSucceeded.value
             ) { userInputCode, bool ->
                 code = userInputCode
-                wasWrong = false
+                wasWrong.value = false
             }
 
-            if (code.length == 5){
-                sendCode("$phone")
-//                wasWrong = code != "12345"
-//                isSucceeded = !wasWrong
-//                if (isSucceeded){
-//                    LaunchedEffect(key1 = Unit) {
-//                        setDefaultAccount()
-//                        Handler(Looper.getMainLooper()).postDelayed({
-//                            navigateToSetup()
-//                        }, 1400)
-//                    }
-//                }
+
+            LaunchedEffect(code.length) {
+                if (code.length == 5) {
+                    sendCode(code)
+                }
             }
+
+
         }
     }
 
