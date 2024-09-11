@@ -2,6 +2,7 @@ package com.ntg.core.network.retrofit
 
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.BudgetNetworkDataSource
@@ -31,6 +32,12 @@ internal class RetrofitBudgetNetwork @Inject constructor(
     override suspend fun verifyCode(code: VerifyOtp): Flow<Result<CodeVerification?>> {
         return networkBoundResources.downloadData(ioDispatcher){
             apiService.verifyOtp(otp = code.otp, query = code.query)
+        }
+    }
+
+    override suspend fun serverAccount(): Flow<Result<List<ServerAccount>?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.my()
         }
     }
 }

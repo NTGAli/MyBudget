@@ -81,7 +81,7 @@ fun CodeRoute(
                                 .isNotEmpty() && it.data?.expiresAt.orEmpty().isNotEmpty()
                         ) {
                             isSucceeded.value = true
-                            loginViewModel.setDefaultAccount()
+//                            loginViewModel.setDefaultAccount()
                             Handler(Looper.getMainLooper()).postDelayed({
                                 loginViewModel.saveUserLogin(
                                     it.data?.accessToken.orEmpty(),

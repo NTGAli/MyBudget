@@ -2,6 +2,7 @@ package com.ntg.core.data.repository.api
 
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.BudgetNetworkDataSource
@@ -21,5 +22,9 @@ internal class AuthRequestRepository @Inject constructor(
 
     override suspend fun verifyCode(verification: VerifyOtp): Flow<Result<CodeVerification?>> {
         return network.verifyCode(verification)
+    }
+
+    override suspend fun serverAccounts(): Flow<Result<List<ServerAccount>?>> {
+        return network.serverAccount()
     }
 }

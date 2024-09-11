@@ -1,6 +1,7 @@
 package com.ntg.core.network.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.tracing.trace
 import coil.ImageLoader
@@ -10,6 +11,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ntg.core.network.BuildConfig
 import com.ntg.core.network.service.BudgetService
+import com.ntg.core.network.util.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,21 +51,16 @@ object NetworkModule {
     fun provideOkHttpClient(
         loggerInterceptor: HttpLoggingInterceptor,
         @ApplicationContext application: Context,
+        sharedPreferences: SharedPreferences,
     ): OkHttpClient {
-        val timeOut = 30
+        val timeOut = 10
         val httpClient = OkHttpClient().newBuilder()
             .connectTimeout(timeOut.toLong(), TimeUnit.SECONDS)
             .readTimeout(timeOut.toLong(), TimeUnit.SECONDS)
             .writeTimeout(timeOut.toLong(), TimeUnit.SECONDS)
+            .addInterceptor(AuthInterceptor(sharedPreferences))
             .addInterceptor(ChuckerInterceptor(application))
-        httpClient.addInterceptor(loggerInterceptor)
-        httpClient.addInterceptor { chain ->
-            val original = chain.request()
-            val requestBuilder = original.newBuilder()
-                .addHeader("Accept", "application/json")
-            val request = requestBuilder.build()
-            chain.proceed(request)
-        }
+            .addInterceptor(loggerInterceptor)
         return httpClient.build()
     }
 

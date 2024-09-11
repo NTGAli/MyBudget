@@ -1,5 +1,6 @@
 package com.ntg.login
 
+import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +10,9 @@ import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.model.Account
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.mybudget.common.BudgetDispatchers
+import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
@@ -31,6 +34,7 @@ class LoginViewModel
         private val accountRepository: AccountRepository,
         private val userDataRepository: UserDataRepository,
         private val authRepository: AuthRepository,
+        private val sharedPreferences: SharedPreferences,
         @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     ) : ViewModel() {
 
@@ -58,6 +62,7 @@ class LoginViewModel
         token: String, expire: String
     ){
         viewModelScope.launch {
+            sharedPreferences.edit().putString(Constants.Prefs.ACCESS_TOKEN, token).apply()
             userDataRepository.setUserLogged(token, expire)
         }
     }

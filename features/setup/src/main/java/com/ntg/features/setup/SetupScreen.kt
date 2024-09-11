@@ -36,8 +36,10 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.network.model.Result
 import com.ntg.feature.setup.R
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,6 +58,30 @@ fun SetupRoute(
         val accounts =
         setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
 //    val sources = setupViewModel.accounts().collectAsStateWithLifecycle(initialValue = null)
+
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        setupViewModel.serverAccounts()
+        setupViewModel.serverAccounts.collect{
+            Log.d("SSSSSSSSSSSSSSSSS","$it")
+            when(it){
+                is Result.Error -> {
+
+                }
+                is Result.Loading -> {
+
+                }
+                is Result.Success -> {
+
+                }
+            }
+
+        }
+
+    }
+
+
     SetupScreen(
         accounts,
         navigateToSource,

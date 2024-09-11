@@ -1,10 +1,12 @@
 package com.ntg.core.network.service
 
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.network.model.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface BudgetService {
@@ -22,5 +24,11 @@ interface BudgetService {
         @Field("otp") otp: Int,
         @Field("query") query: String,
     ): Response<CodeVerification?>
+
+
+    @GET(value = "/api/account/my")
+    suspend fun my(): Response<List<ServerAccount>>
+
+
 
 }

@@ -5,10 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
+import com.ntg.core.model.res.ServerAccount
+import com.ntg.core.network.model.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,7 +22,8 @@ class SetupViewModel
 @Inject constructor(
     private val accountRepository: AccountRepository,
     private val sourceRepository: SourceExpenditureRepository,
-    private val bankCardRepository: BankCardRepository
+    private val bankCardRepository: BankCardRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     fun accounts() = accountRepository.getAll()
@@ -27,6 +33,9 @@ class SetupViewModel
     fun accountWithSources() = accountRepository.getAccountsWithSources()
 
     fun getSourcesById(id: Int) = sourceRepository.getSourceDetails(id)
+
+    private val _serverAccounts = MutableStateFlow<Result<List<ServerAccount>?>>(Result.Loading(false))
+    val serverAccounts: StateFlow<Result<List<ServerAccount>?>> = _serverAccounts
 
     fun upsertAccount(account: Account) {
         viewModelScope.launch {
@@ -80,6 +89,18 @@ class SetupViewModel
     fun tempRemove(sourceId: Int) {
         viewModelScope.launch {
             sourceRepository.tempRemove(sourceId)
+        }
+    }
+
+
+    fun serverAccounts(){
+        viewModelScope.launch {
+            _serverAccounts.value = Result.Loading(true)
+            authRepository.serverAccounts()
+                .collect { result ->
+                    _serverAccounts.value =
+                        result
+                }
         }
     }
 
