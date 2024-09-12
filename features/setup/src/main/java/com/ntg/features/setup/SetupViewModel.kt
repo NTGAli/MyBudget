@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
@@ -23,8 +24,11 @@ class SetupViewModel
     private val accountRepository: AccountRepository,
     private val sourceRepository: SourceExpenditureRepository,
     private val bankCardRepository: BankCardRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userDataRepository: UserDataRepository
 ) : ViewModel() {
+
+    val homeUiState = MutableStateFlow(SetupUiState.Loading)
 
     fun accounts() = accountRepository.getAll()
 
@@ -104,4 +108,29 @@ class SetupViewModel
         }
     }
 
+    fun setDefaultAccount(){
+        viewModelScope.launch {
+            accountRepository.insert(
+                Account(
+                    id = 0,
+                    sId = null,
+                    name = "حساب شخصی",
+                    dateCreated = System.currentTimeMillis().toString()
+                )
+            )
+        }
+    }
+
+    fun logout(){
+        viewModelScope.launch {
+            userDataRepository.logout()
+        }
+    }
+
+}
+
+enum class SetupUiState {
+    Loading,
+    Error,
+    Success
 }

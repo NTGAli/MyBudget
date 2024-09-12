@@ -10,4 +10,5 @@
     <string name="err_empty_account_name">نام اکانت وارد نشده</string>
     <string name="err_no_aacount">حداقل یک حساب وارد کنید.</string>
     <string name="err_no_sources">حداقل یک منبع خرج وارد کنید.</string>
+    <string name="err_fetch_data">خطایی رخ داده!</string>
 </resources>

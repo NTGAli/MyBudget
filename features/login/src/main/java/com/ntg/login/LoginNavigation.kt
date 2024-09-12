@@ -13,8 +13,14 @@ const val Code_Route = "code_route"
 
 const val PHONE = "phone"
 
-fun NavController.navigateToLogin() {
-    navigate(Login_Route)
+fun NavController.navigateToLogin(removeBackStack: Boolean = false) {
+    if (removeBackStack) {
+        navigate(Login_Route) {
+            popUpTo(0)
+        }
+    } else {
+        navigate(Login_Route)
+    }
 }
 
 fun NavController.navigateToCountries() {

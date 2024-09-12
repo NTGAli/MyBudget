@@ -9,4 +9,6 @@ interface UserDataRepository {
 
     suspend fun setUserLogged(token: String, expire: String)
 
+    suspend fun logout()
+
 }
