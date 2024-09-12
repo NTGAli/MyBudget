@@ -13,8 +13,14 @@ const val Code_Route = "code_route"
 
 const val PHONE = "phone"
 
-fun NavController.navigateToLogin() {
-    navigate(Login_Route)
+fun NavController.navigateToLogin(removeBackStack: Boolean = false) {
+    if (removeBackStack) {
+        navigate(Login_Route) {
+            popUpTo(0)
+        }
+    } else {
+        navigate(Login_Route)
+    }
 }
 
 fun NavController.navigateToCountries() {
@@ -29,20 +35,21 @@ fun NavController.navigateToCode(phone: String) {
 fun NavGraphBuilder.loginScreen(
     loginViewModel: LoginViewModel,
     sharedViewModel: SharedViewModel,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
     navigateToCountries: () -> Unit = {},
     navigateToCode: (String) -> Unit = {},
     navigateToSetup: () -> Unit = {},
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
 ) {
 
     composable(
         route = Login_Route,
     ) {
         LoginRoute(
-            loginViewModel,
             sharedViewModel,
             navigateToDetail = navigateToCountries,
-            navigateToCode = navigateToCode
+            navigateToCode = navigateToCode,
+            onShowSnackbar = onShowSnackbar
         )
     }
 
@@ -65,8 +72,8 @@ fun NavGraphBuilder.loginScreen(
     ) {
         CodeRoute(
             it.arguments?.getString(PHONE).orEmpty(),
-            navigateToSetup,
-            onBack
+            onBack,
+            onShowSnackbar = onShowSnackbar
         )
     }
 }

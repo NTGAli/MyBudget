@@ -8,6 +8,7 @@ import com.ntg.core.model.UserData
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
+import kotlin.math.exp
 
 class BudgetPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>,
@@ -15,15 +16,19 @@ class BudgetPreferencesDataSource @Inject constructor(
     val userData = userPreferences.data
         .map {
             UserData(
-                isLogged = it.isLogged
+                isLogged = it.isLogged,
+                token = it.token,
+                expire = it.expire
             )
         }
 
-    suspend fun setUserLogged() {
+    suspend fun setUserLogged(token: String, expire: String) {
         try {
             userPreferences.updateData {
                 it.copy {
                     isLogged = true
+                    this.token = token
+                    this.expire = expire
                 }
             }
         } catch (ioException: IOException) {
@@ -36,12 +41,19 @@ class BudgetPreferencesDataSource @Inject constructor(
             userPreferences.updateData {
                 it.copy {
                     isLogged = false
+                    token = ""
+                    expire = ""
+
                 }
             }
         } catch (ioException: IOException) {
             Log.e("BudgetPreferences", "Failed to save user logout in preferences", ioException)
         }
     }
+
+
+
+
 
 }
 

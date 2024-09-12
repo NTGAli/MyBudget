@@ -1,15 +1,19 @@
 package com.ntg.core.designsystem.components
 
 
-import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,9 +39,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -59,6 +66,7 @@ fun OtpField(
     otpCount: Int = 5,
     wasWrong: Boolean,
     isSucceeded: Boolean,
+    isLoading: Boolean,
     defaultBorderColor: Color = MaterialTheme.colorScheme.surfaceDim,
     errorColor: Color = MaterialTheme.colorScheme.error,
     successColor: Color = MaterialTheme.colorScheme.secondary,
@@ -128,23 +136,25 @@ fun OtpField(
                 .offset(x = buttonRotate.value.dp),
             value = TextFieldValue(currentText, selection = selection),
             onValueChange = {
-                if (it.text.length <= otpCount) {
-                    onOtpTextChange.invoke(it.text, it.text.length == otpCount)
+                if (!isLoading){
+                    if (it.text.length <= otpCount) {
+                        onOtpTextChange.invoke(it.text, it.text.length == otpCount)
 
-                } else {
-                    itemSelected = false
-                }
-
-                if (it.text.length >= currentText.length) {
-                    currentText = it.text
-                    posSelected++
-                } else {
-                    if (currentText.replace("_", "").dropLast(1) == it.text.replace("_", "")) {
-                        if (currentText.last() == '_') currentText = currentText.dropLast(1)
-                        currentText = it.text
-                        itemSelected = false
                     } else {
-                        currentText = formatInput(currentText, it.text)
+                        itemSelected = false
+                    }
+
+                    if (it.text.length >= currentText.length) {
+                        currentText = it.text
+                        posSelected++
+                    } else {
+                        if (currentText.replace("_", "").dropLast(1) == it.text.replace("_", "")) {
+                            if (currentText.last() == '_') currentText = currentText.dropLast(1)
+                            currentText = it.text
+                            itemSelected = false
+                        } else {
+                            currentText = formatInput(currentText, it.text)
+                        }
                     }
                 }
             },
@@ -163,7 +173,8 @@ fun OtpField(
                             color,
                             defaultBorderColor,
                             successColor,
-                            isSucceeded
+                            isSucceeded,
+                            isLoading
                         ) {
                             itemSelected = true
                             posSelected = it
@@ -189,6 +200,7 @@ private fun CharView(
     defaultColor: Color,
     successColor: Color,
     isSuccess: Boolean,
+    isLoading: Boolean,
     onClick: (Int) -> Unit
 ) {
 
@@ -222,9 +234,9 @@ private fun CharView(
     }
     Box(
         modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
             .border(
                 (2).dp,
-
                 when {
                     isSuccess -> colorSuccess.value
                     isFocused && !color.isRunning -> MaterialTheme.colorScheme.primary
@@ -238,7 +250,9 @@ private fun CharView(
                 onClick = {
                     onClick.invoke(index)
                 }
-            ), contentAlignment = Alignment.Center
+            )
+            .then(if (isLoading) Modifier.flickerAnimation() else Modifier)
+        , contentAlignment = Alignment.Center
     ) {
         Text(
             modifier = Modifier
@@ -267,4 +281,52 @@ private fun CharView(
 private fun formatInput(str1: String, str2: String): String {
     val commonPrefixLength = str1.zip(str2).takeWhile { (c1, c2) -> c1 == c2 }.count()
     return str1.substring(0, commonPrefixLength) + "_" + str1.substring(commonPrefixLength + 1)
+}
+
+
+fun Modifier.flickerAnimation(
+    widthOfShadowBrush: Int = 600,
+    angleOfAxisY: Float = 0f,
+    durationMillis: Int = 1600,
+): Modifier {
+    return composed {
+
+        val shimmerColors = getColours()
+
+        val transition = rememberInfiniteTransition(label = "")
+
+        val translateAnimation = transition.animateFloat(
+            initialValue = 0f,
+            targetValue = (durationMillis + widthOfShadowBrush).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = durationMillis,
+                    easing = LinearEasing,
+                ),
+            ),
+            label = "flicker animation",
+        )
+
+        this.background(
+            brush = Brush.linearGradient(
+                colors = shimmerColors,
+                start = Offset(x = translateAnimation.value - widthOfShadowBrush, y = 0.0f),
+                end = Offset(x = translateAnimation.value, y = angleOfAxisY),
+            ),
+        )
+    }
+
+}
+
+
+private fun getColours(): List<Color> {
+    val color = Color.Gray
+    return listOf(
+        color.copy(alpha = 0.1f),
+        color.copy(alpha = 0.2f),
+        color.copy(alpha = 0.4f),
+        color.copy(alpha = 0.4f),
+        color.copy(alpha = 0.2f),
+        color.copy(alpha = 0.1f),
+    )
 }
