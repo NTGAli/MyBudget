@@ -105,4 +105,11 @@ interface AccountDao {
         }
     }
 
+    @Query("SELECT * FROM accounts WHERE isSynced = 0")
+    suspend fun unSynced(): List<AccountEntity>?
+
+    @Query("UPDATE accounts SET isSynced=1, sId=:sId  WHERE id=:id")
+    suspend fun synced(id: Int, sId: String)
+
+
 }

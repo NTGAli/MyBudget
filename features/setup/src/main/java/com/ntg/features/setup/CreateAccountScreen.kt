@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -26,6 +27,7 @@ import com.ntg.core.model.Account
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
+import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,6 +40,7 @@ fun CreateAccountRoute(
 ) {
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.save))
+    val context = LocalContext.current
 
     val account = setupViewModel.getAccount(id ?: 0).collectAsState(initial = null).value
     var upsertAccount by remember {
@@ -56,9 +59,11 @@ fun CreateAccountRoute(
                         if (account != null){
                             account.name = upsertAccount?.name.orEmpty()
                             setupViewModel.upsertAccount(account)
+
                             onBack()
                         }else{
                             setupViewModel.insertNewAccount(upsertAccount!!)
+                            Sync.initialize(context = context)
                             onBack()
                         }
                     }else{

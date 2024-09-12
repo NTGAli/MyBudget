@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,7 +42,6 @@ import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.core.mybudget.common.toUnixTimestamp
 import com.ntg.core.network.model.Result
 import com.ntg.feature.setup.R
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -83,7 +81,7 @@ fun SetupRoute(
                         setupViewModel.homeUiState.value = SetupUiState.Success
                         it.data?.forEach { account ->
                             if (account.name == "default"){
-                                setupViewModel.setDefaultAccount()
+                                setupViewModel.setDefaultAccount(account.id.orEmpty())
                             }else{
                                 val localAccountId = generateUniqueFiveDigitId()
                                 setupViewModel.insertNewAccount(Account(
@@ -101,7 +99,7 @@ fun SetupRoute(
                 }
 
             }
-        }
+        }else setupViewModel.homeUiState.value = SetupUiState.Success
 
     }
 

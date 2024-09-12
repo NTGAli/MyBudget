@@ -9,6 +9,8 @@ import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
+import com.ntg.core.network.BudgetNetworkDataSource
+import com.ntg.core.network.model.Result
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -17,8 +19,9 @@ import javax.inject.Inject
 
 class AccountRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
-    private val accountDao: AccountDao
-): AccountRepository {
+    private val accountDao: AccountDao,
+    private val network: BudgetNetworkDataSource,
+    ): AccountRepository {
     override suspend fun insert(account: Account) {
         accountDao.insert(account.toEntity())
     }
@@ -72,4 +75,45 @@ class AccountRepositoryImpl @Inject constructor(
             )
         }
             .flowOn(ioDispatcher)
+
+    override fun getUnSyncedAccounts(): Flow<List<Account>?>  =
+        flow {
+            emit(
+                accountDao.unSynced()
+                    ?.map(AccountEntity::asAccount)
+            )
+        }
+            .flowOn(ioDispatcher)
+
+    override suspend fun synced(id: Int, sId: String) {
+        accountDao.synced(id, sId)
+    }
+
+    override suspend fun syncAccounts() {
+        getUnSyncedAccounts().collect{
+            it?.forEach { account ->
+                if (account.name.isNotEmpty()){
+                    if (account.isSynced){
+                        //update synced account
+                        network.updateAccount(account.name).collect{
+                            if (it is Result.Success){
+                                if (it.data?.id.orEmpty().isNotEmpty()){
+                                    synced(account.id, it.data?.id.orEmpty())
+                                }
+                            }
+                        }
+                    }else{
+                        // sync account
+                        network.syncAccount(account.name).collect{
+                            if (it is Result.Success){
+                                if (it.data?.id.orEmpty().isNotEmpty()){
+                                    synced(account.id, it.data?.id.orEmpty())
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -22,4 +22,13 @@ interface AccountRepository {
     fun getAccountsWithSources(): Flow<List<AccountWithSources>>
 
     fun currentAccount(): Flow<Account?>
+
+    fun getUnSyncedAccounts(): Flow<List<Account>?>
+
+    suspend fun synced(id: Int, sId: String)
+
+    //server
+    suspend fun syncAccounts()
+
+
 }

@@ -9,7 +9,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    implementation(projects.core.model)
 //    testImplementation(libs.kotlinx.coroutines.test)
 //    testImplementation(libs.turbine)
     implementation(libs.androidx.runtime.livedata)

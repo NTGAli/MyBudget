@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_work_notification_channel_name">sync</string>
+    <string name="sync_work_notification_channel_description">Background tasks for MyBudget</string>
+    <string name="sync_work_notification_title">MyBudget</string>
+</resources>

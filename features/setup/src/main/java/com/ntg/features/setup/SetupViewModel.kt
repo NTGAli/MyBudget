@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
@@ -14,6 +15,7 @@ import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.network.model.Result
+import com.ntg.mybudget.sync.work.workers.SyncData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +30,8 @@ class SetupViewModel
     private val authRepository: AuthRepository,
     private val userDataRepository: UserDataRepository,
     private val bankCardRepository: BankCardRepository,
-    private val transactionRepository: TransactionsRepository
+    private val transactionRepository: TransactionsRepository,
+    private val syncData: SyncData
 ) : ViewModel() {
 
     val homeUiState = MutableStateFlow(SetupUiState.Loading)
@@ -50,6 +53,7 @@ class SetupViewModel
             if (account.dateCreated.orEmpty().isEmpty()){
                 account.dateCreated = System.currentTimeMillis().toString()
             }
+            account.isSynced = false
             accountRepository.update(account)
         }
     }
@@ -124,13 +128,14 @@ class SetupViewModel
         }
     }
 
-    fun setDefaultAccount(){
+    fun setDefaultAccount(accountId: String){
         viewModelScope.launch {
             accountRepository.insert(
                 Account(
                     id = 0,
-                    sId = null,
+                    sId = accountId,
                     name = "حساب شخصی",
+                    isSynced = true,
                     dateCreated = System.currentTimeMillis().toString()
                 )
             )
@@ -141,6 +146,10 @@ class SetupViewModel
         viewModelScope.launch {
             userDataRepository.logout()
         }
+    }
+
+    fun sync(context: Context){
+        syncData.sync(context)
     }
 
 }
