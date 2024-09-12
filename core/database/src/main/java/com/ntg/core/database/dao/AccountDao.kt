@@ -55,9 +55,24 @@ interface AccountDao {
     )
     suspend fun getAccountsWithSourcesRaw(): List<RawAccountWithSource>
 
+    @Query(
+        """
+        SELECT ae.id as accountId, ae.name as accountName, 
+               se.id as sourceId, se.type, se.name,
+               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
+        FROM accounts ae
+        LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        WHERE ae.isRemoved = 0 AND ae.isSelected = 1
+        """
+    )
+    suspend fun getSelectedAccount(): List<RawAccountWithSource>
+
+
     @Transaction
-    suspend fun getAccountBySources(): List<AccountWithSources> {
-        val rawData = getAccountsWithSourcesRaw()
+    suspend fun getAccountBySources(selected: Boolean = false): List<AccountWithSources> {
+        val rawData = if (selected) getSelectedAccount()
+        else getAccountsWithSourcesRaw()
 
         val accountsMap = rawData.groupBy { it.accountId }
 
@@ -104,5 +119,4 @@ interface AccountDao {
             )
         }
     }
-
 }

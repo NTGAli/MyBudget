@@ -2,6 +2,7 @@
 <resources>
     <string name="income">ورودی</string>
     <string name="outcome">خروجی</string>
+    <string name="internal_transfer">جیب به جیب</string>
     <string name="add_image">اضافه کردن تصویر</string>
     <string name="phone_number">شماره تلفن</string>
     <string name="source_expenditure">منبع خرج</string>

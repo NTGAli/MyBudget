@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +36,6 @@ import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -46,6 +44,7 @@ fun SetupRoute(
     setupViewModel: SetupViewModel = hiltViewModel(),
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
+    navigateToHome: () -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ) {
 
@@ -76,12 +75,21 @@ fun SetupRoute(
                         }) {
                         onShowSnackbar.invoke(R.string.err_no_sources, null)
                     }else{
-
+                        navigateToHome()
                     }
                 }
             }
         }
     }
+
+    if (accounts.value != null){
+        LaunchedEffect(key1 = Unit) {
+            if (accounts.value.orEmpty().any { it.sources.isNotEmpty() }){
+                navigateToHome()
+            }
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

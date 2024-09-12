@@ -27,6 +27,7 @@ class LoginViewModel
                     id = 0,
                     sId = null,
                     name = "حساب شخصی",
+                    isSelected = true,
                     dateCreated = System.currentTimeMillis().toString()
                 )
             )

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="items_format">%s مورد</string>
+    <string name="transactions">تراکنش ها</string>
+    <string name="new_transaction">تراکنش جدید</string>
+</resources>

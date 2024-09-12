@@ -7,6 +7,7 @@ class SharedViewModel : ViewModel() {
     var loginEventListener: LoginEventListener? = null
 
     val bottomNavTitle = MutableLiveData<String>()
+    val bottomNavIcon = MutableLiveData<Int>()
     val setExpand = MutableLiveData<Boolean>()
 
     fun sendLoginEvent() {

@@ -64,6 +64,14 @@ class AccountRepositoryImpl @Inject constructor(
         }
             .flowOn(ioDispatcher)
 
+    override fun getSelectedAccount(): Flow<List<AccountWithSources>> =
+        flow {
+            emit(
+                accountDao.getAccountBySources(true)
+            )
+        }
+            .flowOn(ioDispatcher)
+
     override fun currentAccount(): Flow<Account?> =
         flow {
             emit(

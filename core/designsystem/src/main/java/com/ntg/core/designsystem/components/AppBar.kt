@@ -31,7 +31,7 @@ import com.ntg.core.designsystem.model.PopupItem
 fun AppBar(
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    title: String = "",
+    title: String? = null,
     titleState: @Composable () -> Unit = {},
     enableNavigation: Boolean = true,
     navigationOnClick: () -> Unit = {},
@@ -55,18 +55,19 @@ fun AppBar(
             TopAppBar(
                 title = {
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            title,
-                            maxLines = 1,
-                            style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.onBackground)
-                        )
-
-                        titleState()
-
-                    }
+                   if (title != null){
+                       Row(
+                           verticalAlignment = Alignment.CenterVertically
+                       ) {
+                           Text(
+                               title,
+                               maxLines = 1,
+                               style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.onBackground)
+                           )
+                       }
+                   }else{
+                       titleState()
+                   }
 
                 },
                 navigationIcon = {

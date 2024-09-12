@@ -10,6 +10,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.security.MessageDigest
+import java.text.DecimalFormat
 import java.util.zip.ZipInputStream
 
 fun getCountryFromPhoneNumber(context: Context, phone_number: String?): String? {
@@ -193,4 +194,14 @@ fun getCardDetailsFromAssets(context: Context, cardNumber: String): DataBank? {
         }
     }
     return null
+}
+
+fun formatCurrency(amount: Long, mask:String, currency: String, pos: Int): String {
+    val decimalFormat = DecimalFormat(mask)
+    val formated = decimalFormat.format(amount)
+    return when(pos){
+        1 -> "$currency $formated"
+        2 -> "$formated $currency"
+        else -> formated
+    }
 }

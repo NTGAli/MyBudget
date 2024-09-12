@@ -21,5 +21,7 @@ interface AccountRepository {
 
     fun getAccountsWithSources(): Flow<List<AccountWithSources>>
 
+    fun getSelectedAccount(): Flow<List<AccountWithSources>>
+
     fun currentAccount(): Flow<Account?>
 }

@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -35,6 +34,7 @@ fun NavGraphBuilder.setupScreen(
     sharedViewModel: SharedViewModel,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
+    navigateToHome: () -> Unit,
     onBack:() -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ) {
@@ -42,7 +42,7 @@ fun NavGraphBuilder.setupScreen(
     composable(
         route = Setup_Route
     ) {
-        SetupRoute(sharedViewModel, navigateToSource = navigateToSource, navigateToAccount = navigateToAccount, onShowSnackbar = onShowSnackbar)
+        SetupRoute(sharedViewModel, navigateToSource = navigateToSource, navigateToAccount = navigateToAccount, navigateToHome = navigateToHome, onShowSnackbar = onShowSnackbar)
     }
 
 

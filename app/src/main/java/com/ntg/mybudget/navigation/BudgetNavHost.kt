@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.features.home.homeScreen
+import com.ntg.features.home.navigateToHome
 import com.ntg.features.setup.navigateToCreateAccount
 import com.ntg.features.setup.navigateToSetup
 import com.ntg.features.setup.navigateToSource
@@ -48,8 +50,11 @@ fun BudgetNavHost(
             navigateToSource = navController::navigateToSource,
             navigateToAccount = navController::navigateToCreateAccount,
             onBack = navController::popBackStack,
+            navigateToHome = navController::navigateToHome,
             onShowSnackbar = onShowSnackbar
         )
+
+        homeScreen(sharedViewModel)
 
     }
 }

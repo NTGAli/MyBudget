@@ -28,4 +28,5 @@ object BudgetIcons {
   val bank = R.drawable.bank
   val card = R.drawable.card
   val trash = R.drawable.trash
+  val CalenderTick = R.drawable.calander_tick
 }

@@ -14,6 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.ntg.features.home.Home_Route
 import com.ntg.features.setup.Create_Account_Route
 import com.ntg.features.setup.Setup_Route
 import com.ntg.features.setup.Source_Route
@@ -74,7 +75,8 @@ class BudgetAppState(
                 && when (currentDestination?.route) {
             Login_Route,
             Setup_Route,
-            Source_Route -> {
+            Source_Route,
+            Home_Route-> {
                 true
             }
             else -> {

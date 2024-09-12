@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -93,7 +94,11 @@ internal fun BudgetApp(
         ?: return
 
     var bottomNavTitle by remember {
-        mutableStateOf("")
+        mutableStateOf<String?>(null)
+    }
+
+    var bottomNavIcon by remember {
+        mutableIntStateOf(BudgetIcons.Transaction)
     }
 
     var isExpand by remember {
@@ -103,6 +108,9 @@ internal fun BudgetApp(
     LaunchedEffect(key1 = Unit) {
         sharedViewModel.bottomNavTitle.observe(lifecycle){
             bottomNavTitle = it
+        }
+        sharedViewModel.bottomNavIcon.observe(lifecycle){
+            bottomNavIcon = it
         }
         sharedViewModel.setExpand.observe(lifecycle){
             isExpand = it
@@ -130,7 +138,8 @@ internal fun BudgetApp(
 //                        appState::navigateToTopLevelDestination
                     },
                     expandButton = isExpand,
-                    title = bottomNavTitle
+                    title = bottomNavTitle,
+                    icon = bottomNavIcon
                 )
             }
         }
@@ -190,7 +199,8 @@ internal fun BudgetApp(
 private fun AppBottomBar(
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     expandButton:Boolean,
-    title: String
+    title: String?,
+    icon: Int,
 ) {
     val navs = listOf(
         NavigationItem(
