@@ -24,16 +24,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
+import com.ntg.core.designsystem.model.PopupItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.SourceType
@@ -74,16 +77,12 @@ fun AccountSection(
             canEdit = canEdit,
             isHeader = true
         ) {
-            IconButton(onClick = {
-                accountEndIconClick(account.accountId)
-            }) {
-                Icon(
-                    painter = painterResource(
-                        id =
-                        if (canEdit) BudgetIcons.Pen else
-                            BudgetIcons.ArrowDown
-                    ), contentDescription = "Arrow down"
-                )
+
+            Popup(popupItems = listOf(PopupItem(1, BudgetIcons.Pen, "edit1"),
+                PopupItem(1, BudgetIcons.Pen, "edit3"),
+                PopupItem(1, BudgetIcons.Pen, "edit4"),
+                PopupItem(1, BudgetIcons.Pen, "edit5"))){
+
             }
         }
 
@@ -120,7 +119,7 @@ fun AccountSection(
                             }) {
                             Icon(
                                 painter = painterResource(
-                                    id = BudgetIcons.Pen
+                                    id = BudgetIcons.more
                                 ), contentDescription = "Edit"
                             )
                         }

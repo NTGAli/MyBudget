@@ -13,7 +13,7 @@ androidxComposeCompiler = "1.6.0"
 androidxComposeUiTest = "1.7.0-alpha06"
 androidxComposeMaterial3Adaptive = "1.0.0-alpha10"
 androidxComposeRuntimeTracing = "1.0.0-beta01"
-androidxComposeUiGraphic = "1.6.7"
+androidxComposeUiGraphic = "1.7.1"
 androidxCore = "1.12.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxDataStore = "1.0.0"
@@ -92,6 +92,7 @@ androidx-compose-material3-windowSizeClass = { group = "androidx.compose.materia
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "androidxComposeRuntimeTracing" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "androidxComposeUiGraphic" }
+androidx-compose-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "androidxComposeUiGraphic" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "androidxComposeUiTest" }
 androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-dataStore = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
