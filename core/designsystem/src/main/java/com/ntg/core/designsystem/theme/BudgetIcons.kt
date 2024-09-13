@@ -27,5 +27,6 @@ object BudgetIcons {
   val chip = R.drawable.emv_chip
   val bank = R.drawable.bank
   val card = R.drawable.card
+  val more = R.drawable.more
   val trash = R.drawable.trash
 }
