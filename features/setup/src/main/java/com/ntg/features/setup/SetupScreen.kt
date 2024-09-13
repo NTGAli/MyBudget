@@ -102,18 +102,9 @@ private fun SetupScreen(
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    var iconPosition by remember { mutableStateOf(Offset.Zero) } // Initial position off-screen
-    var iconSize by remember { mutableStateOf(IntSize(0,0)) }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-            .pointerInput(Unit) {
-                detectTapGestures { offset ->
-                    iconSize = size
-                    iconPosition = offset
-                    Log.d("OFFFFFFFFFFFFFFFFFFFFFF **", "$offset *** $iconSize")
-                }
-            },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppBar(
                 enableNavigation = false,
@@ -141,12 +132,7 @@ private fun SetupScreen(
                         navigateToSource(account.accountId, null)
                     }, accountEndIconClick = {it, size, offset ->
 //                        editAccount(it)
-//                        iconSize = size
-//                        iconPosition = offset
-//                        Log.d("OFFFFFFFFFFFFFFFFFFFFFF -->", "$offset || $size")
                     }, onSourceEdit = {it, size, offset ->
-                        iconSize = size
-                        iconPosition = offset
 //                        navigateToSource(account.accountId, it)
                     })
 
@@ -183,16 +169,6 @@ private fun SetupScreen(
             item {
                 Spacer(modifier = Modifier.padding(24.dp))
             }
-
-        }
-
-        Popup(items = listOf(
-            PopupItem(1, BudgetIcons.Pen, "edit1"),
-            PopupItem(1, BudgetIcons.Pen, "edit3"),
-            PopupItem(1, BudgetIcons.Pen, "edit4"),
-            PopupItem(1, BudgetIcons.Pen, "edit5"),
-
-            ), offset = iconPosition,size = iconSize, onDismiss = { /*TODO*/ }) {
 
         }
 
