@@ -1,6 +1,5 @@
 package com.ntg.core.designsystem.components
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,26 +23,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
+import com.ntg.core.designsystem.model.PopupItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
-import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceTypes
-import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.getCardDetailsFromAssets
 import com.ntg.core.mybudget.common.mask
 import com.ntg.mybudget.core.designsystem.R
@@ -54,8 +51,8 @@ fun AccountSection(
     account: AccountWithSources,
     canEdit: Boolean,
     insertNewItem: () -> Unit = {},
-    onSourceEdit: (Int) -> Unit = {},
-    accountEndIconClick: (Int) -> Unit = {}
+    onSourceEdit: (Int, IntSize, Offset) -> Unit = {_, _, _ ->},
+    accountEndIconClick: (Int, IntSize, Offset) -> Unit = {_, _, _ ->}
 ) {
 
     val context = LocalContext.current
@@ -63,6 +60,10 @@ fun AccountSection(
         mutableStateOf(false)
     }
 
+
+
+    var iconPosition by remember { mutableStateOf(Offset.Zero) } // Initial position off-screen
+    var iconSize by remember { mutableStateOf(IntSize(0,0)) }
 
     Column(
         modifier = modifier
@@ -80,17 +81,28 @@ fun AccountSection(
             canEdit = canEdit,
             isHeader = true
         ) {
-            IconButton(onClick = {
-                accountEndIconClick(account.accountId)
-            }) {
-                Icon(
-                    painter = painterResource(
-                        id =
-                        if (canEdit) BudgetIcons.Pen else
-                            BudgetIcons.ArrowDown
-                    ), contentDescription = "Arrow down"
-                )
+
+            Popup(popupItems = listOf(PopupItem(1, BudgetIcons.Pen, "edit1"),
+                PopupItem(1, BudgetIcons.Pen, "edit3"),
+                PopupItem(1, BudgetIcons.Pen, "edit4"),
+                PopupItem(1, BudgetIcons.Pen, "edit5"))){
+
             }
+
+
+//            IconButton(
+//                onClick = {
+//                accountEndIconClick(account.accountId, iconSize, iconPosition)
+//
+//            }) {
+//                Icon(
+//                    painter = painterResource(
+//                        id =
+//                        if (canEdit) BudgetIcons.more else
+//                            BudgetIcons.ArrowDown
+//                    ), contentDescription = "Arrow down"
+//                )
+//            }
         }
 
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
@@ -122,11 +134,11 @@ fun AccountSection(
                     if (canEdit){
                         IconButton(
                             onClick = {
-                                onSourceEdit(source.id)
+                                onSourceEdit(source.id, iconSize, iconPosition)
                             }) {
                             Icon(
                                 painter = painterResource(
-                                    id = BudgetIcons.Pen
+                                    id = BudgetIcons.more
                                 ), contentDescription = "Edit"
                             )
                         }

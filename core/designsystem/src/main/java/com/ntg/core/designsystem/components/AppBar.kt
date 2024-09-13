@@ -20,6 +20,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -123,63 +124,6 @@ fun AppBar(
 
 }
 
-@Composable
-fun Popup(modifier: Modifier = Modifier, popupItems: List<PopupItem>, onClick: (Int) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box(modifier = modifier) {
-        IconButton(
-            onClick = {
-                expanded = true
-                onClick.invoke(-1)
-            }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.MoreVert,
-                tint = MaterialTheme.colorScheme.outline,
-                contentDescription = "action appbar"
-            )
-        }
-
-
-
-        MaterialTheme(
-            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
-        ) {
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = {
-                    expanded = false
-                }
-            ) {
-
-                popupItems.forEach {
-                    DropdownMenuItem(
-                        onClick = {
-                            onClick.invoke(it.id)
-                            expanded = false
-                        },
-                        interactionSource = MutableInteractionSource(),
-                        text = {
-                            Text(it.title, style = MaterialTheme.typography.labelLarge.copy(MaterialTheme.colorScheme.outline))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = it.icon,
-                                contentDescription = it.title,
-                                tint = MaterialTheme.colorScheme.outline
-                            )
-                        }
-                    )
-                }
-
-
-            }
-
-        }
-    }
-}
 
 @Composable
 fun SearchBar(

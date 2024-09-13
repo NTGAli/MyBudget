@@ -1,10 +1,15 @@
 package com.ntg.features.setup
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,18 +24,30 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AppBar
+import com.ntg.core.designsystem.components.Popup
+import com.ntg.core.designsystem.model.PopupItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.LoginEventListener
@@ -38,6 +55,8 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.feature.setup.R
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun SetupRoute(
@@ -83,9 +102,18 @@ private fun SetupScreen(
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var iconPosition by remember { mutableStateOf(Offset.Zero) } // Initial position off-screen
+    var iconSize by remember { mutableStateOf(IntSize(0,0)) }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            .pointerInput(Unit) {
+                detectTapGestures { offset ->
+                    iconSize = size
+                    iconPosition = offset
+                    Log.d("OFFFFFFFFFFFFFFFFFFFFFF **", "$offset *** $iconSize")
+                }
+            },
         topBar = {
             AppBar(
                 enableNavigation = false,
@@ -111,10 +139,15 @@ private fun SetupScreen(
                         .padding(top = 8.dp),
                     account = account, canEdit = true, insertNewItem = {
                         navigateToSource(account.accountId, null)
-                    }, accountEndIconClick = {
-                        editAccount(it)
-                    }, onSourceEdit = {
-                        navigateToSource(account.accountId, it)
+                    }, accountEndIconClick = {it, size, offset ->
+//                        editAccount(it)
+//                        iconSize = size
+//                        iconPosition = offset
+//                        Log.d("OFFFFFFFFFFFFFFFFFFFFFF -->", "$offset || $size")
+                    }, onSourceEdit = {it, size, offset ->
+                        iconSize = size
+                        iconPosition = offset
+//                        navigateToSource(account.accountId, it)
                     })
 
             }
@@ -150,6 +183,16 @@ private fun SetupScreen(
             item {
                 Spacer(modifier = Modifier.padding(24.dp))
             }
+
+        }
+
+        Popup(items = listOf(
+            PopupItem(1, BudgetIcons.Pen, "edit1"),
+            PopupItem(1, BudgetIcons.Pen, "edit3"),
+            PopupItem(1, BudgetIcons.Pen, "edit4"),
+            PopupItem(1, BudgetIcons.Pen, "edit5"),
+
+            ), offset = iconPosition,size = iconSize, onDismiss = { /*TODO*/ }) {
 
         }
 
