@@ -1,5 +1,6 @@
 package com.ntg.core.designsystem.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -86,7 +87,7 @@ fun AccountSection(
                 PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
                 if (it == 1) {
                     accountEndIconClick(account.accountId)
-                }else{
+                }else if (it == 2){
                     deleteAccount(account.accountId)
                 }
             }
@@ -124,7 +125,7 @@ fun AccountSection(
                             PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
                             if (it == 1) {
                                 onSourceEdit(source?.id ?: -1)
-                            }else{
+                            }else if (it == 2){
                                 deleteSource(source?.id ?: -1)
                             }
                         }

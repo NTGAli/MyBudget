@@ -39,6 +39,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AppBar
+import com.ntg.core.designsystem.components.BudgetButton
+import com.ntg.core.designsystem.components.ButtonSize
+import com.ntg.core.designsystem.components.ButtonStyle
+import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.LoadingView
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Account
@@ -272,14 +276,10 @@ private fun SetupScreen(
             title = { Text(dialogTitle) },
             text = { Text(dialogDiscription) },
             confirmButton = {
-                TextButton(onClick = { /* TODO */}) {
-                    Text("Delete it".uppercase())
-                }
+                BudgetButton(text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.MD, style = ButtonStyle.TextOnly)
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel".uppercase())
-                }
+                BudgetButton(text = stringResource(id = R.string.cancel),size = ButtonSize.MD, style = ButtonStyle.TextOnly)
             },
         )
     }
