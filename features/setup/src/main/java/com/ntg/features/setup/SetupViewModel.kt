@@ -14,11 +14,13 @@ import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.res.ServerAccount
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.Result
 import com.ntg.mybudget.sync.work.workers.SyncData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,7 +33,7 @@ class SetupViewModel
     private val userDataRepository: UserDataRepository,
     private val bankCardRepository: BankCardRepository,
     private val transactionRepository: TransactionsRepository,
-    private val syncData: SyncData
+    private val syncData: SyncData,
 ) : ViewModel() {
 
     val homeUiState = MutableStateFlow(SetupUiState.Loading)
@@ -46,6 +48,9 @@ class SetupViewModel
 
     private val _serverAccounts = MutableStateFlow<Result<List<ServerAccount>?>>(Result.Loading(false))
     val serverAccounts: StateFlow<Result<List<ServerAccount>?>> = _serverAccounts
+
+    private val _walletTypes = MutableStateFlow<List<WalletType>?>(emptyList())
+    val walletTypes: StateFlow<List<WalletType>?> = _walletTypes
 
     fun upsertAccount(account: Account) {
         viewModelScope.launch {
@@ -150,6 +155,15 @@ class SetupViewModel
 
     fun sync(context: Context){
         syncData.sync(context)
+    }
+
+    fun walletTypes(): MutableStateFlow<List<WalletType>?> {
+        viewModelScope.launch {
+            accountRepository.walletTypes().collect{
+                _walletTypes.value = it
+            }
+        }
+        return _walletTypes
     }
 
 }

@@ -5,6 +5,7 @@ import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.dao.TransactionsDao
+import com.ntg.core.database.dao.WalletDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,5 +34,10 @@ internal object DaosModule {
     fun provideTransactions(
         database: AppDatabase
     ): TransactionsDao = database.transactionsDao()
+
+    @Provides
+    fun provideWalletTypes(
+        database: AppDatabase
+    ): WalletDao = database.walletDao()
 
 }

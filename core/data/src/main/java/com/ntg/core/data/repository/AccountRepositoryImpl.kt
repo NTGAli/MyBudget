@@ -1,12 +1,15 @@
 package com.ntg.core.data.repository
 
-import android.util.Log
 import com.ntg.core.database.dao.AccountDao
+import com.ntg.core.database.dao.WalletDao
 import com.ntg.core.database.model.AccountEntity
+import com.ntg.core.database.model.WalletTypeEntity
 import com.ntg.core.database.model.asAccount
+import com.ntg.core.database.model.asWalletType
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.BudgetNetworkDataSource
@@ -15,12 +18,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AccountRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     private val accountDao: AccountDao,
     private val network: BudgetNetworkDataSource,
+    private val walletDao: WalletDao
     ): AccountRepository {
     override suspend fun insert(account: Account) {
         accountDao.insert(account.toEntity())
@@ -93,7 +98,7 @@ class AccountRepositoryImpl @Inject constructor(
         getUnSyncedAccounts().collect{
             it?.forEach { account ->
                 if (account.name.isNotEmpty()){
-                    if (account.isSynced){
+                    if (account.sId.orEmpty().isNotEmpty()){
                         //update synced account
                         network.updateAccount(account.name).collect{
                             if (it is Result.Success){
@@ -115,5 +120,23 @@ class AccountRepositoryImpl @Inject constructor(
                 }
             }
         }
+    }
+
+    override suspend fun walletTypes(): Flow<List<WalletType>?> {
+        network.walletTypes().collect{
+            if (it is Result.Success){
+                if (it.data.orEmpty().isNotEmpty()){
+                    walletDao.deleteAll()
+                }
+                walletDao.upsert(it.data.orEmpty().map { it.toEntity() })
+            }
+        }
+        return flow {
+            emit(
+                walletDao.walletTypes()
+                    ?.map(WalletTypeEntity::asWalletType)
+            )
+        }
+            .flowOn(ioDispatcher)
     }
 }

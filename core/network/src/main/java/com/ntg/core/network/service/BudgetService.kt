@@ -3,6 +3,7 @@ package com.ntg.core.network.service
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
@@ -42,5 +43,9 @@ interface BudgetService {
     suspend fun updateAccount(
         @Field("name") name: String,
     ): Response<SyncedAccount?>
+
+    @GET(value = "/api/wallet/types")
+    suspend fun walletTypes(
+    ): Response<List<WalletType>?>
 
 }

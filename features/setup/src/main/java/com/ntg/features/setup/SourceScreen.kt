@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +27,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -55,12 +53,12 @@ import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceTypes
 import com.ntg.core.model.SourceWithDetail
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @Composable
 fun SourceRoute(
@@ -87,6 +85,7 @@ fun SourceRoute(
         mutableStateOf("")
     }
 
+    val walletTypes = setupViewModel.walletTypes().collectAsStateWithLifecycle().value
 
     val editSource = setupViewModel.getSourcesById(sourceId ?: -1).collectAsStateWithLifecycle(
         initialValue = null
@@ -102,7 +101,9 @@ fun SourceRoute(
         },
         selectedSource = {
             sourceType = it
-        }) { sourceValue, card, balance ->
+        },
+        walletTypes = walletTypes
+        ) { sourceValue, card, balance ->
         source = sourceValue
         bankCard = card
         cardBalance = balance
@@ -177,6 +178,7 @@ fun SourceRoute(
 @Composable
 private fun SourceScreen(
     editSource: SourceWithDetail?,
+    walletTypes : List<WalletType>?,
     onBack: () -> Unit,
     deleteSource: () -> Unit,
     selectedSource: (String) -> Unit,
@@ -185,7 +187,7 @@ private fun SourceScreen(
 
 
     var sourceType by remember {
-        mutableStateOf("")
+        mutableStateOf<WalletType?>(null)
     }
 
     var bankCard by remember {
@@ -218,8 +220,8 @@ private fun SourceScreen(
     if (editSource != null) {
         editMode = true
         when (editSource.sourceType) {
-            is SourceType.BankCard -> sourceType = stringResource(id = R.string.bank_card)
-            is SourceType.Gold -> sourceType = stringResource(id = R.string.gold)
+            is SourceType.BankCard -> sourceType = walletTypes?.find { it.faName == stringResource(id = R.string.bank_card) }
+            is SourceType.Gold -> sourceType = walletTypes?.find { it.faName == stringResource(id = R.string.gold) }
             null -> editMode = false
         }
     }
@@ -249,17 +251,18 @@ private fun SourceScreen(
                 ExposedDropdownMenuSample(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp),
+                    walletType = walletTypes.orEmpty()
                 ) {
                     sourceType = it
-                    selectedSource.invoke(it)
+                    selectedSource.invoke(it.faName.orEmpty())
                 }
             }
 
 
-            when (sourceType) {
+            when (sourceType?.id) {
 
-                stringResource(id = R.string.bank_card) -> {
+                1 -> {
 
                     BankCardView(
                         if (editMode) editSource?.sourceType as SourceType.BankCard else null,
@@ -272,11 +275,11 @@ private fun SourceScreen(
                     }
                 }
 
-                stringResource(id = R.string.foreign_currency) -> {
+                2 -> {
 
                 }
 
-                stringResource(id = R.string.gold) -> {
+                3 -> {
 
                 }
 

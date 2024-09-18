@@ -2,6 +2,7 @@ package com.ntg.core.data.repository
 
 import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.res.WalletType
 import kotlinx.coroutines.flow.Flow
 
 
@@ -29,6 +30,8 @@ interface AccountRepository {
 
     //server
     suspend fun syncAccounts()
+
+    suspend fun walletTypes(): Flow<List<WalletType>?>
 
 
 }

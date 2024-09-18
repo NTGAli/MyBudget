@@ -11,4 +11,8 @@
     <string name="err_no_aacount">حداقل یک حساب وارد کنید.</string>
     <string name="err_no_sources">حداقل یک منبع خرج وارد کنید.</string>
     <string name="err_fetch_data">خطایی رخ داده!</string>
+    <string name="delete_account">حدف اکانت</string>
+    <string name="delete_account_desc">با حذف اکانت، تمام منابع خرج و تراکنش های مربوط به آن حدف خواه شد.</string>
+    <string name="delete_source">حذف منبع خرج</string>
+    <string name="delete_source_desc">تمام تراکنش های مربوط به این منبع خرج نیز حذف خواهد شد.</string>
 </resources>

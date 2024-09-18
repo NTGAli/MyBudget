@@ -4,6 +4,7 @@ import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.BudgetNetworkDataSource
@@ -53,4 +54,16 @@ internal class RetrofitBudgetNetwork @Inject constructor(
             apiService.updateAccount(name)
         }
     }
+
+    override suspend fun walletTypes(): Flow<Result<List<WalletType>?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.walletTypes()
+        }
+    }
+
+//    override suspend fun deleteAccount(name: String): Flow<Result<SyncedAccount?>> {
+//        return networkBoundResources.downloadData(ioDispatcher){
+//            apiService.deleteAccount(name)
+//        }
+//    }
 }

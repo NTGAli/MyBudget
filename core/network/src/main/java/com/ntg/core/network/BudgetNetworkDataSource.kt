@@ -4,6 +4,7 @@ import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
 import kotlinx.coroutines.flow.Flow
@@ -18,5 +19,7 @@ interface BudgetNetworkDataSource {
     suspend fun syncAccount(name: String): Flow<Result<SyncedAccount?>>
 
     suspend fun updateAccount(name: String): Flow<Result<SyncedAccount?>>
+
+    suspend fun walletTypes(): Flow<Result<List<WalletType>?>>
 
 }
