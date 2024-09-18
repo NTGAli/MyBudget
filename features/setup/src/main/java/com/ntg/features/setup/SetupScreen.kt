@@ -127,7 +127,8 @@ fun SetupRoute(
         backToLogin = {
             setupViewModel.logout()
             navigateToLogin(true)
-        }
+        },
+        onShowSnackbar = onShowSnackbar
     )
 
     LaunchedEffect(key1 = accounts) {
@@ -155,12 +156,14 @@ private fun SetupScreen(
     accounts: State<List<AccountWithSources>?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     uiSate: SetupUiState,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
     navigateToAccount: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
     backToLogin: () -> Unit
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var showDialog by remember {
         mutableStateOf(false)
@@ -172,6 +175,10 @@ private fun SetupScreen(
 
     var dialogDiscription by remember {
         mutableStateOf("")
+    }
+
+    var selectedAccount by remember {
+        mutableStateOf<Account?>(null)
     }
 
     Scaffold(
@@ -218,9 +225,15 @@ private fun SetupScreen(
                                 dialogTitle = context.getString(R.string.delete_source)
                                 dialogDiscription = context.getString(R.string.delete_source_desc)
                             }, deleteAccount = {
-                                showDialog = true
-                                dialogTitle = context.getString(R.string.delete_account)
-                                dialogDiscription = context.getString(R.string.delete_account_desc)
+                                if (!account.isDefault){
+                                    showDialog = true
+                                    dialogTitle = context.getString(R.string.delete_account)
+                                    dialogDiscription = context.getString(R.string.delete_account_desc)
+                                }else{
+                                    scope.launch {
+                                        onShowSnackbar(R.string.deleting_deafult_account, null)
+                                    }
+                                }
                             }
                         )
                     }
@@ -276,10 +289,14 @@ private fun SetupScreen(
             title = { Text(dialogTitle) },
             text = { Text(dialogDiscription) },
             confirmButton = {
-                BudgetButton(text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.MD, style = ButtonStyle.TextOnly)
+                BudgetButton(text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.MD, style = ButtonStyle.TextOnly){
+                    showDialog = false
+                }
             },
             dismissButton = {
-                BudgetButton(text = stringResource(id = R.string.cancel),size = ButtonSize.MD, style = ButtonStyle.TextOnly)
+                BudgetButton(text = stringResource(id = R.string.cancel),size = ButtonSize.MD, style = ButtonStyle.TextOnly){
+                    showDialog = false
+                }
             },
         )
     }

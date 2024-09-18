@@ -44,7 +44,7 @@ interface AccountDao {
 
     @Query(
         """
-        SELECT ae.id as accountId, ae.name as accountName, 
+        SELECT ae.id as accountId, ae.name as accountName, ae.isDefault as isDefaultAccount,
                se.id as sourceId, se.type, se.name,
                bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
         FROM accounts ae
@@ -65,6 +65,7 @@ interface AccountDao {
             AccountWithSources(
                 accountId = accountId,
                 accountName = sources.first().accountName,
+                isDefault = sources.first().isDefaultAccount,
                 sources = if (sources.first().sourceId != null){
                     sources.map { row ->
                         val sourceType = when (row.type) {

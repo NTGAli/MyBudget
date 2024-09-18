@@ -141,6 +141,7 @@ class SetupViewModel
                     sId = accountId,
                     name = "حساب شخصی",
                     isSynced = true,
+                    isDefault = true,
                     dateCreated = System.currentTimeMillis().toString()
                 )
             )

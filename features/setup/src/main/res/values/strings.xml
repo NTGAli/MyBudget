@@ -17,4 +17,5 @@
     <string name="delete_source_desc">تمام تراکنش های مربوط به این منبع خرج نیز حذف خواهد شد.</string>
     <string name="delete">حذف</string>
     <string name="cancel">لغو</string>
+    <string name="deleting_deafult_account">حذف اکانت پیشفرض امکان پذیر نیست.</string>
 </resources>
