@@ -131,7 +131,8 @@ class SetupViewModel
                     id = 0,
                     sId = null,
                     name = "حساب شخصی",
-                    dateCreated = System.currentTimeMillis().toString()
+                    dateCreated = System.currentTimeMillis().toString(),
+                    isSelected = true
                 )
             )
         }
