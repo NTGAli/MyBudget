@@ -105,6 +105,10 @@ internal fun BudgetApp(
         mutableStateOf(false)
     }
 
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(key1 = Unit) {
         sharedViewModel.bottomNavTitle.observe(lifecycle){
             bottomNavTitle = it
@@ -114,6 +118,9 @@ internal fun BudgetApp(
         }
         sharedViewModel.setExpand.observe(lifecycle){
             isExpand = it
+        }
+        sharedViewModel.setLoading.observe(lifecycle){
+            isLoading = it
         }
     }
 
@@ -139,7 +146,7 @@ internal fun BudgetApp(
                     },
                     expandButton = isExpand,
                     title = bottomNavTitle,
-                    icon = bottomNavIcon
+                    isLoading = isLoading
                 )
             }
         }
@@ -199,8 +206,8 @@ internal fun BudgetApp(
 private fun AppBottomBar(
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     expandButton:Boolean,
-    title: String?,
-    icon: Int,
+    isLoading:Boolean,
+    title: String
 ) {
     val navs = listOf(
         NavigationItem(
@@ -220,7 +227,7 @@ private fun AppBottomBar(
     )
 
 
-    BottomNavigation(modifier = Modifier, items = navs, expandButton = expandButton, txtButton = title) {
+    BottomNavigation(modifier = Modifier, items = navs, expandButton = expandButton, txtButton = title, isLoading = isLoading) {
         onNavigateToDestination(TopLevelDestination.HOME)
 //        if (it == 1) {
 //            onNavigateToDestination(TopLevelDestination.HOME)

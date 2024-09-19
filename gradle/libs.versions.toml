@@ -13,7 +13,7 @@ androidxComposeCompiler = "1.6.0"
 androidxComposeUiTest = "1.7.0-alpha06"
 androidxComposeMaterial3Adaptive = "1.0.0-alpha10"
 androidxComposeRuntimeTracing = "1.0.0-beta01"
-androidxComposeUiGraphic = "1.6.7"
+androidxComposeUiGraphic = "1.7.1"
 androidxCore = "1.12.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxDataStore = "1.0.0"
@@ -54,6 +54,7 @@ okhttp = "4.12.0"
 protobuf = "3.25.2"
 protobufPlugin = "0.9.4"
 retrofit = "2.9.0"
+chucker = "4.0.0"
 retrofitKotlinxSerializationJson = "1.0.0"
 robolectric = "4.11.1"
 roborazzi = "1.7.0"
@@ -91,6 +92,7 @@ androidx-compose-material3-windowSizeClass = { group = "androidx.compose.materia
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "androidxComposeRuntimeTracing" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "androidxComposeUiGraphic" }
+androidx-compose-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "androidxComposeUiGraphic" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "androidxComposeUiTest" }
 androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-dataStore = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
@@ -145,8 +147,12 @@ lint-tests = { group = "com.android.tools.lint", name = "lint-tests", version.re
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }
+retrofit-convertor = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+retrofit-scalars = { group = "com.squareup.retrofit2", name = "converter-scalars", version.ref = "retrofit" }
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
+chucker = { group = "com.github.chuckerteam.chucker", name = "library", version.ref = "chucker" }
+chucker-no-op = { group = "com.github.chuckerteam.chucker", name = "library-no-op", version.ref = "chucker" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }

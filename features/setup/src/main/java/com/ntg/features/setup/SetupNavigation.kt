@@ -37,6 +37,7 @@ fun NavGraphBuilder.setupScreen(
     navigateToHome: () -> Unit,
     onBack:() -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
+    navigateToLogin:(Boolean) -> Unit
 ) {
 
     composable(

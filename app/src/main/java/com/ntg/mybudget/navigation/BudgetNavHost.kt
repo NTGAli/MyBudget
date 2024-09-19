@@ -16,6 +16,7 @@ import com.ntg.login.Login_Route
 import com.ntg.login.loginScreen
 import com.ntg.login.navigateToCode
 import com.ntg.login.navigateToCountries
+import com.ntg.login.navigateToLogin
 import com.ntg.mybudget.ui.BudgetAppState
 import javax.annotation.Untainted
 
@@ -42,7 +43,8 @@ fun BudgetNavHost(
             navigateToCountries = navController::navigateToCountries,
             navigateToCode = navController::navigateToCode,
             navigateToSetup = navController::navigateToSetup,
-            onBack = navController::popBackStack
+            onBack = navController::popBackStack,
+            onShowSnackbar = onShowSnackbar
         )
 
         setupScreen(
@@ -50,6 +52,8 @@ fun BudgetNavHost(
             navigateToSource = navController::navigateToSource,
             navigateToAccount = navController::navigateToCreateAccount,
             onBack = navController::popBackStack,
+            onShowSnackbar = onShowSnackbar,
+            navigateToLogin = navController::navigateToLogin,
             navigateToHome = navController::navigateToHome,
             onShowSnackbar = onShowSnackbar
         )

@@ -10,6 +10,8 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.security.MessageDigest
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.text.DecimalFormat
 import java.util.zip.ZipInputStream
 
@@ -194,6 +196,12 @@ fun getCardDetailsFromAssets(context: Context, cardNumber: String): DataBank? {
         }
     }
     return null
+}
+
+fun String.toUnixTimestamp(): Long {
+    if (this.isEmpty()) return System.currentTimeMillis()
+    val instant = ZonedDateTime.parse(this, DateTimeFormatter.ISO_ZONED_DATE_TIME).toInstant()
+    return instant.epochSecond
 }
 
 fun formatCurrency(amount: Long, mask:String, currency: String, pos: Int): String {

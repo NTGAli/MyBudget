@@ -8,6 +8,8 @@ import com.ntg.core.data.repository.MainUserDataRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.SourceExpenditureRepositoryImpl
 import com.ntg.core.data.repository.UserDataRepository
+import com.ntg.core.data.repository.api.AuthRepository
+import com.ntg.core.data.repository.api.AuthRequestRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepositoryImpl
 import dagger.Binds
@@ -36,5 +38,9 @@ internal abstract class DataModule {
         userDataRepository: MainUserDataRepository,
     ): UserDataRepository
 
+    @Binds
+    internal abstract fun bindsAuthRepository(
+        authRepository: AuthRequestRepository,
+    ): AuthRepository
 
 }
