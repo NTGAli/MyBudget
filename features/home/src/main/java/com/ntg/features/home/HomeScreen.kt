@@ -209,9 +209,11 @@ fun InsertTransactionView(
 
 
             val items = listOf(
-                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.internal_transfer), tint = MaterialTheme.colorScheme.onPrimary, backColor = MaterialTheme.colorScheme.primary),
-                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income), tint = MaterialTheme.colorScheme.onSecondary, backColor = MaterialTheme.colorScheme.secondary),
                 SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.outcome), tint = MaterialTheme.colorScheme.onError, backColor = MaterialTheme.colorScheme.error),
+                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income), tint = MaterialTheme.colorScheme.onSecondary, backColor = MaterialTheme.colorScheme.secondary),
+                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.internal_transfer), tint = MaterialTheme.colorScheme.onPrimary, backColor = MaterialTheme.colorScheme.primary),
+
+
             )
 
             SwitchText(
