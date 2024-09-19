@@ -106,42 +106,7 @@ private fun HomeScreen(
     transactions: State<List<Transaction>?>,
     expandTransaction: Boolean
 ) {
-
-    val scope = rememberCoroutineScope()
-
-
-    val transactionsBaseDate = transactions.value?.groupBy { it.date }
-    val bottomSheetState: SheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = bottomSheetState
-    )
-
-    LaunchedEffect(key1 = expandTransaction) {
-        scope.launch {
-            if (expandTransaction){
-                bottomSheetState.expand()
-            }else{
-                bottomSheetState.hide()
-            }
-        }
-    }
-
-
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetSwipeEnabled = true,
-        sheetPeekHeight = 0.dp,
-        sheetDragHandle = {},
-        sheetShadowElevation = 8.dp,
-        sheetContentColor = MaterialTheme.colorScheme.background,
-        sheetContainerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.background,
-        containerColor = MaterialTheme.colorScheme.background,
-        sheetShape = RoundedCornerShape(0.dp),
-        sheetContent = {
-            InsertTransactionView()
-    },
+    Scaffold(
         topBar = {
             AppBar(
                 titleState = {
@@ -193,27 +158,10 @@ private fun HomeScreen(
                     text = stringResource(id = R.string.transactions), style = MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outline))
             }
 
-            items(transactionsBaseDate.orEmpty().size){
-
-
-
-            }
-
         }
 
 
 
-    }
-
-
-    LaunchedEffect(bottomSheetState.currentValue, expandTransaction) {
-        snapshotFlow { scaffoldState.bottomSheetState.currentValue }
-            .collect { value ->
-                // If the user tries to collapse it through gestures, prevent it
-                if (expandTransaction && value != SheetValue.Expanded){
-                    scaffoldState.bottomSheetState.expand()
-                }
-            }
     }
 
 }
@@ -304,35 +252,5 @@ fun DateItem(
 
 }
 
-@SuppressLint("ModifierFactoryUnreferencedReceiver")
-fun Modifier.verticalScrollDisabled() =
-    pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                awaitPointerEvent(pass = PointerEventPass.Initial).changes.forEach {
-                    val offset = it.positionChange()
-                    if (abs(offset.y) > 0f) {
-                        it.consume()
-                    }
-                }
-            }
-        }
-    }
 
 
-fun Modifier.scrollEnabled(
-    enabled: Boolean,
-) = nestedScroll(
-    connection = object : NestedScrollConnection {
-        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            return super.onPreScroll(available, source)
-        }
-        override fun onPostScroll(
-            consumed: Offset,
-            available: Offset,
-            source: NestedScrollSource
-        ): Offset {
-            return super.onPostScroll(consumed, available, source)
-        }
-    }
-)
