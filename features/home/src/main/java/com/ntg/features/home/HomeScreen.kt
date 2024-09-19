@@ -33,6 +33,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,6 +59,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.CardReport
+import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.SwitchText
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -76,9 +78,9 @@ fun HomeRoute(
     sharedViewModel: SharedViewModel,
     homeViewModel: HomeViewModel = hiltViewModel()
 ){
-    var expandTransaction by remember { mutableStateOf(false) }
-    sharedViewModel.setExpand.postValue(expandTransaction)
-    sharedViewModel.bottomNavTitle.postValue(if (expandTransaction) "submit" else null)
+    var expandTransaction = remember { mutableStateOf(false) }
+    sharedViewModel.setExpand.postValue(expandTransaction.value)
+    sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
 
     val currentAccount = homeViewModel.selectedAccount().collectAsState(initial = null)
 
@@ -92,7 +94,7 @@ fun HomeRoute(
     LaunchedEffect(key1 = Unit) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onLoginEvent() {
-                expandTransaction = !expandTransaction
+                expandTransaction.value = !expandTransaction.value
             }
         }
     }
@@ -104,7 +106,7 @@ fun HomeRoute(
 private fun HomeScreen(
     currentAccount: AccountWithSources,
     transactions: State<List<Transaction>?>,
-    expandTransaction: Boolean
+    expandTransaction: MutableState<Boolean>
 ) {
     Scaffold(
         topBar = {
@@ -164,41 +166,45 @@ private fun HomeScreen(
 
     }
 
+
+
+    InsertTransactionView(expandTransaction)
+
+
 }
 
 
 
 @Composable
-fun InsertTransactionView(){
+fun InsertTransactionView(
+    expandTransaction : MutableState<Boolean>
+){
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-        topBar = {
-            Row(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .padding(start = 16.dp),
-                    onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = BudgetIcons.directionDown), contentDescription = "close")
-                }
 
-                Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp)
-                    ,
-                    text = stringResource(id = R.string.new_transaction), style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
-
-                DateItem(unixTime = 123L)
+    FullScreenBottomSheet(showSheet = expandTransaction, appbar = {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .padding(start = 16.dp),
+                onClick = { /*TODO*/ }) {
+                Icon(painter = painterResource(id = BudgetIcons.directionDown), contentDescription = "close")
             }
-        },
-        contentColor = MaterialTheme.colorScheme.background
-    ){
 
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp)
+                ,
+                text = stringResource(id = R.string.new_transaction), style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
 
+            DateItem(unixTime = 123L)
+        }
+    }) {
         Column(modifier = Modifier
-            .padding(it)
+//            .padding(it)
             .verticalScroll(rememberScrollState())) {
 
 
@@ -209,15 +215,15 @@ fun InsertTransactionView(){
             )
 
             SwitchText(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
                 items = items) {
 
             }
-            
-            
+
+
         }
-
-
     }
 
 

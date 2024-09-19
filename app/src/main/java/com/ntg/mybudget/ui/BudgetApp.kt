@@ -207,7 +207,7 @@ private fun AppBottomBar(
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     expandButton:Boolean,
     isLoading:Boolean,
-    title: String
+    title: String? = null
 ) {
     val navs = listOf(
         NavigationItem(

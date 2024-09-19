@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.model.Account
@@ -27,6 +28,7 @@ class LoginViewModel
         private val userDataRepository: UserDataRepository,
         private val authRepository: AuthRepository,
         private val sharedPreferences: SharedPreferences,
+        private val accountRepository: AccountRepository,
         @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     ) : ViewModel() {
 
