@@ -3,6 +3,8 @@ package com.ntg.core.database.di
 import com.ntg.core.database.AppDatabase
 import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.dao.BankCardDao
+import com.ntg.core.database.dao.BankDao
+import com.ntg.core.database.dao.ConfigDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.dao.TransactionsDao
 import com.ntg.core.database.dao.WalletDao
@@ -39,5 +41,15 @@ internal object DaosModule {
     fun provideWalletTypes(
         database: AppDatabase
     ): WalletDao = database.walletDao()
+
+    @Provides
+    fun provideConfigDao(
+        database: AppDatabase
+    ): ConfigDao = database.configDao()
+
+    @Provides
+    fun provideBankDao(
+        database: AppDatabase
+    ): BankDao = database.bankDao()
 
 }

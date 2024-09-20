@@ -6,6 +6,7 @@ import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.dao.TransactionsDao
 import com.ntg.core.database.dao.WalletDao
+import com.ntg.core.database.dao.ConfigDao
 import com.ntg.core.database.model.AccountEntity
 import com.ntg.core.database.model.WalletTypeEntity
 import com.ntg.core.database.model.asAccount
@@ -24,12 +25,12 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AccountRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     private val accountDao: AccountDao,
+    private val configDao: ConfigDao,
     private val sourceDao: SourceExpenditureDao,
     private val bankCardDao: BankCardDao,
     private val transactionsDao: TransactionsDao,
@@ -201,6 +202,14 @@ class AccountRepositoryImpl @Inject constructor(
                 }else{
                     deleteAccountData(account.id)
                 }
+            }
+        }
+    }
+
+    override suspend fun updateConfigs() {
+        network.serverConfig().collect{
+            if (it is Result.Success){
+                configDao.upsert(it.data.orEmpty().map { it.toEntity() })
             }
         }
     }

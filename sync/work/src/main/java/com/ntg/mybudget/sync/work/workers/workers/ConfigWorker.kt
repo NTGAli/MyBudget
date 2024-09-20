@@ -12,24 +12,24 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class SyncWorker @AssistedInject constructor(
+class ConfigWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val accountRepository: AccountRepository
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
-        accountRepository.syncAccounts()
+        accountRepository.updateConfigs()
         return Result.success()
     }
 
     companion object {
         /**
-         * Expedited one time work to sync data on app startup and update user data
+         * Expedited one time work to sync data on app startup
          */
         fun startUpSyncWork() = OneTimeWorkRequestBuilder<DelegatingWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setConstraints(SyncConstraints)
-            .setInputData(SyncWorker::class.delegatedData())
+            .setInputData(ConfigWorker::class.delegatedData())
             .build()
     }
 

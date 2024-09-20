@@ -3,6 +3,7 @@ package com.ntg.core.network.retrofit
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
+import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
@@ -65,6 +66,12 @@ internal class RetrofitBudgetNetwork @Inject constructor(
     override suspend fun removeAccount(id: String): Flow<Result<ResponseBody<String?>>> {
         return networkBoundResources.downloadData(ioDispatcher){
             apiService.deleteAccount(id)
+        }
+    }
+
+    override suspend fun serverConfig(): Flow<Result<List<ServerConfig>?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.configs()
         }
     }
 }

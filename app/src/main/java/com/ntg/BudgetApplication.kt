@@ -10,6 +10,7 @@ class BudgetApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Sync.initialize(context = this)
+        Sync.updateConfigs(this)
     }
 
 
