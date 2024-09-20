@@ -55,4 +55,6 @@ interface BudgetService {
     suspend fun walletTypes(
     ): Response<List<WalletType>?>
 
+    @GET(value = "/api/banks")
+    suspend fun banks(): Response<List<ServerAccount>>
 }
