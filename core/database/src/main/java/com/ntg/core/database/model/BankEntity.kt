@@ -7,9 +7,8 @@ import androidx.room.PrimaryKey
     tableName = "banks"
 )
 data class BankEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val id: Int,
-    val sId: String? = null,
     val enName: String? = null,
     val nativeName: String? = null,
     val logoName: String? = null,
