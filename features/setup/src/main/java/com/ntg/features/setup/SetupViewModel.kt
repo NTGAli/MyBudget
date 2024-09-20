@@ -77,6 +77,12 @@ class SetupViewModel
         context: Context? = null
     ){
         viewModelScope.launch {
+            if (account.dateCreated.orEmpty().isEmpty()){
+                account.dateCreated = System.currentTimeMillis().toString()
+                account.dateModified = System.currentTimeMillis().toString()
+            }else{
+                account.dateModified = System.currentTimeMillis().toString()
+            }
             accountRepository.insert(account)
         }
         if (context != null){
