@@ -61,9 +61,10 @@ internal class RetrofitBudgetNetwork @Inject constructor(
         }
     }
 
-//    override suspend fun deleteAccount(name: String): Flow<Result<SyncedAccount?>> {
-//        return networkBoundResources.downloadData(ioDispatcher){
-//            apiService.deleteAccount(name)
-//        }
-//    }
+
+    override suspend fun removeAccount(id: String): Flow<Result<ResponseBody<String?>>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.deleteAccount(id)
+        }
+    }
 }

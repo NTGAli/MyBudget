@@ -22,4 +22,6 @@ interface BudgetNetworkDataSource {
 
     suspend fun walletTypes(): Flow<Result<List<WalletType>?>>
 
+    suspend fun removeAccount(id: String): Flow<Result<ResponseBody<String?>>>
+
 }

@@ -209,7 +209,7 @@ private fun SourceScreen(
             name = "تومن",
             symbol = "ت",
             isSelected = false,
-            type = SourceTypes.BankCard.ordinal,
+            type = sourceType?.id,
             dateCreated = System.currentTimeMillis().toString()
         ),
         bankCard,

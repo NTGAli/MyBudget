@@ -62,8 +62,7 @@ fun CreateAccountRoute(
 
                             onBack()
                         }else{
-                            setupViewModel.insertNewAccount(upsertAccount!!)
-                            Sync.initialize(context = context)
+                            setupViewModel.insertNewAccount(upsertAccount!!, context)
                             onBack()
                         }
                     }else{

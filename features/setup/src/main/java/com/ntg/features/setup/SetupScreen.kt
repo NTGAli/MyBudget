@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,47 +63,53 @@ fun SetupRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-    navigateToLogin:(Boolean) -> Unit
+    navigateToLogin: (Boolean) -> Unit
 ) {
 
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.submit))
 
     val scope = rememberCoroutineScope()
-        val accounts =
+    val context = LocalContext.current
+    val accounts =
         setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
 
-
     LaunchedEffect(accounts.value) {
-        Log.d("SetupRoute", "SetupRoute: $accounts")
-        if (accounts.value != null && accounts.value.orEmpty().isEmpty()){
+        if (accounts.value != null && accounts.value.orEmpty().isEmpty()) {
             setupViewModel.serverAccounts()
-            setupViewModel.serverAccounts.collect{
-                when(it){
+            setupViewModel.serverAccounts.collect {
+                when (it) {
                     is Result.Error -> {
                         setupViewModel.homeUiState.value = SetupUiState.Error
                         scope.launch {
                             onShowSnackbar(R.string.err_fetch_data, null)
                         }
                     }
+
                     is Result.Loading -> {
                         setupViewModel.homeUiState.value = SetupUiState.Loading
                     }
+
                     is Result.Success -> {
                         setupViewModel.homeUiState.value = SetupUiState.Success
                         it.data?.forEach { account ->
-                            if (account.name == "default"){
-                                setupViewModel.setDefaultAccount(account.id.orEmpty())
-                            }else{
+                            if (account.name == "default") {
+                                setupViewModel.setDefaultAccount(account.id.orEmpty(),
+                                    account.createdAt.orEmpty().toUnixTimestamp()
+                                    .toString())
+                            } else {
                                 val localAccountId = generateUniqueFiveDigitId()
-                                setupViewModel.insertNewAccount(Account(
-                                    id = localAccountId,
-                                    sId = account.id,
-                                    name = account.name.orEmpty(),
-                                    isSelected = false,
-                                    isSynced = true,
-                                    dateCreated = account.createdAt.orEmpty().toUnixTimestamp().toString()
-                                ))
+                                setupViewModel.insertNewAccount(
+                                    Account(
+                                        id = localAccountId,
+                                        sId = account.id,
+                                        name = account.name.orEmpty(),
+                                        isSelected = false,
+                                        isSynced = true,
+                                        dateCreated = account.createdAt.orEmpty().toUnixTimestamp()
+                                            .toString()
+                                    )
+                                )
                             }
                         }
 
@@ -110,7 +117,7 @@ fun SetupRoute(
                 }
 
             }
-        }else setupViewModel.homeUiState.value = SetupUiState.Success
+        } else setupViewModel.homeUiState.value = SetupUiState.Success
 
     }
 
@@ -128,6 +135,10 @@ fun SetupRoute(
             setupViewModel.logout()
             navigateToLogin(true)
         },
+        deleteAccount = {
+            setupViewModel.deleteAccount(it, context = context)
+            setupViewModel.homeUiState.value = SetupUiState.Success
+        },
         onShowSnackbar = onShowSnackbar
     )
 
@@ -141,7 +152,7 @@ fun SetupRoute(
                             it.sources.isNotEmpty()
                         }) {
                         onShowSnackbar.invoke(R.string.err_no_sources, null)
-                    }else{
+                    } else {
 
                     }
                 }
@@ -159,6 +170,7 @@ private fun SetupScreen(
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     navigateToAccount: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
+    deleteAccount: (id: Int) -> Unit,
     backToLogin: () -> Unit
 ) {
 
@@ -178,7 +190,7 @@ private fun SetupScreen(
     }
 
     var selectedAccount by remember {
-        mutableStateOf<Account?>(null)
+        mutableStateOf<Int?>(null)
     }
 
     Scaffold(
@@ -192,13 +204,15 @@ private fun SetupScreen(
         }
     ) {
 
-        when(uiSate){
+        when (uiSate) {
             SetupUiState.Error -> {
                 backToLogin()
             }
+
             SetupUiState.Loading -> {
                 LoadingView(Modifier.padding(it))
             }
+
             SetupUiState.Success -> {
                 LazyColumn(
                     modifier = Modifier
@@ -225,11 +239,13 @@ private fun SetupScreen(
                                 dialogTitle = context.getString(R.string.delete_source)
                                 dialogDiscription = context.getString(R.string.delete_source_desc)
                             }, deleteAccount = {
-                                if (!account.isDefault){
+                                if (!account.isDefault) {
                                     showDialog = true
+                                    selectedAccount = account.accountId
                                     dialogTitle = context.getString(R.string.delete_account)
-                                    dialogDiscription = context.getString(R.string.delete_account_desc)
-                                }else{
+                                    dialogDiscription =
+                                        context.getString(R.string.delete_account_desc)
+                                } else {
                                     scope.launch {
                                         onShowSnackbar(R.string.deleting_deafult_account, null)
                                     }
@@ -277,25 +293,38 @@ private fun SetupScreen(
                 }
             }
         }
-
-
-
     }
 
 
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = {
+                selectedAccount = null
+                showDialog = false
+            },
             title = { Text(dialogTitle) },
             text = { Text(dialogDiscription) },
             confirmButton = {
-                BudgetButton(text = stringResource(id = R.string.delete), type = ButtonType.Error, size = ButtonSize.MD, style = ButtonStyle.TextOnly){
+                BudgetButton(
+                    text = stringResource(id = R.string.delete),
+                    type = ButtonType.Error,
+                    size = ButtonSize.MD,
+                    style = ButtonStyle.TextOnly
+                ) {
                     showDialog = false
+                    if (selectedAccount != null) {
+                        deleteAccount(selectedAccount!!)
+                    }
                 }
             },
             dismissButton = {
-                BudgetButton(text = stringResource(id = R.string.cancel),size = ButtonSize.MD, style = ButtonStyle.TextOnly){
+                BudgetButton(
+                    text = stringResource(id = R.string.cancel),
+                    size = ButtonSize.MD,
+                    style = ButtonStyle.TextOnly
+                ) {
                     showDialog = false
+                    selectedAccount = null
                 }
             },
         )

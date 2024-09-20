@@ -44,6 +44,12 @@ interface BudgetService {
         @Field("name") name: String,
     ): Response<SyncedAccount?>
 
+    @FormUrlEncoded
+    @POST(value = "/api/account/destroy")
+    suspend fun deleteAccount(
+        @Field("id") id: String,
+    ): Response<ResponseBody<String?>>
+
     @GET(value = "/api/wallet/types")
     suspend fun walletTypes(
     ): Response<List<WalletType>?>

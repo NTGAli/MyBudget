@@ -17,6 +17,7 @@ import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.Result
 import com.ntg.mybudget.sync.work.workers.SyncData
+import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -72,10 +73,14 @@ class SetupViewModel
     }
 
     fun insertNewAccount(
-        account: Account
+        account: Account,
+        context: Context? = null
     ){
         viewModelScope.launch {
             accountRepository.insert(account)
+        }
+        if (context != null){
+            Sync.initialize(context = context)
         }
     }
 
@@ -133,7 +138,7 @@ class SetupViewModel
         }
     }
 
-    fun setDefaultAccount(accountId: String){
+    fun setDefaultAccount(accountId: String, dateCreated: String = System.currentTimeMillis().toString()){
         viewModelScope.launch {
             accountRepository.insert(
                 Account(
@@ -142,7 +147,7 @@ class SetupViewModel
                     name = "حساب شخصی",
                     isSynced = true,
                     isDefault = true,
-                    dateCreated = System.currentTimeMillis().toString()
+                    dateCreated = dateCreated
                 )
             )
         }
@@ -165,6 +170,15 @@ class SetupViewModel
             }
         }
         return _walletTypes
+    }
+
+    fun deleteAccount(accountId: Int, context: Context? = null){
+        viewModelScope.launch {
+            accountRepository.delete(accountId)
+        }
+        if (context != null) {
+            Sync.initialize(context = context)
+        }
     }
 
 }

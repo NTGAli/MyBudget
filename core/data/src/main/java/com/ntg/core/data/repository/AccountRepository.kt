@@ -12,6 +12,8 @@ interface AccountRepository {
 
     suspend fun delete(account: Account)
 
+    suspend fun delete(accountId: Int)
+
     suspend fun upsert(account: Account)
 
     suspend fun update(account: Account)
@@ -25,6 +27,8 @@ interface AccountRepository {
     fun currentAccount(): Flow<Account?>
 
     fun getUnSyncedAccounts(): Flow<List<Account>?>
+
+    fun getRemovedAccounts(): Flow<List<Account>?>
 
     suspend fun synced(id: Int, sId: String)
 
