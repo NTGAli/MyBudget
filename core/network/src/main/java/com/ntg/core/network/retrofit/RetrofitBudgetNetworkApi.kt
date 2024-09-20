@@ -49,9 +49,9 @@ internal class RetrofitBudgetNetwork @Inject constructor(
         }
     }
 
-    override suspend fun updateAccount(name: String): Flow<Result<SyncedAccount?>> {
+    override suspend fun updateAccount(name: String, id: String): Flow<Result<SyncedAccount?>> {
         return networkBoundResources.downloadData(ioDispatcher){
-            apiService.updateAccount(name)
+            apiService.updateAccount(name = name, id = id)
         }
     }
 

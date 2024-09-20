@@ -18,7 +18,7 @@ interface BudgetNetworkDataSource {
 
     suspend fun syncAccount(name: String): Flow<Result<SyncedAccount?>>
 
-    suspend fun updateAccount(name: String): Flow<Result<SyncedAccount?>>
+    suspend fun updateAccount(name: String, id: String): Flow<Result<SyncedAccount?>>
 
     suspend fun walletTypes(): Flow<Result<List<WalletType>?>>
 

@@ -166,7 +166,7 @@ class AccountRepositoryImpl @Inject constructor(
                 if (account.name.isNotEmpty()) {
                     if (account.sId.orEmpty().isNotEmpty()) {
                         //update synced account
-                        network.updateAccount(account.name).collect {
+                        network.updateAccount(name = account.name, id = account.sId.orEmpty()).collect {
                             if (it is Result.Success) {
                                 if (it.data?.id.orEmpty().isNotEmpty()) {
                                     synced(account.id, it.data?.id.orEmpty())

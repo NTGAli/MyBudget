@@ -53,7 +53,7 @@ class SetupViewModel
     private val _walletTypes = MutableStateFlow<List<WalletType>?>(emptyList())
     val walletTypes: StateFlow<List<WalletType>?> = _walletTypes
 
-    fun upsertAccount(account: Account) {
+    fun upsertAccount(account: Account, context: Context? = null) {
         viewModelScope.launch {
             account.dateModified = System.currentTimeMillis().toString()
             if (account.dateCreated.orEmpty().isEmpty()){
@@ -61,6 +61,10 @@ class SetupViewModel
             }
             account.isSynced = false
             accountRepository.update(account)
+        }
+
+        if (context != null) {
+            Sync.initialize(context = context)
         }
     }
 

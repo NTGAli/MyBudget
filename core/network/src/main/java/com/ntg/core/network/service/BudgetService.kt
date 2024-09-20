@@ -42,6 +42,7 @@ interface BudgetService {
     @POST(value = "/api/account/update")
     suspend fun updateAccount(
         @Field("name") name: String,
+        @Field("id") id: String,
     ): Response<SyncedAccount?>
 
     @FormUrlEncoded

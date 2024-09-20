@@ -58,8 +58,7 @@ fun CreateAccountRoute(
                     if (upsertAccount?.name.orEmpty().isNotEmpty()){
                         if (account != null){
                             account.name = upsertAccount?.name.orEmpty()
-                            setupViewModel.upsertAccount(account)
-
+                            setupViewModel.upsertAccount(account, context)
                             onBack()
                         }else{
                             setupViewModel.insertNewAccount(upsertAccount!!, context)
