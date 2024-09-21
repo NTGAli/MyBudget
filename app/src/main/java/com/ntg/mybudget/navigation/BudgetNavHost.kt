@@ -27,7 +27,6 @@ fun BudgetNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = Login_Route,
     sharedViewModel: SharedViewModel,
-    sync:() -> Unit
 ) {
     val navController = appState.navController
     val loginViewModel: LoginViewModel = hiltViewModel()

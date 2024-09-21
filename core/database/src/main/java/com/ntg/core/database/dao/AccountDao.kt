@@ -62,6 +62,19 @@ interface AccountDao {
     )
     fun getAccountBySources(): Flow<List<RawAccountWithSource>>
 
+    @Query(
+        """
+        SELECT ae.id as accountId, ae.name as accountName, ae.isDefault as isDefaultAccount,
+               se.id as sourceId, se.type, se.name,
+               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
+        FROM accounts ae
+        LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        WHERE ae.isRemoved = 0 AND ae.isSelected = 1
+        """
+    )
+    fun getSelectedAccountBySources(): Flow<List<RawAccountWithSource>>
+
     @Query("SELECT * FROM accounts WHERE isSynced = 0 AND isRemoved = 0")
     suspend fun unSynced(): List<AccountEntity>?
 

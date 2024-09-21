@@ -56,6 +56,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.CardReport
@@ -82,12 +83,12 @@ fun HomeRoute(
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
 
-    val currentAccount = homeViewModel.selectedAccount().collectAsState(initial = null)
+    val currentAccount = homeViewModel.selectedAccount().collectAsStateWithLifecycle(initialValue = null)
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()){
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
 
-        val transactions = homeViewModel.transactions(sourceIds).collectAsState(initial = null)
+        val transactions = homeViewModel.transactions(sourceIds).collectAsStateWithLifecycle(initialValue = null)
         HomeScreen(currentAccount.value.orEmpty().first(), transactions, expandTransaction)
     }
 

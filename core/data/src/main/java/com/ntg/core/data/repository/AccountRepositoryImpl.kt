@@ -131,9 +131,54 @@ class AccountRepositoryImpl @Inject constructor(
 
     override fun getSelectedAccount(): Flow<List<AccountWithSources>> =
         flow {
-            emit(
-                accountDao.getAccountBySources(true)
-            )
+            accountDao.getSelectedAccountBySources().collect{rawData ->
+                val accountsMap = rawData.groupBy { it.accountId }
+                emit(
+                    accountsMap.map { (accountId, sources) ->
+                        AccountWithSources(
+                            accountId = accountId,
+                            accountName = sources.first().accountName,
+                            isDefault = sources.first().isDefaultAccount,
+                            sources = if (sources.first().sourceId != null){
+                                sources.map { row ->
+                                    val sourceType = when (row.type) {
+                                        0 -> {
+                                            if (row.number != null){
+                                                SourceType.BankCard(
+                                                    id = row.bankId ?: -1,
+                                                    number = row.number ?: "",
+                                                    cvv = row.cvv ?: "",
+                                                    date = row.expire ?: "",
+                                                    name = row.name.orEmpty(),
+                                                    sheba = row.sheba.orEmpty(),
+                                                    accountNumber = row.accountNumber.orEmpty()
+                                                )
+                                            }else null
+                                        }
+
+                                        1 -> SourceType.Gold(
+                                            value = row.value ?: 0.0,
+                                            weight = row.weight ?: 0.0
+                                        )
+
+                                        else -> null
+
+                                    }
+                                    if (sourceType != null){
+                                        SourceWithDetail(
+                                            id = row.sourceId ?: 0,
+                                            accountId = row.accountId,
+                                            type = row.type ?: 0,
+                                            name = row.name ?: "",
+                                            sourceType = sourceType
+                                        )
+                                    }else null
+                                }
+                            }else emptyList()
+                        )
+                    }
+                )
+            }
         }
             .flowOn(ioDispatcher)
 
