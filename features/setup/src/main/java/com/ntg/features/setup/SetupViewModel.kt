@@ -1,9 +1,11 @@
 package com.ntg.features.setup
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
+import com.ntg.core.data.repository.ConfigRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
@@ -12,11 +14,19 @@ import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.ServerAccount
+import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.WalletType
+import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.network.model.Result
+import com.ntg.mybudget.sync.work.workers.SyncData
+import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,7 +38,9 @@ class SetupViewModel
     private val authRepository: AuthRepository,
     private val userDataRepository: UserDataRepository,
     private val bankCardRepository: BankCardRepository,
-    private val transactionRepository: TransactionsRepository
+    private val transactionRepository: TransactionsRepository,
+    private val configRepository: ConfigRepository,
+    private val syncData: SyncData,
 ) : ViewModel() {
 
     val homeUiState = MutableStateFlow(SetupUiState.Loading)
@@ -44,13 +56,24 @@ class SetupViewModel
     private val _serverAccounts = MutableStateFlow<Result<List<ServerAccount>?>>(Result.Loading(false))
     val serverAccounts: StateFlow<Result<List<ServerAccount>?>> = _serverAccounts
 
-    fun upsertAccount(account: Account) {
+    private val _walletTypes = MutableStateFlow<List<WalletType>?>(emptyList())
+    val walletTypes: StateFlow<List<WalletType>?> = _walletTypes
+
+    private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
+    val localUserBans: StateFlow<List<Bank>?> = _localUserBanks
+
+    fun upsertAccount(account: Account, context: Context? = null) {
         viewModelScope.launch {
             account.dateModified = System.currentTimeMillis().toString()
             if (account.dateCreated.orEmpty().isEmpty()){
                 account.dateCreated = System.currentTimeMillis().toString()
             }
+            account.isSynced = false
             accountRepository.update(account)
+        }
+
+        if (context != null) {
+            Sync.initialize(context = context)
         }
     }
 
@@ -63,10 +86,20 @@ class SetupViewModel
     }
 
     fun insertNewAccount(
-        account: Account
+        account: Account,
+        context: Context? = null
     ){
         viewModelScope.launch {
+            if (account.dateCreated.orEmpty().isEmpty()){
+                account.dateCreated = System.currentTimeMillis().toString()
+                account.dateModified = System.currentTimeMillis().toString()
+            }else{
+                account.dateModified = System.currentTimeMillis().toString()
+            }
             accountRepository.insert(account)
+        }
+        if (context != null){
+            Sync.initialize(context = context)
         }
     }
 
@@ -124,14 +157,16 @@ class SetupViewModel
         }
     }
 
-    fun setDefaultAccount(){
+    fun setDefaultAccount(accountId: String, dateCreated: String = System.currentTimeMillis().toString()){
         viewModelScope.launch {
             accountRepository.insert(
                 Account(
                     id = 0,
-                    sId = null,
+                    sId = accountId,
                     name = "حساب شخصی",
-                    dateCreated = System.currentTimeMillis().toString()
+                    isSynced = true,
+                    isDefault = true,
+                    dateCreated = dateCreated
                 )
             )
         }
@@ -141,6 +176,46 @@ class SetupViewModel
         viewModelScope.launch {
             userDataRepository.logout()
         }
+    }
+
+    fun sync(context: Context){
+        syncData.sync(context)
+    }
+
+    fun walletTypes(): MutableStateFlow<List<WalletType>?> {
+        viewModelScope.launch {
+            accountRepository.walletTypes().collect{
+                _walletTypes.value = it
+            }
+        }
+        return _walletTypes
+    }
+
+    fun deleteAccount(accountId: Int, context: Context? = null){
+        viewModelScope.launch {
+            accountRepository.delete(accountId)
+        }
+        if (context != null) {
+            Sync.initialize(context = context)
+        }
+    }
+
+    fun getLocalUserBanks(): MutableStateFlow<List<Bank>?> {
+        viewModelScope.launch {
+            bankCardRepository.getUserLocalBanks().collect{
+                _localUserBanks.value = it
+            }
+        }
+        return _localUserBanks
+    }
+
+    fun getBankLogoMono(): Flow<ServerConfig?> {
+        return configRepository.get(Constants.Configs.BANK_LOGO_MONO_URL)
+    }
+
+    fun getBankLogoColor(): Flow<ServerConfig?> {
+        return configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL)
+
     }
 
 }

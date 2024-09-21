@@ -1,13 +1,19 @@
 package com.ntg.core.network.service
 
+import com.ntg.core.model.res.Bank
+import com.ntg.core.model.res.BankRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
+import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface BudgetService {
 
@@ -30,5 +36,34 @@ interface BudgetService {
     suspend fun my(): Response<List<ServerAccount>>
 
 
+    @FormUrlEncoded
+    @POST(value = "/api/account/create")
+    suspend fun syncAccount(
+        @Field("name") name: String,
+    ): Response<SyncedAccount?>
 
+    @FormUrlEncoded
+    @POST(value = "/api/account/update")
+    suspend fun updateAccount(
+        @Field("name") name: String,
+        @Field("id") id: String,
+    ): Response<SyncedAccount?>
+
+    @FormUrlEncoded
+    @POST(value = "/api/account/destroy")
+    suspend fun deleteAccount(
+        @Field("id") id: String,
+    ): Response<ResponseBody<String?>>
+
+    @GET(value = "/api/wallet/types")
+    suspend fun walletTypes(
+    ): Response<List<WalletType>?>
+
+    @GET(value = "/api/banks")
+    suspend fun banks(): Response<List<Bank>?>
+
+    @GET(value = "/api/config")
+    suspend fun configs(
+        @Query("platform") platform: String = "all"
+    ): Response<List<ServerConfig>>
 }

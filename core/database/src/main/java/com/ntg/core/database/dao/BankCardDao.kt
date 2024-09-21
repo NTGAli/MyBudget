@@ -17,6 +17,9 @@ interface BankCardDao {
     @Delete
     suspend fun delete(cardEntity: BankCardEntity)
 
+    @Query("DELETE FROM bank_card_entity WHERE sourceId = :sourceId")
+    suspend fun forceDelete(sourceId: Int)
+
     @Update
     suspend fun update(cardEntity: BankCardEntity)
 

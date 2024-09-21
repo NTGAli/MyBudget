@@ -48,6 +48,7 @@ import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
 
+
 @Composable
 fun BudgetApp(
     appState: BudgetAppState, modifier: Modifier = Modifier,
@@ -59,8 +60,10 @@ fun BudgetApp(
     val snackbarHostState = remember { SnackbarHostState() }
 
 
-    BudgetBackground(modifier = modifier
-        .safeDrawingPadding()) {
+    BudgetBackground(
+        modifier = modifier
+            .safeDrawingPadding()
+    ) {
         BudgetApp(
             appState = appState,
             snackbarHostState = snackbarHostState,
@@ -105,13 +108,13 @@ internal fun BudgetApp(
     }
 
     LaunchedEffect(key1 = Unit) {
-        sharedViewModel.bottomNavTitle.observe(lifecycle){
+        sharedViewModel.bottomNavTitle.observe(lifecycle) {
             bottomNavTitle = it
         }
-        sharedViewModel.setExpand.observe(lifecycle){
+        sharedViewModel.setExpand.observe(lifecycle) {
             isExpand = it
         }
-        sharedViewModel.setLoading.observe(lifecycle){
+        sharedViewModel.setLoading.observe(lifecycle) {
             isLoading = it
         }
     }
@@ -125,10 +128,13 @@ internal fun BudgetApp(
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
 //        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        snackbarHost = { SnackbarHost(
-            snackbarHostState,){
-            BudgetSnackBar(data = it)
-        } },
+        snackbarHost = {
+            SnackbarHost(
+                snackbarHostState,
+            ) {
+                BudgetSnackBar(data = it)
+            }
+        },
         bottomBar = {
             if (appState.shouldShowBottomBar) {
                 AppBottomBar(
@@ -186,7 +192,10 @@ internal fun BudgetApp(
                         Modifier
                     },
                     startDestination = if (isUserLogged) Setup_Route else Login_Route,
-                    sharedViewModel
+                    sharedViewModel,
+                    sync = {
+
+                    }
                 )
             }
         }
@@ -197,8 +206,8 @@ internal fun BudgetApp(
 @Composable
 private fun AppBottomBar(
     onNavigateToDestination: (TopLevelDestination) -> Unit,
-    expandButton:Boolean,
-    isLoading:Boolean,
+    expandButton: Boolean,
+    isLoading: Boolean,
     title: String
 ) {
     val navs = listOf(
@@ -219,7 +228,13 @@ private fun AppBottomBar(
     )
 
 
-    BottomNavigation(modifier = Modifier, items = navs, expandButton = expandButton, txtButton = title, isLoading = isLoading) {
+    BottomNavigation(
+        modifier = Modifier,
+        items = navs,
+        expandButton = expandButton,
+        txtButton = title,
+        isLoading = isLoading
+    ) {
         onNavigateToDestination(TopLevelDestination.HOME)
 //        if (it == 1) {
 //            onNavigateToDestination(TopLevelDestination.HOME)

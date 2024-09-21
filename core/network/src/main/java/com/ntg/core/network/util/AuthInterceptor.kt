@@ -15,7 +15,8 @@ class AuthInterceptor(private val sharedPreferences: SharedPreferences) : Interc
 
         val requestBuilder = originalRequest.newBuilder()
             .addHeader("Authorization", "Bearer $accessToken")
-            .addHeader("Accept-Language", "fa-IR")
+            .addHeader("Accept", "application/json")
+//            .addHeader("Accept-Encoding", "gzip")
 
         val request = requestBuilder.build()
 

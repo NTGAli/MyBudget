@@ -1,5 +1,6 @@
 package com.ntg.core.designsystem.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,6 +38,7 @@ import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.ntg.core.designsystem.model.PopupItem
+import com.ntg.core.designsystem.model.PopupType
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.SourceType
@@ -52,7 +54,9 @@ fun AccountSection(
     canEdit: Boolean,
     insertNewItem: () -> Unit = {},
     onSourceEdit: (Int) -> Unit = {},
-    accountEndIconClick: (Int) -> Unit = {}
+    accountEndIconClick: (Int) -> Unit = {},
+    deleteAccount: (Int) -> Unit = {},
+    deleteSource: (Int) -> Unit = {}
 ) {
 
     val context = LocalContext.current
@@ -78,11 +82,14 @@ fun AccountSection(
             isHeader = true
         ) {
 
-            Popup(popupItems = listOf(PopupItem(1, BudgetIcons.Pen, "edit1"),
-                PopupItem(1, BudgetIcons.Pen, "edit3"),
-                PopupItem(1, BudgetIcons.Pen, "edit4"),
-                PopupItem(1, BudgetIcons.Pen, "edit5"))){
-
+            Popup(popupItems = listOf(
+                PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
+                PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
+                if (it == 1) {
+                    accountEndIconClick(account.accountId)
+                }else if (it == 2){
+                    deleteAccount(account.accountId)
+                }
             }
         }
 
@@ -113,15 +120,14 @@ fun AccountSection(
                     type = source?.type ?: 0
                 ) {
                     if (canEdit){
-                        IconButton(
-                            onClick = {
+                        Popup(popupItems = listOf(
+                            PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
+                            PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
+                            if (it == 1) {
                                 onSourceEdit(source?.id ?: -1)
-                            }) {
-                            Icon(
-                                painter = painterResource(
-                                    id = BudgetIcons.more
-                                ), contentDescription = "Edit"
-                            )
+                            }else if (it == 2){
+                                deleteSource(source?.id ?: -1)
+                            }
                         }
                     }
                 }

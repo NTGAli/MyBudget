@@ -1,6 +1,7 @@
 package com.ntg.core.data.repository
 
 import com.ntg.core.model.SourceType
+import com.ntg.core.model.res.Bank
 import kotlinx.coroutines.flow.Flow
 
 interface BankCardRepository {
@@ -14,5 +15,7 @@ interface BankCardRepository {
     suspend fun tempRemove(id: Int)
 
     fun getAll(): Flow<List<SourceType.BankCard>>
+
+    suspend fun getUserLocalBanks(): Flow<List<Bank>>
 
 }
