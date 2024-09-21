@@ -14,8 +14,10 @@ android {
 }
 
 dependencies {
-    api(project(":core:model"))
-    api(project(":core:common"))
+    api(projects.core.model)
+    api(projects.core.common)
+
+    implementation(libs.gson)
 
     implementation(libs.kotlinx.datetime)
 

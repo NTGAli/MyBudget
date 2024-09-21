@@ -14,6 +14,7 @@ import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.RawAccountWithSource
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
@@ -23,6 +24,12 @@ interface AccountDao {
 
     @Delete
     suspend fun delete(account: AccountEntity)
+
+    @Query("UPDATE accounts SET isRemoved=1 WHERE id=:accountId")
+    suspend fun delete(accountId: Int)
+
+    @Query("DELETE FROM accounts WHERE id=:accountId")
+    suspend fun forceDelete(accountId: Int)
 
     @Upsert
     suspend fun upsert(account: AccountEntity)
@@ -44,7 +51,7 @@ interface AccountDao {
 
     @Query(
         """
-        SELECT ae.id as accountId, ae.name as accountName, 
+        SELECT ae.id as accountId, ae.name as accountName, ae.isDefault as isDefaultAccount,
                se.id as sourceId, se.type, se.name,
                bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
         FROM accounts ae
@@ -53,70 +60,15 @@ interface AccountDao {
         WHERE ae.isRemoved = 0
         """
     )
-    suspend fun getAccountsWithSourcesRaw(): List<RawAccountWithSource>
+    fun getAccountBySources(): Flow<List<RawAccountWithSource>>
 
-    @Query(
-        """
-        SELECT ae.id as accountId, ae.name as accountName, 
-               se.id as sourceId, se.type, se.name,
-               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
-        FROM accounts ae
-        LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
-        WHERE ae.isRemoved = 0 AND ae.isSelected = 1
-        """
-    )
-    suspend fun getSelectedAccount(): List<RawAccountWithSource>
+    @Query("SELECT * FROM accounts WHERE isSynced = 0 AND isRemoved = 0")
+    suspend fun unSynced(): List<AccountEntity>?
 
+    @Query("SELECT * FROM accounts WHERE isRemoved = 1")
+    suspend fun removedAccounts(): List<AccountEntity>?
 
-    @Transaction
-    suspend fun getAccountBySources(selected: Boolean = false): List<AccountWithSources> {
-        val rawData = if (selected) getSelectedAccount()
-        else getAccountsWithSourcesRaw()
+    @Query("UPDATE accounts SET isSynced=1, sId=:sId  WHERE id=:id")
+    suspend fun synced(id: Int, sId: String)
 
-        val accountsMap = rawData.groupBy { it.accountId }
-
-        return accountsMap.map { (accountId, sources) ->
-            AccountWithSources(
-                accountId = accountId,
-                accountName = sources.first().accountName,
-                sources = if (sources.first().sourceId != null){
-                    sources.map { row ->
-                        val sourceType = when (row.type) {
-                            0 -> {
-                                if (row.number != null){
-                                    SourceType.BankCard(
-                                        id = row.bankId ?: -1,
-                                        number = row.number ?: "",
-                                        cvv = row.cvv ?: "",
-                                        date = row.expire ?: "",
-                                        name = row.name.orEmpty(),
-                                        sheba = row.sheba.orEmpty(),
-                                        accountNumber = row.accountNumber.orEmpty()
-                                    )
-                                }else null
-                            }
-
-                            1 -> SourceType.Gold(
-                                value = row.value ?: 0.0,
-                                weight = row.weight ?: 0.0
-                            )
-
-                            else -> null
-
-                        }
-                        if (sourceType != null){
-                            SourceWithDetail(
-                                id = row.sourceId ?: 0,
-                                accountId = row.accountId,
-                                type = row.type ?: 0,
-                                name = row.name ?: "",
-                                sourceType = sourceType
-                            )
-                        }else null
-                    }
-                }else emptyList()
-            )
-        }
-    }
 }

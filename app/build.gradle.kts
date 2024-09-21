@@ -58,14 +58,14 @@ android {
 
 dependencies {
 
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:common"))
-    implementation(project(":core:model"))
-    implementation(project(":core:data"))
-    implementation(project(":core:database"))
-    implementation(project(":features:login"))
-    implementation(project(":features:setup"))
-    implementation(project(":features:home"))
+    implementation(projects.core.designsystem)
+    implementation(projects.core.common)
+    implementation(projects.core.model)
+    implementation(projects.core.data)
+    implementation(projects.core.database)
+    implementation(projects.features.login)
+    implementation(projects.features.setup)
+    implementation(projects.sync.work)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3.adaptive)

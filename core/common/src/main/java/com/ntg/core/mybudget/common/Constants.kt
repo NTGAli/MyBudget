@@ -15,5 +15,10 @@ object Constants {
         const val SHARED_PREFS_NAME = "budgetShared"
     }
 
+    object Configs{
+        const val BANK_LOGO_COLOR_URL = "banks_logo_color_root_url"
+        const val BANK_LOGO_MONO_URL = "banks_logo_no_color_root_url"
+    }
+
 
 }

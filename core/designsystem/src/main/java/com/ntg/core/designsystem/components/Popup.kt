@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.model.PopupItem
+import com.ntg.core.designsystem.model.PopupType
 import com.ntg.core.designsystem.theme.BudgetIcons
 
 
@@ -63,14 +64,14 @@ fun Popup(modifier: Modifier = Modifier, popupItems: List<PopupItem>, onClick: (
                         interactionSource = MutableInteractionSource(),
                         text = {
                             Text(
-                                text = it.title, style = MaterialTheme.typography.labelLarge
+                                text = it.title, style = MaterialTheme.typography.labelLarge.copy(color = if (it.type == PopupType.Default) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.error)
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(id = it.icon),
                                 contentDescription = "popup item",
-                                tint = MaterialTheme.colorScheme.outline
+                                tint = if (it.type == PopupType.Default) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.error
                             )
                         })
 

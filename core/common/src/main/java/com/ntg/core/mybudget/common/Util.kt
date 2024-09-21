@@ -213,3 +213,8 @@ fun formatCurrency(amount: Long, mask:String, currency: String, pos: Int): Strin
         else -> formated
     }
 }
+
+fun logd(message: String) {
+    Log.d("debugLog", message)
+
+}

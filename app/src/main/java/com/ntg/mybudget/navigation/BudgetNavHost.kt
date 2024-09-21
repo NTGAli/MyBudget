@@ -26,7 +26,8 @@ fun BudgetNavHost(
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     modifier: Modifier = Modifier,
     startDestination: String = Login_Route,
-    sharedViewModel: SharedViewModel
+    sharedViewModel: SharedViewModel,
+    sync:() -> Unit
 ) {
     val navController = appState.navController
     val loginViewModel: LoginViewModel = hiltViewModel()

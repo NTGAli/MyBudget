@@ -37,4 +37,5 @@
     <string name="balance">موجودی</string>
     <string name="submit">ثبت</string>
     <string name="err_balance_empty">موجودی نمی تواند خالی باشد</string>
+    <string name="edit">ویرایش</string>
 </resources>

@@ -19,4 +19,7 @@ interface TransactionsDao {
     suspend fun getBySourceIds(ids: List<Int>): List<TransactionEntity>
 
 
+    @Query("DELETE FROM transactions WHERE accountId = :accountId")
+    suspend fun deleteByAccount(accountId: Int)
+
 }

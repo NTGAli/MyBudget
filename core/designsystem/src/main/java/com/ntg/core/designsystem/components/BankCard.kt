@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +57,8 @@ fun BankCard(
     name: String,
     amount: String,
     expiringDate: String,
+    bankName: String,
+    bankLogo: List<String>,
     fullView: Boolean = false,
     onClick: () -> Unit = {},
 ) {
@@ -71,6 +74,15 @@ fun BankCard(
     var defaultTint by remember {
         mutableStateOf<ColorFilter?>(ColorFilter.tint(Color.White))
     }
+
+    var currentLogo by remember {
+        mutableStateOf("")
+    }
+
+    LaunchedEffect(key1 = bankLogo) {
+        currentLogo = bankLogo.first()
+    }
+
 
     val context = LocalContext.current
     val localDensity = LocalDensity.current
@@ -156,10 +168,11 @@ fun BankCard(
                 fullView = fullView,
             )
 
+
             if (!fullView) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(getCardDetailsFromAssets(context, cardNumber)?.bank_logo)
+                        .data(currentLogo)
                         .crossfade(true)
                         .decoderFactory(SvgDecoder.Factory())
                         .build(),
@@ -179,6 +192,19 @@ fun BankCard(
                         .padding(24.dp)
                         .alpha(animatedAlpha)
                         .size(48.dp)
+                        .clickable(interactionSource = null, indication = null, onClick = {
+                            bankLogo.forEachIndexed { index, it ->
+                                if (it == currentLogo) {
+                                    if (bankLogo.size-1 > index) {
+                                        currentLogo = bankLogo[index + 1]
+                                        return@clickable
+                                    } else {
+                                        currentLogo = bankLogo[0]
+                                        return@clickable
+                                    }
+                                }
+                            }
+                        })
 
                 )
             }
@@ -188,7 +214,7 @@ fun BankCard(
                     .align(Alignment.TopEnd)
                     .padding(32.dp)
                     .alpha(animatedAlpha),
-                text = getCardDetailsFromAssets(context, cardNumber)?.bank_title ?: "",
+                text = bankName,
                 style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
             )
 
