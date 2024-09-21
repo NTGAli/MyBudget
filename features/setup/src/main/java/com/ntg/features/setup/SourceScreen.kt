@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,6 +54,8 @@ import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceTypes
 import com.ntg.core.model.SourceWithDetail
+import com.ntg.core.model.res.Bank
+import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
@@ -69,7 +72,6 @@ fun SourceRoute(
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
     var source by remember {
@@ -79,10 +81,14 @@ fun SourceRoute(
         mutableStateOf<SourceType.BankCard?>(null)
     }
     var sourceType by remember {
-        mutableStateOf("")
+        mutableIntStateOf(-1)
     }
     var cardBalance by remember {
         mutableStateOf("")
+    }
+
+    var localBanks by remember {
+        mutableStateOf<List<Bank>?>(null)
     }
 
     val walletTypes = setupViewModel.walletTypes().collectAsStateWithLifecycle().value
@@ -90,6 +96,9 @@ fun SourceRoute(
     val editSource = setupViewModel.getSourcesById(sourceId ?: -1).collectAsStateWithLifecycle(
         initialValue = null
     ).value
+
+    val logoUrlColor = setupViewModel.getBankLogoColor().collectAsStateWithLifecycle(initialValue = null).value
+    val logoUrlMono = setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
 
     SourceScreen(
         editSource, onBack = onBack,
@@ -102,7 +111,10 @@ fun SourceRoute(
         selectedSource = {
             sourceType = it
         },
-        walletTypes = walletTypes
+        walletTypes = walletTypes,
+        logoUrlMono = logoUrlMono,
+        logoUrlColor = logoUrlColor,
+        localBanks = localBanks.orEmpty()
         ) { sourceValue, card, balance ->
         source = sourceValue
         bankCard = card
@@ -116,7 +128,8 @@ fun SourceRoute(
             override fun onLoginEvent() {
 
                 when (sourceType) {
-                    context.getString(R.string.bank_card) -> {
+                    //Bank card
+                    1 -> {
                         if (bankCard?.number.orEmpty().isEmpty()) {
                             scope.launch {
                                 onShowSnackbar(R.string.err_empty_card_number, null)
@@ -160,16 +173,29 @@ fun SourceRoute(
                         }
                     }
 
-                    context.getString(R.string.foreign_currency) -> {
+                    //cash
+                    2 -> {
 
                     }
 
-                    context.getString(R.string.gold) -> {
+                    // crypto
+                    3 -> {
 
                     }
 
                 }
             }
+        }
+    }
+
+    LaunchedEffect(key1 = sourceType) {
+        when(sourceType){
+            1 -> {
+                setupViewModel.getLocalUserBanks().collect{
+                    localBanks = it
+                }
+            }
+
         }
     }
 }
@@ -179,9 +205,12 @@ fun SourceRoute(
 private fun SourceScreen(
     editSource: SourceWithDetail?,
     walletTypes : List<WalletType>?,
+    localBanks: List<Bank>,
+    logoUrlMono: ServerConfig?,
+    logoUrlColor: ServerConfig?,
     onBack: () -> Unit,
     deleteSource: () -> Unit,
-    selectedSource: (String) -> Unit,
+    selectedSource: (Int) -> Unit,
     submitCard: (source: SourceExpenditure, card: SourceType.BankCard?, balance: String) -> Unit
 ) {
 
@@ -255,7 +284,7 @@ private fun SourceScreen(
                     walletType = walletTypes.orEmpty()
                 ) {
                     sourceType = it
-                    selectedSource.invoke(it.faName.orEmpty())
+                    selectedSource.invoke(it.id ?: -1)
                 }
             }
 
@@ -266,6 +295,9 @@ private fun SourceScreen(
 
                     BankCardView(
                         if (editMode) editSource?.sourceType as SourceType.BankCard else null,
+                        localBanks = localBanks,
+                        logoUrlMono = logoUrlMono,
+                        logoUrlColor = logoUrlColor,
                         deleteCard = {
                             deleteSource()
                         }
@@ -295,6 +327,9 @@ private fun SourceScreen(
 @Composable
 private fun BankCardView(
     editBankCard: SourceType.BankCard? = null,
+    localBanks: List<Bank>,
+    logoUrlMono: ServerConfig?,
+    logoUrlColor: ServerConfig?,
     deleteCard: () -> Unit,
     bankCard: (SourceType.BankCard, String) -> Unit
 ) {
@@ -340,6 +375,8 @@ private fun BankCardView(
     val balance = remember {
         mutableStateOf("")
     }
+
+    val localBank =localBanks.find { it.bin.orEmpty().find { cardNumber.value.take(6).contains(it) } != null }
 
     bankCard(
         SourceType.BankCard(
@@ -406,7 +443,12 @@ private fun BankCardView(
         cardNumber = cardNumber.value,
         name = name.value,
         amount = "0",
-        expiringDate = expire.value
+        expiringDate = expire.value,
+        bankName = localBank?.nativeName.orEmpty(),
+        bankLogo = listOf(
+            "${logoUrlColor?.value}${localBank?.logoName}.svg",
+            "${logoUrlMono?.value}${localBank?.logoName}.svg"
+        )
     )
 
 

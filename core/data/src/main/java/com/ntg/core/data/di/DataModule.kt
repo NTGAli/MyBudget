@@ -4,6 +4,8 @@ import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.AccountRepositoryImpl
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.BankCardRepositoryImpl
+import com.ntg.core.data.repository.ConfigRepository
+import com.ntg.core.data.repository.ConfigRepositoryImpl
 import com.ntg.core.data.repository.MainUserDataRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.SourceExpenditureRepositoryImpl
@@ -32,6 +34,9 @@ internal abstract class DataModule {
 
     @Binds
     internal abstract fun bindTransactionRepository(impl: TransactionsRepositoryImpl): TransactionsRepository
+
+    @Binds
+    internal abstract fun bindConfigsRepository(impl: ConfigRepositoryImpl): ConfigRepository
 
     @Binds
     internal abstract fun bindsUserDataRepository(

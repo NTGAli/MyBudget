@@ -1,5 +1,6 @@
 package com.ntg.core.network
 
+import android.util.Log
 import com.google.gson.JsonParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -22,7 +23,9 @@ class NetworkBoundResource @Inject constructor(){
                 emit(Result.Loading(true))
                 val response:Response<ResultType> = api()
                 emit(Result.Loading(false))
+                Log.d("NetworkBoundResource", "${response.body()}")
                 if (response.isSuccessful){
+                    Log.d("NetworkBoundResource", "${response.body()}")
                     response.body()?.let {
                         emit(Result.Success(data = it))
                     }?: emit(Result.Error(message = "Unknown error occurred", code = 0))
@@ -44,6 +47,7 @@ class NetworkBoundResource @Inject constructor(){
         }?:"Whoops! Unknown error occurred. Please try again"
     }
     private fun message(throwable: Throwable?):String{
+        Log.d("NetworkBoundResource", "message: ${throwable?.localizedMessage}")
         when (throwable) {
             is SocketTimeoutException -> return "Whoops! Connection time out. Please try again"
             is IOException -> return "Whoops! No Internet Connection. Please try again"

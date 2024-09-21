@@ -202,3 +202,8 @@ fun String.toUnixTimestamp(): Long {
     val instant = ZonedDateTime.parse(this, DateTimeFormatter.ISO_ZONED_DATE_TIME).toInstant()
     return instant.epochSecond
 }
+
+fun logd(message: String) {
+    Log.d("debugLog", message)
+
+}

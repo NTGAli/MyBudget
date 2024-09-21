@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
+import com.ntg.core.data.repository.ConfigRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
@@ -13,12 +14,16 @@ import com.ntg.core.model.Account
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.ServerAccount
+import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
+import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.network.model.Result
 import com.ntg.mybudget.sync.work.workers.SyncData
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -34,6 +39,7 @@ class SetupViewModel
     private val userDataRepository: UserDataRepository,
     private val bankCardRepository: BankCardRepository,
     private val transactionRepository: TransactionsRepository,
+    private val configRepository: ConfigRepository,
     private val syncData: SyncData,
 ) : ViewModel() {
 
@@ -52,6 +58,9 @@ class SetupViewModel
 
     private val _walletTypes = MutableStateFlow<List<WalletType>?>(emptyList())
     val walletTypes: StateFlow<List<WalletType>?> = _walletTypes
+
+    private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
+    val localUserBans: StateFlow<List<Bank>?> = _localUserBanks
 
     fun upsertAccount(account: Account, context: Context? = null) {
         viewModelScope.launch {
@@ -189,6 +198,24 @@ class SetupViewModel
         if (context != null) {
             Sync.initialize(context = context)
         }
+    }
+
+    fun getLocalUserBanks(): MutableStateFlow<List<Bank>?> {
+        viewModelScope.launch {
+            bankCardRepository.getUserLocalBanks().collect{
+                _localUserBanks.value = it
+            }
+        }
+        return _localUserBanks
+    }
+
+    fun getBankLogoMono(): Flow<ServerConfig?> {
+        return configRepository.get(Constants.Configs.BANK_LOGO_MONO_URL)
+    }
+
+    fun getBankLogoColor(): Flow<ServerConfig?> {
+        return configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL)
+
     }
 
 }

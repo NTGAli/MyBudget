@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import com.ntg.core.database.model.BankEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BankDao {

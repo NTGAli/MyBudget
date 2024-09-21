@@ -88,7 +88,9 @@ object NetworkModule {
     @Provides
     fun provideGson(): Gson {
         val gsonBuilder = GsonBuilder()
-        return gsonBuilder.create()
+        return gsonBuilder
+            .setLenient()
+            .create()
     }
 
 

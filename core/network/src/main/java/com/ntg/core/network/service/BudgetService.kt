@@ -1,5 +1,7 @@
 package com.ntg.core.network.service
 
+import com.ntg.core.model.res.Bank
+import com.ntg.core.model.res.BankRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
@@ -58,7 +60,7 @@ interface BudgetService {
     ): Response<List<WalletType>?>
 
     @GET(value = "/api/banks")
-    suspend fun banks(): Response<List<ServerAccount>>
+    suspend fun banks(): Response<List<Bank>?>
 
     @GET(value = "/api/config")
     suspend fun configs(

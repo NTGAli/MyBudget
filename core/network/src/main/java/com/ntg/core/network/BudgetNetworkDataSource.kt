@@ -1,6 +1,8 @@
 package com.ntg.core.network
 
 import com.ntg.core.model.req.VerifyOtp
+import com.ntg.core.model.res.Bank
+import com.ntg.core.model.res.BankRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
@@ -26,4 +28,6 @@ interface BudgetNetworkDataSource {
     suspend fun removeAccount(id: String): Flow<Result<ResponseBody<String?>>>
 
     suspend fun serverConfig(): Flow<Result<List<ServerConfig>?>>
+
+    suspend fun serverBanks(): Flow<Result<List<Bank>?>>
 }

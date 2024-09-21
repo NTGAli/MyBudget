@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "425577683a410563234f8488825ae5f5",
+    "identityHash": "af8bf496a04e1c88cb4c74099e9ffc12",
     "entities": [
       {
         "tableName": "accounts",
@@ -400,7 +400,7 @@
       },
       {
         "tableName": "banks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `enName` TEXT, `nativeName` TEXT, `logoName` TEXT, `countryAlpha2` TEXT, `countryAlpha3` TEXT, `bind` TEXT, `colorLogo` TEXT, `monoLogo` TEXT, `updatedAt` TEXT, `createdAt` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `enName` TEXT, `nativeName` TEXT, `logoName` TEXT, `countryAlpha2` TEXT, `countryAlpha3` TEXT, `bin` TEXT, `colorLogo` TEXT, `monoLogo` TEXT, `updatedAt` TEXT, `createdAt` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -439,8 +439,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "bind",
-            "columnName": "bind",
+            "fieldPath": "bin",
+            "columnName": "bin",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -532,7 +532,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '425577683a410563234f8488825ae5f5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'af8bf496a04e1c88cb4c74099e9ffc12')"
     ]
   }
 }

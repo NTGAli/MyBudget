@@ -30,7 +30,6 @@ import javax.inject.Inject
 class AccountRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     private val accountDao: AccountDao,
-    private val configDao: ConfigDao,
     private val sourceDao: SourceExpenditureDao,
     private val bankCardDao: BankCardDao,
     private val transactionsDao: TransactionsDao,
@@ -202,14 +201,6 @@ class AccountRepositoryImpl @Inject constructor(
                 }else{
                     deleteAccountData(account.id)
                 }
-            }
-        }
-    }
-
-    override suspend fun updateConfigs() {
-        network.serverConfig().collect{
-            if (it is Result.Success){
-                configDao.upsert(it.data.orEmpty().map { it.toEntity() })
             }
         }
     }

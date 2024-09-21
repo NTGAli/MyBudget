@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
 import com.ntg.core.data.repository.AccountRepository
+import com.ntg.core.data.repository.ConfigRepository
 import com.ntg.mybudget.sync.work.workers.initializers.SyncConstraints
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -15,10 +16,10 @@ import dagger.assisted.AssistedInject
 class ConfigWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val accountRepository: AccountRepository
+    private val configRepository: ConfigRepository
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
-        accountRepository.updateConfigs()
+        configRepository.updateConfigs()
         return Result.success()
     }
 

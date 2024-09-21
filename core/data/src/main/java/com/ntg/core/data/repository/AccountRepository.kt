@@ -35,8 +35,6 @@ interface AccountRepository {
     //server
     suspend fun syncAccounts()
 
-    suspend fun updateConfigs()
-
     suspend fun walletTypes(): Flow<List<WalletType>?>
 
 
