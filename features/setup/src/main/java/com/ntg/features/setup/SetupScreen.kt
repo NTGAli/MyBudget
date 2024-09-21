@@ -95,8 +95,7 @@ fun SetupRoute(
                         it.data?.forEach { account ->
                             if (account.name == "default") {
                                 setupViewModel.setDefaultAccount(account.id.orEmpty(),
-                                    account.createdAt.orEmpty().toUnixTimestamp()
-                                    .toString())
+                                    account.createdAt.orEmpty())
                             } else {
                                 val localAccountId = generateUniqueFiveDigitId()
                                 setupViewModel.insertNewAccount(
@@ -106,8 +105,7 @@ fun SetupRoute(
                                         name = account.name.orEmpty(),
                                         isSelected = false,
                                         isSynced = true,
-                                        dateCreated = account.createdAt.orEmpty().toUnixTimestamp()
-                                            .toString()
+                                        dateCreated = account.createdAt.orEmpty()
                                     )
                                 )
                             }
