@@ -89,7 +89,7 @@ class AccountRepositoryImpl @Inject constructor(
                             sources = if (sources.first().sourceId != null){
                                 sources.map { row ->
                                     val sourceType = when (row.type) {
-                                        0 -> {
+                                        1 -> {
                                             if (row.number != null){
                                                 SourceType.BankCard(
                                                     id = row.bankId ?: -1,
@@ -103,7 +103,7 @@ class AccountRepositoryImpl @Inject constructor(
                                             }else null
                                         }
 
-                                        1 -> SourceType.Gold(
+                                        2 -> SourceType.Gold(
                                             value = row.value ?: 0.0,
                                             weight = row.weight ?: 0.0
                                         )
@@ -142,7 +142,7 @@ class AccountRepositoryImpl @Inject constructor(
                             sources = if (sources.first().sourceId != null){
                                 sources.map { row ->
                                     val sourceType = when (row.type) {
-                                        0 -> {
+                                        1 -> {
                                             if (row.number != null){
                                                 SourceType.BankCard(
                                                     id = row.bankId ?: -1,
@@ -156,7 +156,7 @@ class AccountRepositoryImpl @Inject constructor(
                                             }else null
                                         }
 
-                                        1 -> SourceType.Gold(
+                                        2 -> SourceType.Gold(
                                             value = row.value ?: 0.0,
                                             weight = row.weight ?: 0.0
                                         )

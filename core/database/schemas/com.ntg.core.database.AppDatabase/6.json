@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "ff0839f60037d482dbb4fa431a091f02",
+    "identityHash": "a018621a37875228912c266214d97b81",
     "entities": [
       {
         "tableName": "accounts",
@@ -148,7 +148,7 @@
       },
       {
         "tableName": "bank_card_entity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `sourceId` INTEGER, `number` TEXT NOT NULL, `date` TEXT NOT NULL, `cvv` TEXT, `sheba` TEXT, `accountNumber` TEXT, `name` TEXT NOT NULL, `isSynced` INTEGER NOT NULL, `isDeleted` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `sourceId` INTEGER, `bankId` INTEGER, `number` TEXT NOT NULL, `date` TEXT NOT NULL, `cvv` TEXT, `sheba` TEXT, `accountNumber` TEXT, `name` TEXT NOT NULL, `isSynced` INTEGER NOT NULL, `isDeleted` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -165,6 +165,12 @@
           {
             "fieldPath": "sourceId",
             "columnName": "sourceId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bankId",
+            "columnName": "bankId",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -588,7 +594,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ff0839f60037d482dbb4fa431a091f02')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a018621a37875228912c266214d97b81')"
     ]
   }
 }

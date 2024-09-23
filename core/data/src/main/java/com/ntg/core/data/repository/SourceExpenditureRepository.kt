@@ -19,4 +19,6 @@ interface SourceExpenditureRepository {
     fun getSourcesById(accountId: Int): Flow<SourceExpenditure?>
 
     fun getSourceDetails(id: Int): Flow<SourceWithDetail?>
+
+    suspend fun syncSources()
 }

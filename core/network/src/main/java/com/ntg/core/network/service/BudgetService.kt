@@ -70,4 +70,14 @@ interface BudgetService {
 
     @GET(value = "/api/currencies")
     suspend fun currencies(): Response<List<Currency>?>
+
+    @FormUrlEncoded
+    @POST(value = "/api/wallet/create")
+    suspend fun syncWallet(
+        @Field("wallet_type_id") walletType: String,
+        @Field("currency_id") currencyId: String,
+        @Field("account_id") accountId: String,
+        @Field("details") details: String,
+//        @Field("init_amount") initAmount: String,
+    ): Response<SyncedAccount?>
 }

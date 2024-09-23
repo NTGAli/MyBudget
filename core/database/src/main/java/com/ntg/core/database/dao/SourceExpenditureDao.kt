@@ -10,6 +10,7 @@ import com.ntg.core.database.model.SourceExpenditureEntity
 import com.ntg.core.model.RawSourceDetail
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SourceExpenditureDao {
@@ -40,7 +41,7 @@ interface SourceExpenditureDao {
         SELECT se.id, se.accountId, se.type, cr.nativeName as name,
         bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.id as bankId
         FROM sourceExpenditures se
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
         LEFT JOIN currencies cr ON se.currencyId = cr.id
         WHERE se.isRemoved != 1
     """)
@@ -50,7 +51,7 @@ interface SourceExpenditureDao {
     suspend fun getSourcesWithDetails(accountId: Int): List<SourceWithDetail> {
         return getSourcesByAccount().map { row ->
             val sourceType = when (row.type) {
-                0 -> SourceType.BankCard(
+                1 -> SourceType.BankCard(
                     id = row.bankId ?: -1,
                     number = row.number ?: "",
                     cvv = row.cvv ?: "",
@@ -60,7 +61,7 @@ interface SourceExpenditureDao {
                     accountNumber = row.accountNumber.orEmpty(),
                 )
 
-                1 -> SourceType.Gold(
+                3 -> SourceType.Gold(
                     value = row.value ?: 0.0,
                     weight = row.weight ?: 0.0
                 )
@@ -83,7 +84,7 @@ interface SourceExpenditureDao {
         SELECT se.id, se.accountId, se.type, cr.nativeName as name,
         bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber
         FROM sourceExpenditures se
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
         LEFT JOIN currencies cr ON se.currencyId = cr.id
         WHERE se.id=:id
     """)
@@ -95,7 +96,7 @@ interface SourceExpenditureDao {
         val row = getSourceWithDetails(id)
         if (row != null) {
             val sourceType = when (row.type) {
-                0 -> SourceType.BankCard(
+                1 -> SourceType.BankCard(
                     id = row.bankId ?: -1,
                     number = row.number ?: "",
                     cvv = row.cvv ?: "",
@@ -105,7 +106,7 @@ interface SourceExpenditureDao {
                     name = row.cardName.orEmpty()
                 )
 
-                1 -> SourceType.Gold(
+                2 -> SourceType.Gold(
                     value = row.value ?: 0.0,
                     weight = row.weight ?: 0.0
                 )
@@ -123,5 +124,18 @@ interface SourceExpenditureDao {
             return null
         }
     }
+
+    @Query("""
+        SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId,
+        bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.bankId as bankId,
+        b.nativeName as bankName, ac.sId as accountSId
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        LEFT JOIN banks b ON bc.bankId = b.id
+        LEFT JOIN accounts ac ON ac.id = se.accountId
+        WHERE se.isSynced = 0
+    """)
+    fun unSynced(): Flow<List<RawSourceDetail>>
 
 }

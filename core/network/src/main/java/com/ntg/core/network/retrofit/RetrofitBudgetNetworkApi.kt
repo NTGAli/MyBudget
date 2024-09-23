@@ -1,5 +1,9 @@
 package com.ntg.core.network.retrofit
 
+import com.google.gson.Gson
+import com.ntg.core.model.SourceType
+import com.ntg.core.model.SourceWithDetail
+import com.ntg.core.model.req.SourceDetailReq
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
@@ -87,6 +91,26 @@ internal class RetrofitBudgetNetwork @Inject constructor(
     override suspend fun currencies(): Flow<Result<List<Currency>?>> {
         return networkBoundResources.downloadData(ioDispatcher){
             apiService.currencies()
+        }
+    }
+
+    override suspend fun syncSources(source: SourceWithDetail): Flow<Result<SyncedAccount?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            val details = if (source.sourceType is SourceType.BankCard){
+                Gson().toJson(SourceDetailReq(
+                    cart_number = (source.sourceType as SourceType.BankCard).number,
+                    bank_id = (source.sourceType as SourceType.BankCard).bankId.toString(),
+                    bank_name = (source.sourceType as SourceType.BankCard).nativeName,
+                    cart_owner_name = (source.sourceType as SourceType.BankCard).name,
+                    cvv2 = (source.sourceType as SourceType.BankCard).cvv
+                ))
+            }else ""
+            apiService.syncWallet(
+                walletType = source.type.toString(),
+                currencyId = source.currencyId.toString(),
+                accountId = source.accountSId.toString(),
+                details = details
+            )
         }
     }
 }

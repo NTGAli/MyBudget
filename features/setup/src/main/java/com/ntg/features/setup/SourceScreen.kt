@@ -63,6 +63,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.model.res.Currency
@@ -72,12 +73,13 @@ import com.ntg.core.mybudget.common.logd
 fun SourceRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
-    accountId: Int,
+    accountId: Int = 1,
     sourceId: Int? = null,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     onBack: () -> Unit,
     navigateToCurrencies: () -> Unit
 ) {
+
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
     var source by remember {
@@ -107,9 +109,9 @@ fun SourceRoute(
         setupViewModel.getBankLogoColor().collectAsStateWithLifecycle(initialValue = null).value
     val logoUrlMono =
         setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
-    val selectedCurrency = setupViewModel.selectedCurrency.collectAsStateWithLifecycle(initialValue = null)
+    val selectedCurrency =
+        setupViewModel.selectedCurrency.collectAsStateWithLifecycle(initialValue = null)
 
-    logd("selectedCurrency ::::: $${selectedCurrency.value}")
 
     SourceScreen(
         editSource, onBack = onBack,
@@ -211,6 +213,12 @@ fun SourceRoute(
                 }
             }
 
+        }
+    }
+
+    LaunchedEffect(editSource) {
+        if (editSource != null){
+            sourceType = editSource.type
         }
     }
 }
@@ -355,6 +363,7 @@ private fun BankCardView(
 ) {
 
     val layoutDirection = LocalLayoutDirection.current
+    val context = LocalContext.current
 
     val concurrency = remember {
         mutableStateOf("تومن")
@@ -398,7 +407,10 @@ private fun BankCardView(
 
     LaunchedEffect(selectedCurrency) {
         val flag = getLanguageFlag(selectedCurrency?.countryAlpha2 ?: "") ?: ""
-        concurrency.value = "$flag ${selectedCurrency?.symbol} | ${selectedCurrency?.faName}"
+        concurrency.value =
+            if (selectedCurrency != null) "$flag ${selectedCurrency.symbol} | ${selectedCurrency.faName}" else context.getString(
+                R.string.select_currency
+            )
     }
 
     val localBank =
@@ -413,7 +425,8 @@ private fun BankCardView(
             updatedAt = System.currentTimeMillis().toString(),
             cvv = cvv.value,
             sheba = sheba.value,
-            accountNumber = accountNumber.value
+            accountNumber = accountNumber.value,
+            bankId = localBank?.id
         ),
         balance.value
     )
@@ -745,15 +758,4 @@ private fun BankCardView(
 
         }
     }
-}
-
-object WalletTypeSaver : Saver<WalletType, WalletType> {
-    override fun restore(value: WalletType): WalletType? {
-        return value
-    }
-
-    override fun SaverScope.save(value: WalletType): WalletType? {
-        return value
-    }
-
 }
