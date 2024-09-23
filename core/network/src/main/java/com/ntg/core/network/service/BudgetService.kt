@@ -3,6 +3,7 @@ package com.ntg.core.network.service
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
@@ -66,4 +67,7 @@ interface BudgetService {
     suspend fun configs(
         @Query("platform") platform: String = "all"
     ): Response<List<ServerConfig>>
+
+    @GET(value = "/api/currencies")
+    suspend fun currencies(): Response<List<Currency>?>
 }

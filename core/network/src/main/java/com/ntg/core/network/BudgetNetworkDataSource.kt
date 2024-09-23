@@ -4,6 +4,7 @@ import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
@@ -30,4 +31,6 @@ interface BudgetNetworkDataSource {
     suspend fun serverConfig(): Flow<Result<List<ServerConfig>?>>
 
     suspend fun serverBanks(): Flow<Result<List<Bank>?>>
+
+    suspend fun currencies(): Flow<Result<List<Currency>?>>
 }

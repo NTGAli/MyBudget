@@ -11,6 +11,8 @@ class SharedViewModel : ViewModel() {
     val setExpand = MutableLiveData<Boolean>()
     val setLoading = MutableLiveData<Boolean>()
 
+    var selectedCurrency: String = ""
+
     fun sendLoginEvent() {
         loginEventListener?.onLoginEvent()
     }

@@ -8,6 +8,7 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.homeScreen
 import com.ntg.features.home.navigateToHome
 import com.ntg.features.setup.navigateToCreateAccount
+import com.ntg.features.setup.navigateToCurrencies
 import com.ntg.features.setup.navigateToSetup
 import com.ntg.features.setup.navigateToSource
 import com.ntg.features.setup.setupScreen
@@ -55,6 +56,7 @@ fun BudgetNavHost(
             onShowSnackbar = onShowSnackbar,
             navigateToLogin = navController::navigateToLogin,
             navigateToHome = navController::navigateToHome,
+            navigateToCurrencies = navController::navigateToCurrencies
         )
 
         homeScreen(sharedViewModel)

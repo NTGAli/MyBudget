@@ -61,6 +61,7 @@ import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -70,7 +71,8 @@ fun SourceRoute(
     sourceId: Int? = null,
     setupViewModel: SetupViewModel = hiltViewModel(),
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navigateToCurrencies: () -> Unit
 ) {
     sharedViewModel.setExpand.postValue(true)
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
@@ -99,6 +101,11 @@ fun SourceRoute(
 
     val logoUrlColor = setupViewModel.getBankLogoColor().collectAsStateWithLifecycle(initialValue = null).value
     val logoUrlMono = setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
+
+    LaunchedEffect(key1 = Unit) {
+        delay(3000)
+        navigateToCurrencies()
+    }
 
     SourceScreen(
         editSource, onBack = onBack,

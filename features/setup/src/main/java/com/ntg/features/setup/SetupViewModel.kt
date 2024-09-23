@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.ConfigRepository
+import com.ntg.core.data.repository.CurrencyRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
@@ -15,6 +16,7 @@ import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.res.Bank
+import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
@@ -40,6 +42,7 @@ class SetupViewModel
     private val bankCardRepository: BankCardRepository,
     private val transactionRepository: TransactionsRepository,
     private val configRepository: ConfigRepository,
+    private val currencyRepository: CurrencyRepository,
     private val syncData: SyncData,
 ) : ViewModel() {
 
@@ -61,6 +64,8 @@ class SetupViewModel
 
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
     val localUserBans: StateFlow<List<Bank>?> = _localUserBanks
+
+    private val _currencies = MutableStateFlow<List<Currency>?>(emptyList())
 
     fun upsertAccount(account: Account, context: Context? = null) {
         viewModelScope.launch {
@@ -216,6 +221,16 @@ class SetupViewModel
     fun getBankLogoColor(): Flow<ServerConfig?> {
         return configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL)
 
+    }
+
+    fun loadCurrencies(): MutableStateFlow<List<Currency>?> {
+        viewModelScope.launch {
+            currencyRepository.upsert()
+            currencyRepository.getCurrencies().collect{
+                _currencies.value = it
+            }
+        }
+        return _currencies
     }
 
 }
