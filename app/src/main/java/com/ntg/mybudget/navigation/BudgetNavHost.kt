@@ -57,7 +57,12 @@ fun BudgetNavHost(
             navigateToHome = navController::navigateToHome,
         )
 
-        homeScreen(sharedViewModel)
+        homeScreen(
+            sharedViewModel = sharedViewModel,
+            navigateToSource = navController::navigateToSource,
+            navigateToAccount = navController::navigateToCreateAccount,
+            onShowSnackbar = onShowSnackbar
+        )
 
     }
 }

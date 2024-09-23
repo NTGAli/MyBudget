@@ -6,7 +6,6 @@ import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.dao.TransactionsDao
 import com.ntg.core.database.dao.WalletDao
-import com.ntg.core.database.dao.ConfigDao
 import com.ntg.core.database.model.AccountEntity
 import com.ntg.core.database.model.WalletTypeEntity
 import com.ntg.core.database.model.asAccount
@@ -19,6 +18,7 @@ import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.network.BudgetNetworkDataSource
 import com.ntg.core.network.model.Result
 import kotlinx.coroutines.CoroutineDispatcher
@@ -88,8 +88,9 @@ class AccountRepositoryImpl @Inject constructor(
                             isDefault = sources.first().isDefaultAccount,
                             sources = if (sources.first().sourceId != null){
                                 sources.map { row ->
+                                    logd("getAccountBySources ::: $row")
                                     val sourceType = when (row.type) {
-                                        0 -> {
+                                        1 -> {
                                             if (row.number != null){
                                                 SourceType.BankCard(
                                                     id = row.bankId ?: -1,
@@ -103,7 +104,7 @@ class AccountRepositoryImpl @Inject constructor(
                                             }else null
                                         }
 
-                                        1 -> SourceType.Gold(
+                                        2 -> SourceType.Gold(
                                             value = row.value ?: 0.0,
                                             weight = row.weight ?: 0.0
                                         )
@@ -142,7 +143,7 @@ class AccountRepositoryImpl @Inject constructor(
                             sources = if (sources.first().sourceId != null){
                                 sources.map { row ->
                                     val sourceType = when (row.type) {
-                                        0 -> {
+                                        1 -> {
                                             if (row.number != null){
                                                 SourceType.BankCard(
                                                     id = row.bankId ?: -1,
@@ -156,7 +157,7 @@ class AccountRepositoryImpl @Inject constructor(
                                             }else null
                                         }
 
-                                        1 -> SourceType.Gold(
+                                        2 -> SourceType.Gold(
                                             value = row.value ?: 0.0,
                                             weight = row.weight ?: 0.0
                                         )
@@ -211,6 +212,10 @@ class AccountRepositoryImpl @Inject constructor(
 
     override suspend fun synced(id: Int, sId: String) {
         accountDao.synced(id, sId)
+    }
+
+    override suspend fun updateSelectedAccountAndSources(accountId: Int) {
+        accountDao.updateSelectedAccount(accountId)
     }
 
     override suspend fun syncAccounts() {

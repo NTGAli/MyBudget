@@ -8,7 +8,9 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +29,8 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 fun RadioCheck(
     modifier: Modifier = Modifier,
     isChecked: Boolean,
-    size: Float = 24f,
+    size: Float = 18f,
+    isCircle: Boolean,
     radius: Int = 4,
     checkedColor: Color = MaterialTheme.colorScheme.primary,
     uncheckedColor: Color = MaterialTheme.colorScheme.background,
@@ -40,8 +43,15 @@ fun RadioCheck(
     Box(
         modifier = modifier
             .size(size.dp)
-            .background(color = checkboxColor, shape = RoundedCornerShape(radius.dp))
-            .border(width = 1.5.dp, color = if (isChecked) checkedColor else MaterialTheme.colorScheme.outline, shape = RoundedCornerShape(radius.dp)),
+            .background(
+                if (!isCircle && isChecked) checkboxColor else uncheckedColor,
+                if (isCircle) CircleShape else RoundedCornerShape(radius.dp))
+            .border(
+                width = if (isCircle && isChecked) 3.5.dp else 1.5.dp,
+                color = if (isChecked) checkboxColor else MaterialTheme.colorScheme.surfaceDim,
+                shape = if (isCircle) CircleShape else RoundedCornerShape(radius.dp)
+            )
+        ,
         contentAlignment = Alignment.Center
     ) {
         androidx.compose.animation.AnimatedVisibility(
@@ -54,11 +64,13 @@ fun RadioCheck(
             ),
             exit = fadeOut()
         ) {
-            Icon(
-                painterResource(id = BudgetIcons.Tick),
-                contentDescription = null,
-                tint = uncheckedColor
-            )
+            if (!isCircle) {
+                Icon(
+                    painterResource(id = BudgetIcons.Tick),
+                    contentDescription = null,
+                    tint = uncheckedColor
+                )
+            }
         }
     }
 }
