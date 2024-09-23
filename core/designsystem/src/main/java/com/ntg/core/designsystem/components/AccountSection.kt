@@ -1,12 +1,15 @@
 package com.ntg.core.designsystem.components
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,12 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -43,6 +48,7 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceTypes
+import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.mybudget.common.getCardDetailsFromAssets
 import com.ntg.core.mybudget.common.mask
 import com.ntg.mybudget.core.designsystem.R
@@ -52,18 +58,18 @@ fun AccountSection(
     modifier: Modifier = Modifier,
     account: AccountWithSources,
     canEdit: Boolean,
+    isAccountSelected: Boolean = false,
+    selectedSources: MutableList<Int> = mutableListOf(),
     insertNewItem: () -> Unit = {},
     onSourceEdit: (Int) -> Unit = {},
     accountEndIconClick: (Int) -> Unit = {},
     deleteAccount: (Int) -> Unit = {},
-    deleteSource: (Int) -> Unit = {}
+    deleteSource: (Int) -> Unit = {},
+    onAccountSelect: (Int) -> Unit = {},
+    onSourceSelect: (Int) -> Unit = {}
 ) {
-
+    var expaned by remember { mutableStateOf(isAccountSelected) }
     val context = LocalContext.current
-    val isCheck = remember {
-        mutableStateOf(false)
-    }
-
 
     Column(
         modifier = modifier
@@ -72,70 +78,92 @@ fun AccountSection(
                 shape = RoundedCornerShape(16.dp)
             )
             .clip(RoundedCornerShape(16.dp))
+            .animateContentSize()
     ) {
 
         Item(
             type = -1,
             title = account.accountName,
-            isChecked = isCheck,
+            isChecked = isAccountSelected,
             canEdit = canEdit,
-            isHeader = true
+            isHeader = true,
+            onCLick = {
+                expaned = true
+                onAccountSelect.invoke(account.accountId)
+            }
         ) {
-
-            Popup(popupItems = listOf(
-                PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
-                PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
-                if (it == 1) {
-                    accountEndIconClick(account.accountId)
-                }else if (it == 2){
-                    deleteAccount(account.accountId)
+            if (canEdit) {
+                Popup(popupItems = listOf(
+                    PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
+                    PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
+                    if (it == 1) {
+                        accountEndIconClick(account.accountId)
+                    } else if (it == 2) {
+                        deleteAccount(account.accountId)
+                    }
+                }
+            } else {
+                IconButton(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(32.dp),
+                    onClick = { expaned = !expaned }
+                ) {
+                    Icon(painter = painterResource(id = BudgetIcons.directionDown), contentDescription = "wallet icon")
                 }
             }
         }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
-        account.sources.forEach { source ->
+        if (expaned) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
+            account.sources.forEach { source ->
 
-            val subTitle = if (source?.sourceType is SourceType.BankCard) (source.sourceType as SourceType.BankCard).number.mask("#### #### #### ####")
-            else ""
+                val subTitle = if (source?.sourceType is SourceType.BankCard) (source.sourceType as SourceType.BankCard).number.mask("#### #### #### ####")
+                else ""
 
-            val title = if (source?.sourceType is SourceType.BankCard){
-                val bandData = getCardDetailsFromAssets(context,
-                    (source.sourceType as SourceType.BankCard).number)
-                if (bandData != null){
-                    "${bandData.bank_title} - ${
-                        (source.sourceType as SourceType.BankCard).number.takeLast(4)
-                    }"
-                }else stringResource(id = R.string.bank_card)
-            }
-            else ""
+                val title = if (source?.sourceType is SourceType.BankCard){
+                    val bandData = getCardDetailsFromAssets(context,
+                        (source.sourceType as SourceType.BankCard).number)
+                    if (bandData != null){
+                        "${bandData.bank_title} - ${
+                            (source.sourceType as SourceType.BankCard).number.takeLast(4)
+                        }"
+                    }else stringResource(id = R.string.bank_card)
+                }
+                else ""
 
-            if (title.isNotEmpty()){
-                Item(
-                    isImage = true,
-                    title = title,
-                    subtitle = subTitle,
-                    isChecked = isCheck,
-                    canEdit = canEdit,
-                    type = source?.type ?: 0
-                ) {
-                    if (canEdit){
-                        Popup(popupItems = listOf(
-                            PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
-                            PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
-                            if (it == 1) {
-                                onSourceEdit(source?.id ?: -1)
-                            }else if (it == 2){
-                                deleteSource(source?.id ?: -1)
+                if (title.isNotEmpty()){
+                    Item(
+                        isImage = true,
+                        title = title,
+                        subtitle = subTitle,
+                        canEdit = canEdit,
+                        type = source?.type ?: 0,
+                        onCLick = { onSourceSelect.invoke(source?.id ?: -1) }
+                    ) {
+                        if (canEdit){
+                            Popup(popupItems = listOf(
+                                PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
+                                PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
+                                if (it == 1) {
+                                    onSourceEdit(source?.id ?: -1)
+                                }else if (it == 2){
+                                    deleteSource(source?.id ?: -1)
+                                }
                             }
+                        } else {
+                            RadioCheck(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                isChecked = selectedSources.contains(source?.id ?: -1), isCircle = false
+                            )
                         }
                     }
                 }
             }
-        }
 
-        InsetItem{
-            insertNewItem()
+            InsetItem{
+                insertNewItem()
+            }
         }
     }
 
@@ -149,10 +177,10 @@ private fun Item(
     isImage: Boolean = false,
     title: String,
     subtitle: String? = null,
-    setStartRadio: Boolean = false,
-    isChecked: MutableState<Boolean>,
+    isChecked: Boolean = false,
     canEdit: Boolean,
     isHeader: Boolean = false,
+    onCLick: () -> Unit,
     endItem: @Composable () -> Unit
 ) {
 
@@ -160,14 +188,15 @@ private fun Item(
 
     Row(
         modifier
+            .clickable { onCLick.invoke() }
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        if (setStartRadio) {
+        if (isHeader && !canEdit) {
             RadioCheck(
-                modifier = Modifier.padding(start = 8.dp),
-                isChecked = isChecked.value, radius = 12
+                modifier = Modifier.padding(horizontal = 8.dp),
+                isChecked = isChecked, isCircle = isHeader
             )
         } else {
             Spacer(modifier = Modifier.padding(start = 16.dp))
@@ -236,12 +265,8 @@ private fun Item(
 
         Column(
             modifier = Modifier
-                .then(
-                    if (canEdit && isHeader) Modifier else Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
-                .padding(start = 12.dp)
+                .weight(1f)
+                .padding(start = 12.dp, end = 8.dp)
         ) {
 
             Text(

@@ -56,7 +56,7 @@ interface AccountDao {
                bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
         FROM accounts ae
         LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND bc.isDeleted = 0
         WHERE ae.isRemoved = 0
         """
     )
@@ -69,7 +69,7 @@ interface AccountDao {
                bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
         FROM accounts ae
         LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND bc.isDeleted = 0
         WHERE ae.isRemoved = 0 AND ae.isSelected = 1
         """
     )
@@ -84,4 +84,6 @@ interface AccountDao {
     @Query("UPDATE accounts SET isSynced=1, sId=:sId  WHERE id=:id")
     suspend fun synced(id: Int, sId: String)
 
+    @Query("UPDATE accounts SET isSelected = CASE WHEN id=:id THEN 1 ELSE 0 END")
+    suspend fun updateSelectedAccount(id: Int)
 }

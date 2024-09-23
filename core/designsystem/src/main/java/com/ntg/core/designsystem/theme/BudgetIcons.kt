@@ -30,4 +30,6 @@ object BudgetIcons {
   val more = R.drawable.more
   val trash = R.drawable.trash
   val CalenderTick = R.drawable.calander_tick
+  val UserCircle = R.drawable.ic_user_circle
+  val Exit = R.drawable.ic_exit
 }
