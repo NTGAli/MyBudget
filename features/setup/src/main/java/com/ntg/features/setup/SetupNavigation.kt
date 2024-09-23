@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -38,6 +37,7 @@ fun NavController.navigateToCurrencies() {
 
 fun NavGraphBuilder.setupScreen(
     sharedViewModel: SharedViewModel,
+    setupViewModel: SetupViewModel,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToHome: () -> Unit,
@@ -66,7 +66,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
+        SourceRoute(sharedViewModel,setupViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
     }
 
     composable(
@@ -77,7 +77,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
+        SourceRoute(sharedViewModel, setupViewModel,it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
     }
 
     composable(
@@ -95,7 +95,7 @@ fun NavGraphBuilder.setupScreen(
     composable(
         route = Currencies_Route
     ) {
-        CurrenciesRoute(sharedViewModel, onBack = onBack)
+        CurrenciesRoute(sharedViewModel,setupViewModel, onBack = onBack)
     }
 
 }

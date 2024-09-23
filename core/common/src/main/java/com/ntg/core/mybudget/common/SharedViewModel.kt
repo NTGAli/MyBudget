@@ -2,6 +2,7 @@ package com.ntg.core.mybudget.common
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.ntg.core.model.res.Currency
 
 class SharedViewModel : ViewModel() {
     var loginEventListener: LoginEventListener? = null
@@ -10,8 +11,6 @@ class SharedViewModel : ViewModel() {
     val bottomNavIcon = MutableLiveData<Int>()
     val setExpand = MutableLiveData<Boolean>()
     val setLoading = MutableLiveData<Boolean>()
-
-    var selectedCurrency: String = ""
 
     fun sendLoginEvent() {
         loginEventListener?.onLoginEvent()

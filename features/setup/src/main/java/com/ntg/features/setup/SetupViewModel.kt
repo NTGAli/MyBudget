@@ -1,6 +1,7 @@
 package com.ntg.features.setup
 
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
@@ -29,6 +30,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -47,6 +51,8 @@ class SetupViewModel
 ) : ViewModel() {
 
     val homeUiState = MutableStateFlow(SetupUiState.Loading)
+
+    var selectedCurrency = flowOf<Currency?>(null)
 
     fun accounts() = accountRepository.getAll()
 
