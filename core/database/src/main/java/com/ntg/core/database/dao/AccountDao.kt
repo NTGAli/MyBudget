@@ -52,11 +52,13 @@ interface AccountDao {
     @Query(
         """
         SELECT ae.id as accountId, ae.name as accountName, ae.isDefault as isDefaultAccount,
-               se.id as sourceId, se.type, se.name,
-               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
+               se.id as sourceId, se.type,
+               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba,
+               cr.country, cr.nativeName as name, cr.symbol
         FROM accounts ae
         LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND bc.isDeleted = 0
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
         WHERE ae.isRemoved = 0
         """
     )
@@ -65,11 +67,13 @@ interface AccountDao {
     @Query(
         """
         SELECT ae.id as accountId, ae.name as accountName, ae.isDefault as isDefaultAccount,
-               se.id as sourceId, se.type, se.name,
-               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba
+               se.id as sourceId, se.type,
+               bc.number, bc.cvv, bc.date, bc.id as bankId, bc.name, bc.accountNumber, bc.sheba,
+               cr.country, cr.nativeName as name, cr.symbol
         FROM accounts ae
         LEFT JOIN sourceExpenditures se ON ae.id = se.accountId AND se.isRemoved = 0
-        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0 AND bc.isDeleted = 0
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND bc.isDeleted = 0
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
         WHERE ae.isRemoved = 0 AND ae.isSelected = 1
         """
     )

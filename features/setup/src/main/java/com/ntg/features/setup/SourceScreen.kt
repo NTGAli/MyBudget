@@ -252,8 +252,7 @@ private fun SourceScreen(
         SourceExpenditure(
             id = generateUniqueFiveDigitId(),
             accountId = 0,
-            name = selectedCurrency?.faName,
-            symbol = selectedCurrency?.symbol,
+            currencyId = selectedCurrency?.id,
             isSelected = false,
             type = sourceType,
             dateCreated = System.currentTimeMillis().toString()

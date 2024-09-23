@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "9e7d3d383970d6c17a0054aa609e658c",
+    "identityHash": "ff0839f60037d482dbb4fa431a091f02",
     "entities": [
       {
         "tableName": "accounts",
@@ -74,7 +74,7 @@
       },
       {
         "tableName": "sourceExpenditures",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `accountId` INTEGER NOT NULL, `type` INTEGER, `name` TEXT, `icon` TEXT, `symbol` TEXT, `isoCode` TEXT, `precision` INTEGER NOT NULL, `isSelected` INTEGER NOT NULL, `isCrypto` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `isRemoved` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `accountId` INTEGER NOT NULL, `type` INTEGER, `icon` TEXT, `currencyId` INTEGER, `isSelected` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `isRemoved` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -101,44 +101,20 @@
             "notNull": false
           },
           {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
             "fieldPath": "icon",
             "columnName": "icon",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "symbol",
-            "columnName": "symbol",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isoCode",
-            "columnName": "isoCode",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "precision",
-            "columnName": "precision",
+            "fieldPath": "currencyId",
+            "columnName": "currencyId",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "isSelected",
             "columnName": "isSelected",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isCrypto",
-            "columnName": "isCrypto",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -612,7 +588,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9e7d3d383970d6c17a0054aa609e658c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ff0839f60037d482dbb4fa431a091f02')"
     ]
   }
 }

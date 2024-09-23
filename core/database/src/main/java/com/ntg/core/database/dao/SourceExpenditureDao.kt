@@ -36,15 +36,14 @@ interface SourceExpenditureDao {
     suspend fun tempRemove(id: Int)
 
     @Transaction
-    @Query(
-        "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
-//                "            ge.value, ge.weight\n" +
-                "        FROM sourceExpenditures se\n" +
-                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
-        "WHERE se.isRemoved != 1"
-//                "        LEFT JOIN gold_entity ge ON se.id = ge.sourceId AND se.type = 1 "
-    )
+    @Query("""
+        SELECT se.id, se.accountId, se.type, cr.nativeName as name,
+        bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.id as bankId
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        WHERE se.isRemoved != 1
+    """)
     suspend fun getSourcesByAccount(): List<RawSourceDetail>
 
     @Transaction
@@ -80,13 +79,14 @@ interface SourceExpenditureDao {
 
 
     @Transaction
-    @Query(
-        "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
-                "        FROM sourceExpenditures se\n" +
-                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
-                " WHERE se.id=:id"
-    )
+    @Query("""
+        SELECT se.id, se.accountId, se.type, cr.nativeName as name,
+        bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        WHERE se.id=:id
+    """)
     suspend fun getSourceWithDetails(id: Int): RawSourceDetail?
 
     @Transaction
