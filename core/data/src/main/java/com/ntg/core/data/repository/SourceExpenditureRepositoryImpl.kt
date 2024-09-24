@@ -16,9 +16,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class SourceExpenditureRepositoryImpl@Inject constructor(
+class SourceExpenditureRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     private val sourceExpenditureDao: SourceExpenditureDao,
     private val cardDao: BankCardDao,
@@ -36,8 +37,14 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
     override suspend fun tempRemove(sourceId: Int) {
         val source = sourceExpenditureDao.getSource(sourceId)
         sourceExpenditureDao.tempRemove(sourceId)
-        if (source?.type == 0){
+        if (source?.type == 0) {
             cardDao.tempRemove(sourceId)
+        }
+    }
+
+    override suspend fun updateSelectedSources(sourceIds: List<Int>) {
+        if (sourceIds.isNotEmpty()) {
+            sourceExpenditureDao.updateSelectedSources(sourceIds)
         }
     }
 
@@ -69,6 +76,41 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
         flow {
             emit(
                 sourceExpenditureDao.getSourceDetails(id)
+            )
+        }.flowOn(ioDispatcher)
+
+
+    override suspend fun getSelectedSources(): Flow<List<SourceWithDetail>> =
+        flow {
+            emit(
+                sourceExpenditureDao.getSelectedSources().map {
+                        row ->
+                    val sourceType = when (row.type) {
+                        0 -> SourceType.BankCard(
+                            id = row.bankId ?: -1,
+                            number = row.number ?: "",
+                            cvv = row.cvv ?: "",
+                            sheba = row.sheba ?: "",
+                            accountNumber = row.accountNumber ?: "",
+                            date = row.expire ?: "",
+                            name = row.cardName.orEmpty()
+                        )
+
+                        1 -> SourceType.Gold(
+                            value = row.value ?: 0.0,
+                            weight = row.weight ?: 0.0
+                        )
+
+                        else -> throw IllegalArgumentException("Unknown type")
+                    }
+                    SourceWithDetail(
+                        id = row.id,
+                        accountId = row.accountId,
+                        type = row.type,
+                        name = row.name,
+                        sourceType = sourceType
+                    )
+                }
             )
         }.flowOn(ioDispatcher)
 
@@ -115,4 +157,5 @@ class SourceExpenditureRepositoryImpl@Inject constructor(
             }
         }
     }
+
 }

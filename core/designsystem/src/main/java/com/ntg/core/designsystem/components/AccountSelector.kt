@@ -21,13 +21,14 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 fun AccountSelector(
     modifier: Modifier = Modifier,
     title: String,
-    subTitle: String
+    subTitle: String,
+    onClick: () -> Unit
 ){
 
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .clickable {  }
+            .clickable { onClick.invoke() }
             .padding(vertical = 4.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

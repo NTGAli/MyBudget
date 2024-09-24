@@ -3,4 +3,7 @@
     <string name="items_format">%s مورد</string>
     <string name="transactions">تراکنش ها</string>
     <string name="new_transaction">تراکنش جدید</string>
+    <string name="user_account">حساب کاربری</string>
+    <string name="exit">خروج</string>
+    <string name="err_min_resource">حداقل باید یک منبع خرج انتخاب شود.</string>
 </resources>

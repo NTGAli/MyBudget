@@ -15,14 +15,20 @@ fun NavController.navigateToHome(){
 
 
 fun NavGraphBuilder.homeScreen(
-    sharedViewModel: SharedViewModel
+    sharedViewModel: SharedViewModel,
+    navigateToSource: (id: Int, sourceId: Int?) -> Unit,
+    navigateToAccount: (id: Int) -> Unit,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
 ){
 
     composable(
         route = Home_Route
     ){
         HomeRoute(
-            sharedViewModel
+            sharedViewModel = sharedViewModel,
+            navigateToSource = navigateToSource,
+            navigateToAccount = navigateToAccount,
+            onShowSnackbar = onShowSnackbar
         )
     }
 

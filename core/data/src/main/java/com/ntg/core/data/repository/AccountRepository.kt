@@ -34,6 +34,8 @@ interface AccountRepository {
 
     suspend fun synced(id: Int, sId: String)
 
+    suspend fun updateSelectedAccountAndSources(accountId: Int)
+
     //server
     suspend fun syncAccounts()
 

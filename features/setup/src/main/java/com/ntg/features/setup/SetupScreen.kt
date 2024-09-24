@@ -44,6 +44,7 @@ import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.LoadingView
+import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
@@ -264,35 +265,9 @@ private fun SetupScreen(
                     }
 
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp)
-                                .padding(horizontal = 24.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .border(
-                                    width = 1.dp,
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = MaterialTheme.colorScheme.surfaceContainerHighest
-                                )
-                                .clickable {
-                                    navigateToAccount(0)
-                                }
-                                .padding(vertical = 18.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.add_new_account),
-                                style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.outlineVariant)
-                            )
-                            Icon(
-                                modifier = Modifier.padding(start = 8.dp),
-                                painter = painterResource(id = BudgetIcons.Add),
-                                contentDescription = "add account"
-                            )
+                        SampleAddAccountButton() {
+                            navigateToAccount(0)
                         }
-
                     }
 
                     item {

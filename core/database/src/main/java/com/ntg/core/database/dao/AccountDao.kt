@@ -88,4 +88,6 @@ interface AccountDao {
     @Query("UPDATE accounts SET isSynced=1, sId=:sId  WHERE id=:id")
     suspend fun synced(id: Int, sId: String)
 
+    @Query("UPDATE accounts SET isSelected = CASE WHEN id=:id THEN 1 ELSE 0 END")
+    suspend fun updateSelectedAccount(id: Int)
 }

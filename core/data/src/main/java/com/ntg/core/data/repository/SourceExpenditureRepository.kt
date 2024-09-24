@@ -12,6 +12,8 @@ interface SourceExpenditureRepository {
 
     suspend fun tempRemove(sourceId: Int)
 
+    suspend fun updateSelectedSources(sourceIds: List<Int>)
+
     fun getAll(): Flow<List<SourceExpenditure>>
 
     fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>>
@@ -20,5 +22,9 @@ interface SourceExpenditureRepository {
 
     fun getSourceDetails(id: Int): Flow<SourceWithDetail?>
 
+
+    suspend fun getSelectedSources(): Flow<List<SourceWithDetail>>
+
     suspend fun syncSources()
+
 }

@@ -125,6 +125,23 @@ interface SourceExpenditureDao {
         }
     }
 
+
+    @Query("UPDATE sourceExpenditures SET isSelected = CASE WHEN id IN (:ids) THEN 1 ELSE 0 END")
+    suspend fun updateSelectedSources(ids: List<Int>)
+
+//    @Query("SELECT * FROM sourceExpenditures WHERE isSelected = 1")
+//    suspend fun getSelectedSources(): List<SourceWithDetail>
+
+    @Transaction
+    @Query(
+        "SELECT se.id, se.accountId, se.type, se.name,\n" +
+                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
+                "        FROM sourceExpenditures se\n" +
+                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
+                " WHERE se.isSelected = 1"
+    )
+    suspend fun getSelectedSources(): List<RawSourceDetail>
+
     @Query("""
         SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId,
         bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.bankId as bankId,
@@ -137,5 +154,4 @@ interface SourceExpenditureDao {
         WHERE se.isSynced = 0
     """)
     fun unSynced(): Flow<List<RawSourceDetail>>
-
 }
