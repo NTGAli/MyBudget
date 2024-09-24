@@ -18,4 +18,5 @@
     <string name="delete">حذف</string>
     <string name="cancel">لغو</string>
     <string name="deleting_deafult_account">حذف اکانت پیشفرض امکان پذیر نیست.</string>
+    <string name="currency">واحدهای مالی</string>
 </resources>

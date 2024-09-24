@@ -7,7 +7,9 @@ import androidx.navigation.compose.NavHost
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.homeScreen
 import com.ntg.features.home.navigateToHome
+import com.ntg.features.setup.SetupViewModel
 import com.ntg.features.setup.navigateToCreateAccount
+import com.ntg.features.setup.navigateToCurrencies
 import com.ntg.features.setup.navigateToSetup
 import com.ntg.features.setup.navigateToSource
 import com.ntg.features.setup.setupScreen
@@ -30,6 +32,7 @@ fun BudgetNavHost(
 ) {
     val navController = appState.navController
     val loginViewModel: LoginViewModel = hiltViewModel()
+    val setupViewModel: SetupViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -49,12 +52,14 @@ fun BudgetNavHost(
 
         setupScreen(
             sharedViewModel,
+            setupViewModel,
             navigateToSource = navController::navigateToSource,
             navigateToAccount = navController::navigateToCreateAccount,
             onBack = navController::popBackStack,
             onShowSnackbar = onShowSnackbar,
             navigateToLogin = navController::navigateToLogin,
             navigateToHome = navController::navigateToHome,
+            navigateToCurrencies = navController::navigateToCurrencies
         )
 
         homeScreen(

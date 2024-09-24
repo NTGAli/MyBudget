@@ -22,5 +22,9 @@ interface SourceExpenditureRepository {
 
     fun getSourceDetails(id: Int): Flow<SourceWithDetail?>
 
+
     suspend fun getSelectedSources(): Flow<List<SourceWithDetail>>
+
+    suspend fun syncSources()
+
 }

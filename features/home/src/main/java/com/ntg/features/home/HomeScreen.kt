@@ -74,7 +74,7 @@ fun HomeRoute(
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ){
-    var expandTransaction = remember { mutableStateOf(false) }
+    val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
 

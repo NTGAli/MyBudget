@@ -51,6 +51,7 @@ import com.ntg.core.model.AccountWithSources
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.toUnixTimestamp
 import com.ntg.feature.setup.R
 import kotlinx.coroutines.launch
@@ -159,13 +160,13 @@ fun SetupRoute(
         }
     }
 
-    if (accounts.value != null){
-        LaunchedEffect(key1 = Unit) {
-            if (accounts.value.orEmpty().any { it.sources.isNotEmpty() }){
-                navigateToHome()
-            }
-        }
-    }
+//    if (accounts.value != null){
+//        LaunchedEffect(key1 = Unit) {
+//            if (accounts.value.orEmpty().any { it.sources.isNotEmpty() }){
+//                navigateToHome()
+//            }
+//        }
+//    }
 
 }
 
@@ -241,6 +242,7 @@ private fun SetupScreen(
                             }, accountEndIconClick = {
                                 editAccount(it)
                             }, onSourceEdit = {
+                                logd("LLLLLLLLLLLLLLL :::: ${account.accountId} -- $it")
                                 navigateToSource(account.accountId, it)
                             }, deleteSource = {
                                 showDialog = true

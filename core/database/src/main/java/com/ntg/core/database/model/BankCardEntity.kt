@@ -12,6 +12,7 @@ data class BankCardEntity(
     val id: Int,
     val sId: String? = null,
     val sourceId: Int? = null,
+    val bankId: Int? = null,
     val number: String,
     val date: String,
     val cvv: String? = null,

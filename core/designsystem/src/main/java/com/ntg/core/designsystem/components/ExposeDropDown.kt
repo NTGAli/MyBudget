@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +40,8 @@ fun ExposedDropdownMenuSample(
 ) {
 
     var expanded by remember { mutableStateOf(false) }
-    val text = remember { mutableStateOf(defaultText) }
-    var icon by remember {
+    val text = rememberSaveable{ mutableStateOf(defaultText) }
+    var icon by rememberSaveable {
         mutableIntStateOf(BudgetIcons.directionUp)
     }
 

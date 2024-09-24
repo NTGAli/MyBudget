@@ -11,13 +11,9 @@ data class SourceExpenditureEntity(
     val sId: String? = null,
     val accountId: Int,
     val type: Int? = null,
-    val name: String? = null,
     val icon: String? = null,
-    val symbol: String? = null,
-    val isoCode: String? = null,
-    val precision: Int = 0,
+    val currencyId: Int? = null,
     val isSelected: Boolean,
-    val isCrypto: Boolean = false,
     val isSynced: Boolean = false,
     val isRemoved: Boolean = false,
     val dateCreated: String,
@@ -26,32 +22,24 @@ data class SourceExpenditureEntity(
 fun SourceExpenditureEntity.asSource() = SourceExpenditure(
     id = id,
     sId = sId,
-    symbol = symbol,
-    isoCode = isoCode,
-    precision = precision,
-    isCrypto = isCrypto,
     isSynced = isSynced,
     dateCreated = dateCreated,
     isSelected = isSelected,
     accountId = accountId,
+    currencyId = currencyId,
     icon = icon,
     type = type,
-    name = name
 )
 
 
 fun SourceExpenditure.toEntity() = SourceExpenditureEntity(
     id = id,
     sId = sId,
-    symbol = symbol,
-    isoCode = isoCode,
-    precision = precision,
-    isCrypto = isCrypto,
     isSynced = isSynced,
     dateCreated = dateCreated,
     isSelected = isSelected,
     accountId = accountId,
+    currencyId = currencyId,
     icon = icon,
     type = type,
-    name = name
 )
