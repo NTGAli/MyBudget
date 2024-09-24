@@ -1,6 +1,5 @@
 package com.ntg.features.home
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +38,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -74,7 +71,7 @@ fun HomeRoute(
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ){
-    var expandTransaction = remember { mutableStateOf(false) }
+    val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
 
@@ -159,7 +156,7 @@ private fun HomeScreen(
                         .padding(top = 8.dp)
                         .padding(horizontal = 24.dp),
                     title = formatCurrency(
-                        amount = transactions.value?.map { it.amount }?.sum() ?: 0L,
+                        amount = transactions.value?.sumOf { it.amount } ?: 0L,
                         mask = "###,###",
                         currency = "ت",
                         pos = 2
@@ -255,7 +252,7 @@ fun DateItem(
     modifier: Modifier = Modifier,
     unixTime: Long
 ){
-
+    logd("DateItem :: $unixTime")
     Row(
         modifier = modifier
             .padding(end = 16.dp)
@@ -356,7 +353,7 @@ fun AccountSelectorSheet(
         }
 
         item {
-            SampleAddAccountButton() {
+            SampleAddAccountButton {
                 navigateToAccount(0)
             }
             Spacer(modifier = Modifier.height(8.dp))
