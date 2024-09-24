@@ -74,7 +74,7 @@ fun HomeRoute(
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ){
-    var expandTransaction = remember { mutableStateOf(false) }
+    val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
 
@@ -159,7 +159,7 @@ private fun HomeScreen(
                         .padding(top = 8.dp)
                         .padding(horizontal = 24.dp),
                     title = formatCurrency(
-                        amount = transactions.value?.map { it.amount }?.sum() ?: 0L,
+                        amount = transactions.value?.sumOf { it.amount } ?: 0L,
                         mask = "###,###",
                         currency = "ت",
                         pos = 2
@@ -356,7 +356,7 @@ fun AccountSelectorSheet(
         }
 
         item {
-            SampleAddAccountButton() {
+            SampleAddAccountButton {
                 navigateToAccount(0)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -367,7 +367,7 @@ fun AccountSelectorSheet(
                 iconPainter = painterResource(id = BudgetIcons.UserCircle),
                 iconTint = MaterialTheme.colorScheme.outline
             ) {
-                
+
             }
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = MaterialTheme.colorScheme.surfaceContainerHighest)
