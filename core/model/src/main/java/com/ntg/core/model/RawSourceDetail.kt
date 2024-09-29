@@ -2,7 +2,11 @@ package com.ntg.core.model
 
 data class RawSourceDetail(
     val id: Int,
+    val sId: Int? = null,
+    val accountSId: String?=null,
     val accountId: Int,
+    val currencyId: Int? = null,
+    val bankName: String? = null,
     val type: Int,
     val name: String,
     val number: String?,

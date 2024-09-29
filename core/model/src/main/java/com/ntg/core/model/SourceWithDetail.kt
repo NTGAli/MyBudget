@@ -2,7 +2,9 @@ package com.ntg.core.model
 
 data class SourceWithDetail(
     val id: Int,
+    val accountSId: String? = null,
     val accountId: Int,
+    val currencyId: Int? = null,
     val type: Int,
     val name: String,
     val sourceType: SourceType?,
@@ -21,6 +23,8 @@ sealed class SourceType {
         val sheba: String? = null,
         val accountNumber: String? = null,
         val name: String,
+        val bankId: Int? = null,
+        val nativeName: String? = null,
         val isSynced: Boolean = false,
         val isDeleted: Boolean = false,
         val updatedAt: String? = null
