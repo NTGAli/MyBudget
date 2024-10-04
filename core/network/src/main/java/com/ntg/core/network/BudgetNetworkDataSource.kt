@@ -9,6 +9,7 @@ import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
@@ -38,4 +39,6 @@ interface BudgetNetworkDataSource {
     suspend fun syncSources(source: SourceWithDetail): Flow<Result<SyncedAccount?>>
 
     suspend fun removeWallet(id: String): Flow<Result<ResponseBody<String?>>>
+
+    suspend fun updateWallet(id: String, source: SourceWithDetail): Flow<Result<SyncedWallet?>>
 }

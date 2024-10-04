@@ -12,6 +12,7 @@ import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
@@ -117,6 +118,21 @@ internal class RetrofitBudgetNetwork @Inject constructor(
     override suspend fun removeWallet(id: String): Flow<Result<ResponseBody<String?>>> {
         return networkBoundResources.downloadData(ioDispatcher){
             apiService.deleteWallet(id)
+        }
+    }
+
+    override suspend fun updateWallet(id: String, source: SourceWithDetail): Flow<Result<SyncedWallet?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            val details = if (source.sourceType is SourceType.BankCard){
+                Gson().toJson(SourceDetailReq(
+                    cart_number = (source.sourceType as SourceType.BankCard).number,
+                    bank_id = (source.sourceType as SourceType.BankCard).bankId.toString(),
+                    bank_name = (source.sourceType as SourceType.BankCard).nativeName,
+                    cart_owner_name = (source.sourceType as SourceType.BankCard).name,
+                    cvv2 = (source.sourceType as SourceType.BankCard).cvv
+                ))
+            }else ""
+            apiService.updateWallet(id, details)
         }
     }
 }

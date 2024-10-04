@@ -157,4 +157,7 @@ interface SourceExpenditureDao {
 
     @Query("UPDATE sourceExpenditures SET sId=:sId, isSynced=1 WHERE id=:id")
     suspend fun sync(id: Int, sId: String)
+
+    @Query("UPDATE sourceExpenditures SET isSynced=0 WHERE id=:id")
+    suspend fun unSync(id: Int)
 }

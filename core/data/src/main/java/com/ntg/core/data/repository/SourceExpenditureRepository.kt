@@ -27,4 +27,6 @@ interface SourceExpenditureRepository {
 
     suspend fun syncSources()
 
+    suspend fun needToSync(id: Int)
+
 }

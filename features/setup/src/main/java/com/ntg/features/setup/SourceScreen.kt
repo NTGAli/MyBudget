@@ -65,6 +65,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.logd
@@ -81,6 +82,7 @@ fun SourceRoute(
 ) {
 
     sharedViewModel.setExpand.postValue(true)
+    val context = LocalContext.current
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
     var source by remember {
         mutableStateOf<SourceExpenditure?>(null)
@@ -160,7 +162,7 @@ fun SourceRoute(
                                 onShowSnackbar(R.string.err_empty_name, null)
                             }
                             return
-                        } else if (cardBalance.isEmpty()) {
+                        } else if (cardBalance.isEmpty() && editSource == null) {
                             scope.launch {
                                 onShowSnackbar(R.string.err_balance_empty, null)
                             }
@@ -169,7 +171,7 @@ fun SourceRoute(
 
                         if (editSource != null) {
                             bankCard?.sourceId = sourceId
-                            setupViewModel.updateBankCard(bankCard!!)
+                            setupViewModel.updateBankCard(bankCard!!, sourceId!!, context = context)
                             onBack()
                         } else if (source != null && bankCard != null) {
                             source?.accountId = accountId
@@ -217,7 +219,7 @@ fun SourceRoute(
     }
 
     LaunchedEffect(editSource) {
-        if (editSource != null){
+        if (editSource != null) {
             sourceType = editSource.type
         }
     }
@@ -621,16 +623,14 @@ private fun BankCardView(
 
     if (editBankCard != null) {
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest)
-        BudgetButton(
+        SampleItem(
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            iconStart = painterResource(id = BudgetIcons.trash),
-            text = stringResource(id = R.string.delete_card),
-            type = ButtonType.Error,
-            style = ButtonStyle.TextOnly,
-            size = ButtonSize.MD
+            title = stringResource(id = R.string.delete_card),
+            iconPainter = painterResource(id = BudgetIcons.trash),
+            type = ButtonType.Error
         ) {
             showDeleteSheet = true
         }

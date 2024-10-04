@@ -7,6 +7,7 @@ import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import retrofit2.Response
@@ -86,4 +87,11 @@ interface BudgetService {
     suspend fun deleteWallet(
         @Field("wallet_id") id: String,
     ): Response<ResponseBody<String?>>
+
+    @FormUrlEncoded
+    @POST(value = "/api/wallet/update")
+    suspend fun updateWallet(
+        @Field("wallet_id") id: String,
+        @Field("details") details: String,
+    ): Response<SyncedWallet?>
 }

@@ -131,9 +131,13 @@ class SetupViewModel
         }
     }
 
-    fun updateBankCard(bankCard: SourceType.BankCard) {
+    fun updateBankCard(bankCard: SourceType.BankCard, walletId: Int, context: Context?) {
         viewModelScope.launch {
             bankCardRepository.update(bankCard)
+            sourceRepository.needToSync(walletId)
+        }
+        if (context != null){
+            Sync.initialize(context = context)
         }
     }
 

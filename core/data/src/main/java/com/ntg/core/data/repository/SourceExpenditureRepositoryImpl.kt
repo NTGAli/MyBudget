@@ -140,11 +140,13 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
 
                 if (row.isRemoved == true) {
                     if (row.sId == null) {
+                        // wallet not synced yet
                         sourceExpenditureDao.forceDelete(row.id)
                         if (row.type == 1){
                             cardDao.forceDelete(row.id)
                         }
                     } else {
+                        // wallet already sync, wait server remove
                         network.removeWallet(row.sId!!).collect {
                             if (it is Result.Success) {
                                 sourceExpenditureDao.forceDelete(row.id)
@@ -153,6 +155,7 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                     }
 
                 } else if (row.sId == null) {
+                    //create new wallet on server
                     network.syncSources(
                         SourceWithDetail(
                             id = row.id,
@@ -171,11 +174,35 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                             }
                         }
                     }
+                }else{
+                    //update wallet
+                    network.updateWallet(
+                        row.sId.orEmpty(),
+                        SourceWithDetail(
+                            id = row.id,
+                            accountId = row.accountId,
+                            accountSId = row.accountSId,
+                            currencyId = row.currencyId,
+                            type = row.type,
+                            name = row.name,
+                            sourceType = sourceType,
+                        )
+                    ).collect { result ->
+                        if (result is Result.Success) {
+                            if (result.data != null) {
+                                sourceExpenditureDao.sync(row.id, result.data?.id.orEmpty())
+                            }
+                        }
+                    }
                 }
 
 
             }
         }
+    }
+
+    override suspend fun needToSync(id: Int) {
+        sourceExpenditureDao.unSync(id)
     }
 
 }
