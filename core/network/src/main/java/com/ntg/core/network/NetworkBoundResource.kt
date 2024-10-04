@@ -47,7 +47,7 @@ class NetworkBoundResource @Inject constructor(){
         }?:"Whoops! Unknown error occurred. Please try again"
     }
     private fun message(throwable: Throwable?):String{
-        Log.d("NetworkBoundResource", "message: ${throwable?.localizedMessage}")
+        Log.d("NetworkBoundResource", "message: ${throwable?.localizedMessage} --- ${throwable?.message}")
         when (throwable) {
             is SocketTimeoutException -> return "Whoops! Connection time out. Please try again"
             is IOException -> return "Whoops! No Internet Connection. Please try again"

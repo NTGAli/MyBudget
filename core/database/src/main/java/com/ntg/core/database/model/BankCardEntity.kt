@@ -10,7 +10,6 @@ import com.ntg.core.model.SourceType
 data class BankCardEntity(
     @PrimaryKey(autoGenerate = false)
     val id: Int,
-    val sId: String? = null,
     val sourceId: Int? = null,
     val bankId: Int? = null,
     val number: String,
@@ -19,7 +18,6 @@ data class BankCardEntity(
     val sheba: String? = null,
     val accountNumber: String? = null,
     val name: String,
-    val isSynced: Boolean = false,
     val isDeleted: Boolean = false,
     val createdAt: String = System.currentTimeMillis().toString(),
     val updatedAt: String= System.currentTimeMillis().toString(),
@@ -29,7 +27,6 @@ data class BankCardEntity(
 fun BankCardEntity.asBank() =
     SourceType.BankCard(
         id = id,
-        sId = sId,
         sourceId = sourceId,
         number = number,
         date = date,
@@ -37,7 +34,6 @@ fun BankCardEntity.asBank() =
         sheba = sheba,
         accountNumber = accountNumber,
         name = name,
-        isSynced = isSynced,
         isDeleted = isDeleted,
         updatedAt = updatedAt
     )
@@ -46,15 +42,13 @@ fun BankCardEntity.asBank() =
 fun SourceType.BankCard.toEntity() =
     BankCardEntity(
         id = id,
-        sId = sId,
         sourceId = sourceId,
         number = number,
-        date = date,
+        date = date.orEmpty(),
         cvv = cvv,
         sheba = sheba,
         accountNumber = accountNumber,
         name = name,
-        isSynced = isSynced,
         isDeleted = isDeleted,
         updatedAt = updatedAt.orEmpty(),
     )

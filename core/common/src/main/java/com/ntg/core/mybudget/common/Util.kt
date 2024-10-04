@@ -13,7 +13,18 @@ import java.security.MessageDigest
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipInputStream
+
+fun Float?.orZero() = this ?: 0f
+fun Long?.orDefault() = this ?: 0L
+fun String?.orDefault() = this ?: ""
+fun Int?.orZero() = this ?: 0
+fun Boolean?.orFalse() = this ?: false
+fun Boolean?.orTrue() = this ?: true
 
 fun getCountryFromPhoneNumber(context: Context, phone_number: String?): String? {
     if (phone_number == null) return null
@@ -174,12 +185,19 @@ fun String.mask(mask: String): String {
 //    }
 //}
 
+private val counter = AtomicInteger(10000)
+
 fun generateUniqueFiveDigitId(): Int {
-    val timestamp = System.currentTimeMillis()
-    val input = "$timestamp".toByteArray()
-    val digest = MessageDigest.getInstance("SHA-256").digest(input)
-    val hash = digest.fold(0) { acc, byte -> (acc shl 8) + byte.toInt() }
-    return hash and 0x7FFFFFFF % 90000 + 10000 // Ensures 5-digit ID
+//    val timestamp = System.currentTimeMillis()
+//    val input = "$timestamp".toByteArray()
+//    val digest = MessageDigest.getInstance("SHA-256").digest(input)
+//    val hash = digest.fold(0) { acc, byte -> (acc shl 8) + byte.toInt() }
+//    return hash and 0x7FFFFFFF % 90000 + 10000 // Ensures 5-digit ID
+    val nextNumber = counter.getAndIncrement()
+    if (nextNumber >= 100000) {
+        throw IllegalStateException("Unique number limit exceeded")
+    }
+    return nextNumber
 }
 
 
@@ -204,10 +222,10 @@ fun String.toUnixTimestamp(): Long {
     return instant.epochSecond
 }
 
-fun formatCurrency(amount: Long, mask:String, currency: String, pos: Int): String {
+fun formatCurrency(amount: Long, mask: String, currency: String, pos: Int): String {
     val decimalFormat = DecimalFormat(mask)
     val formated = decimalFormat.format(amount)
-    return when(pos){
+    return when (pos) {
         1 -> "$currency $formated"
         2 -> "$formated $currency"
         else -> formated
@@ -217,4 +235,10 @@ fun formatCurrency(amount: Long, mask:String, currency: String, pos: Int): Strin
 fun logd(message: String) {
     Log.d("debugLog", message)
 
+}
+
+fun formatTimestamp(timestamp: Long, format: String = "yyyy/MM"): String {
+    val formatter = SimpleDateFormat(format, Locale.getDefault())
+    val date = Date(timestamp)
+    return formatter.format(date)
 }

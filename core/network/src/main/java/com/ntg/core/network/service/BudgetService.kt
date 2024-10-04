@@ -80,4 +80,10 @@ interface BudgetService {
         @Field("details") details: String,
 //        @Field("init_amount") initAmount: String,
     ): Response<SyncedAccount?>
+
+    @FormUrlEncoded
+    @POST(value = "/api/wallet/destroy")
+    suspend fun deleteWallet(
+        @Field("wallet_id") id: String,
+    ): Response<ResponseBody<String?>>
 }

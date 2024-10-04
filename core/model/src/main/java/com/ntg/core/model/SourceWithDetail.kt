@@ -6,7 +6,7 @@ data class SourceWithDetail(
     val accountId: Int,
     val currencyId: Int? = null,
     val type: Int,
-    val name: String,
+    val name: String? = null,
     val sourceType: SourceType?,
     val bankId: Int?=null,
     val expire: Int? = null,
@@ -15,17 +15,15 @@ data class SourceWithDetail(
 sealed class SourceType {
     data class BankCard (
         val id: Int,
-        val sId: String? = null,
         var sourceId: Int? = null,
         val number: String,
-        val date: String,
+        val date: String?=null,
         val cvv: String? = null,
         val sheba: String? = null,
         val accountNumber: String? = null,
         val name: String,
         val bankId: Int? = null,
         val nativeName: String? = null,
-        val isSynced: Boolean = false,
         val isDeleted: Boolean = false,
         val updatedAt: String? = null
     ) : SourceType()

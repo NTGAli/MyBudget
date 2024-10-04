@@ -33,7 +33,7 @@ interface SourceExpenditureDao {
     @Query("SELECT * FROM sourceExpenditures WHERE id=:id")
     suspend fun getSource(id: Int): SourceExpenditureEntity?
 
-    @Query("UPDATE sourceExpenditures SET isRemoved=1 WHERE id=:id")
+    @Query("UPDATE sourceExpenditures SET isRemoved=1, isSynced=0 WHERE id=:id")
     suspend fun tempRemove(id: Int)
 
     @Transaction
@@ -134,7 +134,7 @@ interface SourceExpenditureDao {
 
     @Transaction
     @Query(
-        "SELECT se.id, se.accountId, se.type, se.name,\n" +
+        "SELECT se.id, se.accountId, se.type,\n" +
                 "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
                 "        FROM sourceExpenditures se\n" +
                 "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
@@ -143,7 +143,7 @@ interface SourceExpenditureDao {
     suspend fun getSelectedSources(): List<RawSourceDetail>
 
     @Query("""
-        SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId,
+        SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId, se.isRemoved,
         bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.bankId as bankId,
         b.nativeName as bankName, ac.sId as accountSId
         FROM sourceExpenditures se
@@ -154,4 +154,7 @@ interface SourceExpenditureDao {
         WHERE se.isSynced = 0
     """)
     fun unSynced(): Flow<List<RawSourceDetail>>
+
+    @Query("UPDATE sourceExpenditures SET sId=:sId, isSynced=1 WHERE id=:id")
+    suspend fun sync(id: Int, sId: String)
 }

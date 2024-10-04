@@ -113,4 +113,10 @@ internal class RetrofitBudgetNetwork @Inject constructor(
             )
         }
     }
+
+    override suspend fun removeWallet(id: String): Flow<Result<ResponseBody<String?>>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.deleteWallet(id)
+        }
+    }
 }

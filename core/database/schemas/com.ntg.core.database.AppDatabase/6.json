@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "a018621a37875228912c266214d97b81",
+    "identityHash": "c03c144465d34c47b834fd5d97cc9912",
     "entities": [
       {
         "tableName": "accounts",
@@ -148,19 +148,13 @@
       },
       {
         "tableName": "bank_card_entity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `sourceId` INTEGER, `bankId` INTEGER, `number` TEXT NOT NULL, `date` TEXT NOT NULL, `cvv` TEXT, `sheba` TEXT, `accountNumber` TEXT, `name` TEXT NOT NULL, `isSynced` INTEGER NOT NULL, `isDeleted` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sourceId` INTEGER, `bankId` INTEGER, `number` TEXT NOT NULL, `date` TEXT NOT NULL, `cvv` TEXT, `sheba` TEXT, `accountNumber` TEXT, `name` TEXT NOT NULL, `isDeleted` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "sId",
-            "columnName": "sId",
-            "affinity": "TEXT",
-            "notNull": false
           },
           {
             "fieldPath": "sourceId",
@@ -208,12 +202,6 @@
             "fieldPath": "name",
             "columnName": "name",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isSynced",
-            "columnName": "isSynced",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -512,7 +500,7 @@
       },
       {
         "tableName": "currencies",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nativeName` TEXT, `enName` TEXT, `faName` TEXT, `symbol` TEXT, `country` TEXT, `countryAlpha2` TEXT, `countryAlpha3` TEXT, `isoCode` TEXT, `precision` TEXT, `isCrypto` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nativeName` TEXT, `enName` TEXT, `faName` TEXT, `symbol` TEXT, `country` TEXT, `countryAlpha2` TEXT, `countryAlpha3` TEXT, `isoCode` INTEGER, `precision` TEXT, `isCrypto` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -565,7 +553,7 @@
           {
             "fieldPath": "isoCode",
             "columnName": "isoCode",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": false
           },
           {
@@ -594,7 +582,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a018621a37875228912c266214d97b81')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c03c144465d34c47b834fd5d97cc9912')"
     ]
   }
 }

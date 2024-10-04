@@ -36,4 +36,6 @@ interface BudgetNetworkDataSource {
     suspend fun currencies(): Flow<Result<List<Currency>?>>
 
     suspend fun syncSources(source: SourceWithDetail): Flow<Result<SyncedAccount?>>
+
+    suspend fun removeWallet(id: String): Flow<Result<ResponseBody<String?>>>
 }

@@ -438,10 +438,10 @@ private fun BankCardView(
             sheba.value = editBankCard.sheba.orEmpty()
             accountNumber.value = editBankCard.accountNumber.orEmpty()
             cvv.value = editBankCard.cvv.orEmpty()
-            if (editBankCard.date.isNotEmpty()) {
-                year = editBankCard.date.split("/")[0].toInt()
-                month = editBankCard.date.split("/")[1].toInt()
-                expire.value = editBankCard.date
+            if (editBankCard.date.orEmpty().isNotEmpty()) {
+                year = editBankCard.date.orEmpty().split("/")[0].toInt()
+                month = editBankCard.date.orEmpty().split("/")[1].toInt()
+                expire.value = editBankCard.date.orEmpty()
             }
         }
     }

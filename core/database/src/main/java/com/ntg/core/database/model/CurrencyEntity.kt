@@ -17,7 +17,7 @@ data class CurrencyEntity(
     val country: String? = null,
     val countryAlpha2: String? = null,
     val countryAlpha3: String? = null,
-    val isoCode: String? = null,
+    val isoCode: Int? = null,
     val precision: String? = null,
     val isCrypto: Int? = null
 )

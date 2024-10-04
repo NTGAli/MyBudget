@@ -12,6 +12,7 @@ import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.network.BudgetNetworkDataSource
+import com.ntg.core.network.model.Result
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -24,7 +25,7 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
     private val sourceExpenditureDao: SourceExpenditureDao,
     private val cardDao: BankCardDao,
     private val network: BudgetNetworkDataSource
-): SourceExpenditureRepository{
+) : SourceExpenditureRepository {
 
     override suspend fun insert(sourceExpenditure: SourceExpenditure) {
         sourceExpenditureDao.insert(sourceExpenditure.toEntity())
@@ -83,8 +84,7 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
     override suspend fun getSelectedSources(): Flow<List<SourceWithDetail>> =
         flow {
             emit(
-                sourceExpenditureDao.getSelectedSources().map {
-                        row ->
+                sourceExpenditureDao.getSelectedSources().map { row ->
                     val sourceType = when (row.type) {
                         0 -> SourceType.BankCard(
                             id = row.bankId ?: -1,
@@ -115,8 +115,8 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
         }.flowOn(ioDispatcher)
 
     override suspend fun syncSources() {
-        sourceExpenditureDao.unSynced().collect{
-            it.forEach {row ->
+        sourceExpenditureDao.unSynced().collect {
+            it.forEach { row ->
                 val sourceType = when (row.type) {
                     1 -> SourceType.BankCard(
                         id = -1,
@@ -138,7 +138,21 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                     else -> throw IllegalArgumentException("Unknown type")
                 }
 
-                if (row.sId == null){
+                if (row.isRemoved == true) {
+                    if (row.sId == null) {
+                        sourceExpenditureDao.forceDelete(row.id)
+                        if (row.type == 1){
+                            cardDao.forceDelete(row.id)
+                        }
+                    } else {
+                        network.removeWallet(row.sId!!).collect {
+                            if (it is Result.Success) {
+                                sourceExpenditureDao.forceDelete(row.id)
+                            }
+                        }
+                    }
+
+                } else if (row.sId == null) {
                     network.syncSources(
                         SourceWithDetail(
                             id = row.id,
@@ -147,12 +161,18 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                             currencyId = row.currencyId,
                             type = row.type,
                             name = row.name,
-                            sourceType = sourceType
+                            sourceType = sourceType,
                         )
-                    ).collect{
-                        logd("syncSources ::: $it")
+                    ).collect { result ->
+
+                        if (result is Result.Success) {
+                            if (result.data != null) {
+                                sourceExpenditureDao.sync(row.id, result.data?.id.orEmpty())
+                            }
+                        }
                     }
                 }
+
 
             }
         }

@@ -17,8 +17,12 @@ data class Currency(
     @SerializedName("country_alpha3")
     val countryAlpha3: String? = null,
     @SerializedName("iso_code")
-    val isoCode: String? = null,
+    val isoCode: Int? = null,
     val precision: String? = null,
     @SerializedName("is_crypto")
-    val isCrypto: Int? = null
+    val isCrypto: Int? = null,
+    @SerializedName("created_at")
+    val createdAt: String? = null,
+    @SerializedName("updated_at")
+    val updatedAt: String? = null
 )
