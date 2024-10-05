@@ -1,11 +1,13 @@
 package com.ntg.features.setup
 
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.ConfigRepository
+import com.ntg.core.data.repository.CurrencyRepository
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
@@ -15,6 +17,7 @@ import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.res.Bank
+import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
@@ -27,6 +30,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,10 +46,13 @@ class SetupViewModel
     private val bankCardRepository: BankCardRepository,
     private val transactionRepository: TransactionsRepository,
     private val configRepository: ConfigRepository,
+    private val currencyRepository: CurrencyRepository,
     private val syncData: SyncData,
 ) : ViewModel() {
 
     val homeUiState = MutableStateFlow(SetupUiState.Loading)
+
+    var selectedCurrency = flowOf<Currency?>(null)
 
     fun accounts() = accountRepository.getAll()
 
@@ -61,6 +70,8 @@ class SetupViewModel
 
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
     val localUserBans: StateFlow<List<Bank>?> = _localUserBanks
+
+    private val _currencies = MutableStateFlow<List<Currency>?>(emptyList())
 
     fun upsertAccount(account: Account, context: Context? = null) {
         viewModelScope.launch {
@@ -120,9 +131,13 @@ class SetupViewModel
         }
     }
 
-    fun updateBankCard(bankCard: SourceType.BankCard) {
+    fun updateBankCard(bankCard: SourceType.BankCard, walletId: Int, context: Context?) {
         viewModelScope.launch {
             bankCardRepository.update(bankCard)
+            sourceRepository.needToSync(walletId)
+        }
+        if (context != null){
+            Sync.initialize(context = context)
         }
     }
 
@@ -216,6 +231,16 @@ class SetupViewModel
     fun getBankLogoColor(): Flow<ServerConfig?> {
         return configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL)
 
+    }
+
+    fun loadCurrencies(): MutableStateFlow<List<Currency>?> {
+        viewModelScope.launch {
+            currencyRepository.upsert()
+            currencyRepository.getCurrencies().collect{
+                _currencies.value = it
+            }
+        }
+        return _currencies
     }
 
 }

@@ -10,6 +10,9 @@ import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
+import com.ntg.core.mybudget.common.logd
+import com.ntg.core.network.BudgetNetworkDataSource
+import com.ntg.core.network.model.Result
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -20,7 +23,8 @@ import javax.inject.Inject
 class SourceExpenditureRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     private val sourceExpenditureDao: SourceExpenditureDao,
-    private val cardDao: BankCardDao
+    private val cardDao: BankCardDao,
+    private val network: BudgetNetworkDataSource
 ) : SourceExpenditureRepository {
 
     override suspend fun insert(sourceExpenditure: SourceExpenditure) {
@@ -76,11 +80,11 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
             )
         }.flowOn(ioDispatcher)
 
+
     override suspend fun getSelectedSources(): Flow<List<SourceWithDetail>> =
         flow {
             emit(
-                sourceExpenditureDao.getSelectedSources().map {
-                        row ->
+                sourceExpenditureDao.getSelectedSources().map { row ->
                     val sourceType = when (row.type) {
                         0 -> SourceType.BankCard(
                             id = row.bankId ?: -1,
@@ -109,4 +113,96 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                 }
             )
         }.flowOn(ioDispatcher)
+
+    override suspend fun syncSources() {
+        sourceExpenditureDao.unSynced().collect {
+            it.forEach { row ->
+                val sourceType = when (row.type) {
+                    1 -> SourceType.BankCard(
+                        id = -1,
+                        number = row.number ?: "",
+                        cvv = row.cvv ?: "",
+                        date = row.expire ?: "",
+                        name = row.cardName.orEmpty(),
+                        sheba = row.sheba.orEmpty(),
+                        accountNumber = row.accountNumber.orEmpty(),
+                        nativeName = row.bankName.orEmpty(),
+                        bankId = row.bankId
+                    )
+
+                    2 -> SourceType.Gold(
+                        value = row.value ?: 0.0,
+                        weight = row.weight ?: 0.0
+                    )
+
+                    else -> throw IllegalArgumentException("Unknown type")
+                }
+
+                if (row.isRemoved == true) {
+                    if (row.sId == null) {
+                        // wallet not synced yet
+                        sourceExpenditureDao.forceDelete(row.id)
+                        if (row.type == 1){
+                            cardDao.forceDelete(row.id)
+                        }
+                    } else {
+                        // wallet already sync, wait server remove
+                        network.removeWallet(row.sId!!).collect {
+                            if (it is Result.Success) {
+                                sourceExpenditureDao.forceDelete(row.id)
+                            }
+                        }
+                    }
+
+                } else if (row.sId == null) {
+                    //create new wallet on server
+                    network.syncSources(
+                        SourceWithDetail(
+                            id = row.id,
+                            accountId = row.accountId,
+                            accountSId = row.accountSId,
+                            currencyId = row.currencyId,
+                            type = row.type,
+                            name = row.name,
+                            sourceType = sourceType,
+                        )
+                    ).collect { result ->
+
+                        if (result is Result.Success) {
+                            if (result.data != null) {
+                                sourceExpenditureDao.sync(row.id, result.data?.id.orEmpty())
+                            }
+                        }
+                    }
+                }else{
+                    //update wallet
+                    network.updateWallet(
+                        row.sId.orEmpty(),
+                        SourceWithDetail(
+                            id = row.id,
+                            accountId = row.accountId,
+                            accountSId = row.accountSId,
+                            currencyId = row.currencyId,
+                            type = row.type,
+                            name = row.name,
+                            sourceType = sourceType,
+                        )
+                    ).collect { result ->
+                        if (result is Result.Success) {
+                            if (result.data != null) {
+                                sourceExpenditureDao.sync(row.id, result.data?.id.orEmpty())
+                            }
+                        }
+                    }
+                }
+
+
+            }
+        }
+    }
+
+    override suspend fun needToSync(id: Int) {
+        sourceExpenditureDao.unSync(id)
+    }
+
 }

@@ -33,26 +33,25 @@ interface SourceExpenditureDao {
     @Query("SELECT * FROM sourceExpenditures WHERE id=:id")
     suspend fun getSource(id: Int): SourceExpenditureEntity?
 
-    @Query("UPDATE sourceExpenditures SET isRemoved=1 WHERE id=:id")
+    @Query("UPDATE sourceExpenditures SET isRemoved=1, isSynced=0 WHERE id=:id")
     suspend fun tempRemove(id: Int)
 
     @Transaction
-    @Query(
-        "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.id as bankId\n" +
-//                "            ge.value, ge.weight\n" +
-                "        FROM sourceExpenditures se\n" +
-                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
-        "WHERE se.isRemoved != 1"
-//                "        LEFT JOIN gold_entity ge ON se.id = ge.sourceId AND se.type = 1 "
-    )
+    @Query("""
+        SELECT se.id, se.accountId, se.type, cr.nativeName as name,
+        bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.id as bankId
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        WHERE se.isRemoved != 1
+    """)
     suspend fun getSourcesByAccount(): List<RawSourceDetail>
 
     @Transaction
     suspend fun getSourcesWithDetails(accountId: Int): List<SourceWithDetail> {
         return getSourcesByAccount().map { row ->
             val sourceType = when (row.type) {
-                0 -> SourceType.BankCard(
+                1 -> SourceType.BankCard(
                     id = row.bankId ?: -1,
                     number = row.number ?: "",
                     cvv = row.cvv ?: "",
@@ -62,7 +61,7 @@ interface SourceExpenditureDao {
                     accountNumber = row.accountNumber.orEmpty(),
                 )
 
-                1 -> SourceType.Gold(
+                3 -> SourceType.Gold(
                     value = row.value ?: 0.0,
                     weight = row.weight ?: 0.0
                 )
@@ -81,13 +80,14 @@ interface SourceExpenditureDao {
 
 
     @Transaction
-    @Query(
-        "SELECT se.id, se.accountId, se.type, se.name,\n" +
-                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
-                "        FROM sourceExpenditures se\n" +
-                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
-                " WHERE se.id=:id"
-    )
+    @Query("""
+        SELECT se.id, se.accountId, se.type, cr.nativeName as name,
+        bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        WHERE se.id=:id
+    """)
     suspend fun getSourceWithDetails(id: Int): RawSourceDetail?
 
     @Transaction
@@ -96,7 +96,7 @@ interface SourceExpenditureDao {
         val row = getSourceWithDetails(id)
         if (row != null) {
             val sourceType = when (row.type) {
-                0 -> SourceType.BankCard(
+                1 -> SourceType.BankCard(
                     id = row.bankId ?: -1,
                     number = row.number ?: "",
                     cvv = row.cvv ?: "",
@@ -106,7 +106,7 @@ interface SourceExpenditureDao {
                     name = row.cardName.orEmpty()
                 )
 
-                1 -> SourceType.Gold(
+                2 -> SourceType.Gold(
                     value = row.value ?: 0.0,
                     weight = row.weight ?: 0.0
                 )
@@ -125,6 +125,7 @@ interface SourceExpenditureDao {
         }
     }
 
+
     @Query("UPDATE sourceExpenditures SET isSelected = CASE WHEN id IN (:ids) THEN 1 ELSE 0 END")
     suspend fun updateSelectedSources(ids: List<Int>)
 
@@ -133,11 +134,30 @@ interface SourceExpenditureDao {
 
     @Transaction
     @Query(
-        "SELECT se.id, se.accountId, se.type, se.name,\n" +
+        "SELECT se.id, se.accountId, se.type,\n" +
                 "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
                 "        FROM sourceExpenditures se\n" +
                 "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
                 " WHERE se.isSelected = 1"
     )
     suspend fun getSelectedSources(): List<RawSourceDetail>
+
+    @Query("""
+        SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId, se.isRemoved,
+        bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.bankId as bankId,
+        b.nativeName as bankName, ac.sId as accountSId
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        LEFT JOIN banks b ON bc.bankId = b.id
+        LEFT JOIN accounts ac ON ac.id = se.accountId
+        WHERE se.isSynced = 0
+    """)
+    fun unSynced(): Flow<List<RawSourceDetail>>
+
+    @Query("UPDATE sourceExpenditures SET sId=:sId, isSynced=1 WHERE id=:id")
+    suspend fun sync(id: Int, sId: String)
+
+    @Query("UPDATE sourceExpenditures SET isSynced=0 WHERE id=:id")
+    suspend fun unSync(id: Int)
 }

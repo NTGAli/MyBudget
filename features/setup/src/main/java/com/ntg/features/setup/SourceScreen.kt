@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,11 +24,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,7 +51,6 @@ import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.SourceExpenditure
 import com.ntg.core.model.SourceType
-import com.ntg.core.model.SourceTypes
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.ServerConfig
@@ -61,18 +59,30 @@ import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import com.ntg.core.designsystem.components.SampleItem
+import com.ntg.core.designsystem.components.getLanguageFlag
+import com.ntg.core.model.res.Currency
+import com.ntg.core.mybudget.common.logd
 
 @Composable
 fun SourceRoute(
     sharedViewModel: SharedViewModel,
-    accountId: Int,
-    sourceId: Int? = null,
     setupViewModel: SetupViewModel = hiltViewModel(),
+    accountId: Int = 1,
+    sourceId: Int? = null,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navigateToCurrencies: () -> Unit
 ) {
+
     sharedViewModel.setExpand.postValue(true)
+    val context = LocalContext.current
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
     var source by remember {
         mutableStateOf<SourceExpenditure?>(null)
@@ -80,14 +90,14 @@ fun SourceRoute(
     var bankCard by remember {
         mutableStateOf<SourceType.BankCard?>(null)
     }
-    var sourceType by remember {
+    var sourceType by rememberSaveable {
         mutableIntStateOf(-1)
     }
-    var cardBalance by remember {
+    var cardBalance by rememberSaveable {
         mutableStateOf("")
     }
 
-    var localBanks by remember {
+    var localBanks by rememberSaveable {
         mutableStateOf<List<Bank>?>(null)
     }
 
@@ -97,8 +107,13 @@ fun SourceRoute(
         initialValue = null
     ).value
 
-    val logoUrlColor = setupViewModel.getBankLogoColor().collectAsStateWithLifecycle(initialValue = null).value
-    val logoUrlMono = setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
+    val logoUrlColor =
+        setupViewModel.getBankLogoColor().collectAsStateWithLifecycle(initialValue = null).value
+    val logoUrlMono =
+        setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
+    val selectedCurrency =
+        setupViewModel.selectedCurrency.collectAsStateWithLifecycle(initialValue = null)
+
 
     SourceScreen(
         editSource, onBack = onBack,
@@ -114,8 +129,10 @@ fun SourceRoute(
         walletTypes = walletTypes,
         logoUrlMono = logoUrlMono,
         logoUrlColor = logoUrlColor,
-        localBanks = localBanks.orEmpty()
-        ) { sourceValue, card, balance ->
+        localBanks = localBanks.orEmpty(),
+        navigateToCurrencies = navigateToCurrencies,
+        selectedCurrency = selectedCurrency.value
+    ) { sourceValue, card, balance ->
         source = sourceValue
         bankCard = card
         cardBalance = balance
@@ -145,7 +162,7 @@ fun SourceRoute(
                                 onShowSnackbar(R.string.err_empty_name, null)
                             }
                             return
-                        }else if (cardBalance.isEmpty()){
+                        } else if (cardBalance.isEmpty() && editSource == null) {
                             scope.launch {
                                 onShowSnackbar(R.string.err_balance_empty, null)
                             }
@@ -154,7 +171,7 @@ fun SourceRoute(
 
                         if (editSource != null) {
                             bankCard?.sourceId = sourceId
-                            setupViewModel.updateBankCard(bankCard!!)
+                            setupViewModel.updateBankCard(bankCard!!, sourceId!!, context = context)
                             onBack()
                         } else if (source != null && bankCard != null) {
                             source?.accountId = accountId
@@ -163,7 +180,9 @@ fun SourceRoute(
                             setupViewModel.insertNewBankCard(bankCard!!)
 
                             // insert balance value
-                            setupViewModel.initCardTransactions(cardBalance.replace(",", "").toLong(), source?.id!!, accountId)
+                            setupViewModel.initCardTransactions(
+                                cardBalance.replace(",", "").toLong(), source?.id!!, accountId
+                            )
 
                             onBack()
                         } else {
@@ -189,13 +208,19 @@ fun SourceRoute(
     }
 
     LaunchedEffect(key1 = sourceType) {
-        when(sourceType){
+        when (sourceType) {
             1 -> {
-                setupViewModel.getLocalUserBanks().collect{
+                setupViewModel.getLocalUserBanks().collect {
                     localBanks = it
                 }
             }
 
+        }
+    }
+
+    LaunchedEffect(editSource) {
+        if (editSource != null) {
+            sourceType = editSource.type
         }
     }
 }
@@ -204,30 +229,32 @@ fun SourceRoute(
 @Composable
 private fun SourceScreen(
     editSource: SourceWithDetail?,
-    walletTypes : List<WalletType>?,
+    walletTypes: List<WalletType>?,
     localBanks: List<Bank>,
     logoUrlMono: ServerConfig?,
     logoUrlColor: ServerConfig?,
     onBack: () -> Unit,
     deleteSource: () -> Unit,
     selectedSource: (Int) -> Unit,
+    navigateToCurrencies: () -> Unit,
+    selectedCurrency: Currency?,
     submitCard: (source: SourceExpenditure, card: SourceType.BankCard?, balance: String) -> Unit
 ) {
 
 
-    var sourceType by remember {
-        mutableStateOf<WalletType?>(null)
+    var sourceType by rememberSaveable {
+        mutableStateOf<Int?>(null)
     }
 
     var bankCard by remember {
         mutableStateOf<SourceType.BankCard?>(null)
     }
 
-    var editMode by remember {
+    var editMode by rememberSaveable {
         mutableStateOf(false)
     }
 
-    var balance by remember {
+    var balance by rememberSaveable {
         mutableStateOf("")
     }
 
@@ -235,10 +262,9 @@ private fun SourceScreen(
         SourceExpenditure(
             id = generateUniqueFiveDigitId(),
             accountId = 0,
-            name = "تومن",
-            symbol = "ت",
+            currencyId = selectedCurrency?.id,
             isSelected = false,
-            type = sourceType?.id,
+            type = sourceType,
             dateCreated = System.currentTimeMillis().toString()
         ),
         bankCard,
@@ -249,8 +275,8 @@ private fun SourceScreen(
     if (editSource != null) {
         editMode = true
         when (editSource.sourceType) {
-            is SourceType.BankCard -> sourceType = walletTypes?.find { it.faName == stringResource(id = R.string.bank_card) }
-            is SourceType.Gold -> sourceType = walletTypes?.find { it.faName == stringResource(id = R.string.gold) }
+            is SourceType.BankCard -> sourceType = 1
+            is SourceType.Gold -> sourceType = 2
             null -> editMode = false
         }
     }
@@ -283,13 +309,13 @@ private fun SourceScreen(
                         .padding(top = 8.dp),
                     walletType = walletTypes.orEmpty()
                 ) {
-                    sourceType = it
+                    sourceType = it.id
                     selectedSource.invoke(it.id ?: -1)
                 }
             }
 
 
-            when (sourceType?.id) {
+            when (sourceType) {
 
                 1 -> {
 
@@ -298,10 +324,12 @@ private fun SourceScreen(
                         localBanks = localBanks,
                         logoUrlMono = logoUrlMono,
                         logoUrlColor = logoUrlColor,
+                        navigateToCurrencies = navigateToCurrencies,
+                        selectedCurrency = selectedCurrency,
                         deleteCard = {
                             deleteSource()
                         }
-                    ) {card, finalBalance ->
+                    ) { card, finalBalance ->
                         bankCard = card
                         balance = finalBalance
                     }
@@ -330,11 +358,14 @@ private fun BankCardView(
     localBanks: List<Bank>,
     logoUrlMono: ServerConfig?,
     logoUrlColor: ServerConfig?,
+    selectedCurrency: Currency?,
     deleteCard: () -> Unit,
+    navigateToCurrencies: () -> Unit,
     bankCard: (SourceType.BankCard, String) -> Unit
 ) {
 
     val layoutDirection = LocalLayoutDirection.current
+    val context = LocalContext.current
 
     val concurrency = remember {
         mutableStateOf("تومن")
@@ -376,7 +407,16 @@ private fun BankCardView(
         mutableStateOf("")
     }
 
-    val localBank =localBanks.find { it.bin.orEmpty().find { cardNumber.value.take(6).contains(it) } != null }
+    LaunchedEffect(selectedCurrency) {
+        val flag = getLanguageFlag(selectedCurrency?.countryAlpha2 ?: "") ?: ""
+        concurrency.value =
+            if (selectedCurrency != null) "$flag ${selectedCurrency.symbol} | ${selectedCurrency.faName}" else context.getString(
+                R.string.select_currency
+            )
+    }
+
+    val localBank =
+        localBanks.find { it.bin.orEmpty().find { cardNumber.value.take(6).contains(it) } != null }
 
     bankCard(
         SourceType.BankCard(
@@ -387,7 +427,8 @@ private fun BankCardView(
             updatedAt = System.currentTimeMillis().toString(),
             cvv = cvv.value,
             sheba = sheba.value,
-            accountNumber = accountNumber.value
+            accountNumber = accountNumber.value,
+            bankId = localBank?.id
         ),
         balance.value
     )
@@ -399,10 +440,10 @@ private fun BankCardView(
             sheba.value = editBankCard.sheba.orEmpty()
             accountNumber.value = editBankCard.accountNumber.orEmpty()
             cvv.value = editBankCard.cvv.orEmpty()
-            if (editBankCard.date.isNotEmpty()) {
-                year = editBankCard.date.split("/")[0].toInt()
-                month = editBankCard.date.split("/")[1].toInt()
-                expire.value = editBankCard.date
+            if (editBankCard.date.orEmpty().isNotEmpty()) {
+                year = editBankCard.date.orEmpty().split("/")[0].toInt()
+                month = editBankCard.date.orEmpty().split("/")[1].toInt()
+                expire.value = editBankCard.date.orEmpty()
             }
         }
     }
@@ -423,7 +464,10 @@ private fun BankCardView(
                 .padding(horizontal = 24.dp),
             text = concurrency,
             label = stringResource(id = R.string.concurrency),
-            readOnly = true
+            readOnly = true,
+            onClick = {
+                navigateToCurrencies()
+            }
         )
     }
 
@@ -512,13 +556,13 @@ private fun BankCardView(
                 balance.value = it
             },
             currencySymbol = "",
-            currencyName = concurrency.value,
+            currencyName = selectedCurrency?.nativeName.orEmpty(),
             maxNoOfDecimal = 2,
             label = stringResource(id = R.string.balance),
             maxLines = 1,
             divider = ",",
-            fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
-            fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
+            fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) selectedCurrency?.symbol.orEmpty() else null,
+            fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) selectedCurrency?.symbol.orEmpty() else null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
     }
@@ -579,16 +623,14 @@ private fun BankCardView(
 
     if (editBankCard != null) {
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest)
-        BudgetButton(
+        SampleItem(
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            iconStart = painterResource(id = BudgetIcons.trash),
-            text = stringResource(id = R.string.delete_card),
-            type = ButtonType.Error,
-            style = ButtonStyle.TextOnly,
-            size = ButtonSize.MD
+            title = stringResource(id = R.string.delete_card),
+            iconPainter = painterResource(id = BudgetIcons.trash),
+            type = ButtonType.Error
         ) {
             showDeleteSheet = true
         }
@@ -717,4 +759,3 @@ private fun BankCardView(
         }
     }
 }
-

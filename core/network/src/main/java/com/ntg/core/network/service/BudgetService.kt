@@ -3,9 +3,11 @@ package com.ntg.core.network.service
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
 import com.ntg.core.model.res.CodeVerification
+import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
+import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import retrofit2.Response
@@ -66,4 +68,30 @@ interface BudgetService {
     suspend fun configs(
         @Query("platform") platform: String = "all"
     ): Response<List<ServerConfig>>
+
+    @GET(value = "/api/currencies")
+    suspend fun currencies(): Response<List<Currency>?>
+
+    @FormUrlEncoded
+    @POST(value = "/api/wallet/create")
+    suspend fun syncWallet(
+        @Field("wallet_type_id") walletType: String,
+        @Field("currency_id") currencyId: String,
+        @Field("account_id") accountId: String,
+        @Field("details") details: String,
+//        @Field("init_amount") initAmount: String,
+    ): Response<SyncedAccount?>
+
+    @FormUrlEncoded
+    @POST(value = "/api/wallet/destroy")
+    suspend fun deleteWallet(
+        @Field("wallet_id") id: String,
+    ): Response<ResponseBody<String?>>
+
+    @FormUrlEncoded
+    @POST(value = "/api/wallet/update")
+    suspend fun updateWallet(
+        @Field("wallet_id") id: String,
+        @Field("details") details: String,
+    ): Response<SyncedWallet?>
 }

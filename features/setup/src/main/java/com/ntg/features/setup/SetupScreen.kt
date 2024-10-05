@@ -48,9 +48,15 @@ import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.SourceType
+import com.ntg.core.model.SourceTypes
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.mybudget.common.formatTimestamp
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
+import com.ntg.core.mybudget.common.logd
+import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.toUnixTimestamp
 import com.ntg.feature.setup.R
 import kotlinx.coroutines.launch
@@ -94,22 +100,55 @@ fun SetupRoute(
                     is Result.Success -> {
                         setupViewModel.homeUiState.value = SetupUiState.Success
                         it.data?.forEach { account ->
-                            if (account.name == "default") {
-                                setupViewModel.setDefaultAccount(account.id.orEmpty(),
-                                    account.createdAt.orEmpty())
-                            } else {
-                                val localAccountId = generateUniqueFiveDigitId()
-                                setupViewModel.insertNewAccount(
-                                    Account(
-                                        id = localAccountId,
-                                        sId = account.id,
-                                        name = account.name.orEmpty(),
+                            val localAccountId = if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
+                            setupViewModel.insertNewAccount(
+                                Account(
+                                    id = localAccountId,
+                                    sId = account.id,
+                                    name = account.name.orEmpty(),
+                                    isDefault = account.isDefault.orFalse(),
+                                    isSelected = false,
+                                    isSynced = true,
+                                    dateCreated = account.createdAt.orEmpty()
+                                )
+                            )
+                            account.wallets.orEmpty().forEach { wallet ->
+                                val sourceId = generateUniqueFiveDigitId()
+                                logd("received sources ---> $sourceId -- $wallet")
+                                setupViewModel.insertNewSource(
+                                    SourceExpenditure(
+                                        id = sourceId,
+                                        sId = wallet.id.orEmpty(),
+                                        type = wallet.walletType,
+                                        accountId = localAccountId,
+                                        icon = null,
+                                        currencyId = wallet.currencyId,
                                         isSelected = false,
                                         isSynced = true,
-                                        dateCreated = account.createdAt.orEmpty()
+                                        dateCreated = wallet.createdAt.orEmpty()
                                     )
                                 )
+
+                                if (wallet.walletType == 1) {
+                                    setupViewModel.insertNewBankCard(
+                                        SourceType.BankCard(
+                                            id = generateUniqueFiveDigitId(),
+                                            sourceId = sourceId,
+                                            number = wallet.details.cardNumber.orEmpty(),
+                                            cvv = wallet.details.cvv2.orEmpty(),
+                                            sheba = wallet.details.sheba,
+                                            name = wallet.details.cardOwner.orEmpty(),
+                                            bankId = try {
+                                                wallet.details.bankId!!.toInt()
+                                            } catch (e: Exception) {
+                                                -1
+                                            }
+                                        )
+                                    )
+                                }
+
                             }
+
                         }
 
                     }
@@ -151,7 +190,7 @@ fun SetupRoute(
                             it.sources.isNotEmpty()
                         }) {
                         onShowSnackbar.invoke(R.string.err_no_sources, null)
-                    }else{
+                    } else {
                         navigateToHome()
                     }
                 }
@@ -159,13 +198,13 @@ fun SetupRoute(
         }
     }
 
-    if (accounts.value != null){
-        LaunchedEffect(key1 = Unit) {
-            if (accounts.value.orEmpty().any { it.sources.isNotEmpty() }){
-                navigateToHome()
-            }
-        }
-    }
+//    if (accounts.value != null){
+//        LaunchedEffect(key1 = Unit) {
+//            if (accounts.value.orEmpty().any { it.sources.isNotEmpty() }){
+//                navigateToHome()
+//            }
+//        }
+//    }
 
 }
 

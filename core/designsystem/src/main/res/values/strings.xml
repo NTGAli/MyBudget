@@ -39,4 +39,6 @@
     <string name="err_balance_empty">موجودی نمی تواند خالی باشد</string>
     <string name="edit">ویرایش</string>
     <string name="add_new_account">اضافه کردن حساب جدید</string>
+    <string name="select_currency">انتخاب واحد مالی</string>
+
 </resources>

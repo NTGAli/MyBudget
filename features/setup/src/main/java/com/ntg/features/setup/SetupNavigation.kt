@@ -10,6 +10,7 @@ import com.ntg.core.mybudget.common.SharedViewModel
 const val Setup_Route = "SetupRoute"
 const val Source_Route = "SourceRoute"
 const val Create_Account_Route = "CreateAccountRoute"
+const val Currencies_Route = "CurrenciesRoute"
 
 const val AccountId_Arg = "accountId"
 const val SourceId_Arg = "accountId"
@@ -29,16 +30,23 @@ fun NavController.navigateToCreateAccount(id: Int?) {
     navigate(finalRoute)
 }
 
+fun NavController.navigateToCurrencies() {
+    navigate(Currencies_Route)
+}
+
 
 fun NavGraphBuilder.setupScreen(
     sharedViewModel: SharedViewModel,
+    setupViewModel: SetupViewModel,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToHome: () -> Unit,
+    navigateToCurrencies: () -> Unit,
     onBack:() -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     navigateToLogin:(Boolean) -> Unit
 ) {
+
 
     composable(
         route = Setup_Route
@@ -58,7 +66,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack)
+        SourceRoute(sharedViewModel,setupViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
     }
 
     composable(
@@ -69,7 +77,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack)
+        SourceRoute(sharedViewModel, setupViewModel,it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
     }
 
     composable(
@@ -81,6 +89,13 @@ fun NavGraphBuilder.setupScreen(
         )
     ) {
         CreateAccountRoute(sharedViewModel, id =  it.arguments?.getInt(AccountId_Arg) ?: 0, onShowSnackbar = onShowSnackbar, onBack=onBack)
+    }
+
+
+    composable(
+        route = Currencies_Route
+    ) {
+        CurrenciesRoute(sharedViewModel,setupViewModel, onBack = onBack)
     }
 
 }

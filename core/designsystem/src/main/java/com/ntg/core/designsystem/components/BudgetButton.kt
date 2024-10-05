@@ -205,7 +205,6 @@ fun BudgetButton(
         modifier = modifier
             .wrapContentHeight()
             .clip(RoundedCornerShape(radius))
-
             .background(background)
             .clickable(
                 enabled = enable,
