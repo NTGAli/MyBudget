@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
@@ -41,15 +43,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.CardReport
+import com.ntg.core.designsystem.components.CurrencyTextField
+import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.components.SampleItem
@@ -61,7 +72,9 @@ import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.Transaction
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatCurrency
+import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.logd
 import com.ntg.feature.home.R
 import kotlinx.coroutines.launch
@@ -193,10 +206,24 @@ private fun HomeScreen(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsertTransactionView(
     expandTransaction : MutableState<Boolean>
 ){
+
+    val balance = remember {
+        mutableStateOf("")
+    }
+
+    val concurrency = remember {
+        mutableStateOf("تومن")
+    }
+
+    var opendKeyboard by remember {
+        mutableStateOf(false)
+    }
+    val layoutDirection = LocalLayoutDirection.current
 
 
     FullScreenBottomSheet(showSheet = expandTransaction, appbar = {
@@ -243,9 +270,91 @@ fun InsertTransactionView(
             }
 
 
+            CurrencyTextField(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                onChange = {
+                    balance.value = it
+                },
+                currencySymbol = "",
+                currencyName = concurrency.value,
+                maxNoOfDecimal = 2,
+                label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.balance),
+                maxLines = 1,
+                divider = ",",
+                fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
+                fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                readOnly = true
+            ){
+                opendKeyboard = true
+            }
+
         }
     }
 
+    if (opendKeyboard){
+
+        ModalBottomSheet(onDismissRequest = { /* Executed when the sheet is dismissed */ }) {
+            var input by remember { mutableStateOf("") }
+
+            Column(
+                modifier = Modifier
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+
+                var textSize by remember { mutableStateOf(36.sp) }
+
+                LaunchedEffect(formatInput(input)) {
+                    textSize = if (formatInput(input).length > 20) 20.sp else 36.sp
+                }
+
+//                BasicTextField(
+//                    value = formatInput(input),
+//                    onValueChange = {
+////                        text = it
+//                    },
+//                    modifier = Modifier.fillMaxWidth(),
+//                    textStyle = TextStyle(fontSize = textSize),
+//                    maxLines = 1, // Force text to stay on one line
+//                )
+
+                Text(
+                    text = formatInput(input),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 24.dp),
+                    style = MaterialTheme.typography.headlineMedium.copy(textDirection = TextDirection.Ltr)
+                )
+
+                Text(
+                    text = calculateExpression(input.replace(",","")).toString(),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 24.dp),
+                    style = TextStyle(textDirection = TextDirection.Ltr)
+                )
+
+                CustomKeyboard(
+                    onKeyPressed = { key ->
+                        input += key
+                    },
+                    onBackspace = {
+                        if (input.isNotEmpty()) {
+                            input = input.dropLast(1)
+                        }
+                    },
+                    onConfirm = {
+                        // Perform confirm action, e.g., calculation
+                        input = "Confirmed: $input"
+                    }
+                )
+            }
+        }
+    }
 
 }
 

@@ -17,6 +17,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import java.text.NumberFormat
+import java.util.Stack
 import java.util.zip.ZipInputStream
 
 fun Float?.orZero() = this ?: 0f
@@ -229,6 +231,153 @@ fun formatCurrency(amount: Long, mask: String, currency: String, pos: Int): Stri
         1 -> "$currency $formated"
         2 -> "$formated $currency"
         else -> formated
+    }
+}
+
+
+fun calculateExpression(expression: String): Double? {
+    // Clean up the input expression by removing spaces
+    val sanitizedExpression = expression.replace(" ", "")
+
+    // Check for empty or invalid input
+    if (sanitizedExpression.isEmpty()) {
+        println("Error: Expression is empty.")
+        return null
+    }
+
+    // Validate the expression for allowed characters and operators
+    if (!sanitizedExpression.matches(Regex("^[0-9.+\\-*/×÷]+$"))) {
+        println("Error: Expression contains invalid characters.")
+        return null
+    }
+
+    // Check if the expression ends with an operator
+    if (sanitizedExpression.last() in listOf('+', '-', '*', '/', '×', '÷')) {
+        println("Error: Expression ends with an operator.")
+        return null
+    }
+
+    // Replace '×' and '÷' with '*' and '/' to make the expression compatible
+    val expressionWithOperators = sanitizedExpression.replace('×', '*').replace('÷', '/')
+
+    return try {
+        evaluate(expressionWithOperators)
+    } catch (e: Exception) {
+        println("Error: ${e.message}")
+        null
+    }
+}
+
+fun evaluate(expression: String): Double {
+    val numberStack = Stack<Double>()
+    val operatorStack = Stack<Char>()
+
+    var i = 0
+    while (i < expression.length) {
+        val ch = expression[i]
+
+        when {
+            // If current character is a number, handle multi-digit numbers or decimals
+            ch.isDigit() || ch == '.' -> {
+                var num = StringBuilder()
+                while (i < expression.length && (expression[i].isDigit() || expression[i] == '.')) {
+                    num.append(expression[i])
+                    i++
+                }
+                numberStack.push(num.toString().toDouble())
+                continue
+            }
+
+            // If it's an operator, handle operator precedence and stacking
+            ch == '+' || ch == '-' || ch == '*' || ch == '/' -> {
+                if (operatorStack.isNotEmpty() && precedence(ch) <= precedence(operatorStack.peek())) {
+                    numberStack.push(performOperation(operatorStack.pop(), numberStack.pop(), numberStack.pop()))
+                }
+                operatorStack.push(ch)
+            }
+        }
+        i++
+    }
+
+    // Process remaining operators in the stack
+    while (operatorStack.isNotEmpty()) {
+        numberStack.push(performOperation(operatorStack.pop(), numberStack.pop(), numberStack.pop()))
+    }
+
+    return numberStack.pop()
+}
+
+// Helper function to return precedence of operators
+fun precedence(op: Char): Int {
+    return when (op) {
+        '+', '-' -> 1
+        '*', '/' -> 2
+        else -> -1
+    }
+}
+
+// Helper function to perform the operations
+fun performOperation(op: Char, b: Double, a: Double): Double {
+    return when (op) {
+        '+' -> a + b
+        '-' -> a - b
+        '*' -> a * b
+        '/' -> {
+            if (b == 0.0) {
+                throw ArithmeticException("Division by zero")
+            }
+            a / b
+        }
+        else -> throw UnsupportedOperationException("Operator $op is not supported")
+    }
+}
+
+
+fun formatInput(input: String): String {
+    // Regex to match any operator (+, -, ×, ÷)
+    val regex = "([+×÷-])".toRegex()
+
+    // Split the input into alternating numbers and operations
+    val parts = input.split(regex).filter { it.isNotEmpty() }
+    val operations = regex.findAll(input).map { it.value }.toList()
+
+    // Use StringBuilder to append formatted numbers and operations
+    val formattedParts = StringBuilder()
+
+    for (i in parts.indices) {
+        // Format the number (handle decimals)
+        formattedParts.append(formatNumberWithCommasAndDecimal(parts[i].trim()))
+
+        // Append the operator if there's one for this index
+        if (i < operations.size) {
+            formattedParts.append(operations[i].trim())
+        }
+    }
+
+    return formattedParts.toString()
+}
+
+// Function to format both integers and decimal numbers with commas
+private fun formatNumberWithCommasAndDecimal(number: String): String {
+    if (number.isEmpty()) return number
+
+    return try {
+        // Split by decimal point to handle both parts separately
+        val parts = number.split(".")
+        val integerPart = parts[0].replace(",", "").toLongOrNull()
+        val formattedIntegerPart = integerPart?.let {
+            NumberFormat.getNumberInstance(Locale.US).format(it)
+        } ?: parts[0]
+
+        // If there's a decimal part, append it without further formatting
+        if (parts.size > 1) {
+            val decimalPart = parts[1]
+            "$formattedIntegerPart.$decimalPart"
+        } else {
+            formattedIntegerPart
+        }
+    } catch (e: NumberFormatException) {
+        number
     }
 }
 

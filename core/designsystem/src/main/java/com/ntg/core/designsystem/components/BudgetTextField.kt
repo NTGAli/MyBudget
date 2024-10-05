@@ -556,6 +556,8 @@ fun CurrencyTextField(
     errorText: String? = null,
     fixTrailingText: String? = null,
     fixLeadingText: String? = null,
+    readOnly: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
     var textFieldState by remember {
         mutableStateOf(
@@ -588,6 +590,9 @@ fun CurrencyTextField(
     var oldText = ""
 
     Column(
+        modifier = Modifier.clickable(enabled = readOnly, indication = null, interactionSource = null, onClick = {
+            onClick()
+        }),
         horizontalAlignment = Alignment.End
     ) {
         OutlinedTextField(
@@ -604,7 +609,15 @@ fun CurrencyTextField(
             modifier = modifier
                 .height(80.dp)
                 .wrapContentSize(align = Alignment.CenterStart)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable(
+                    enabled = true,
+                    onClick = { onClick.invoke() },
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ),
             onValueChange = {
                 if (it.text.length > 19) return@OutlinedTextField
                 textFieldState = formatUserInput(
@@ -626,6 +639,7 @@ fun CurrencyTextField(
             keyboardOptions = keyboardOptions,
             maxLines = maxLines,
             singleLine = true,
+            readOnly = readOnly,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Left),
             isError = isError,
             shape = RoundedCornerShape(8.dp),
@@ -672,7 +686,17 @@ fun CurrencyTextField(
 
                     }
                 }
-            } else null
+            } else null,
+            interactionSource = remember { MutableInteractionSource() }
+                .also { interactionSource ->
+                    LaunchedEffect(interactionSource) {
+                        interactionSource.interactions.collect {
+                            if (it is PressInteraction.Release) {
+                                onClick.invoke()
+                            }
+                        }
+                    }
+                },
         )
 
         AnimatedVisibility(visible = isError && errorText?.isNotEmpty() == true) {
