@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder
 import com.ntg.core.network.BuildConfig
 import com.ntg.core.network.service.BudgetService
 import com.ntg.core.network.util.AuthInterceptor
+import com.ntg.core.network.util.GzipInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,6 +21,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -46,6 +48,10 @@ object NetworkModule {
         return interceptor
     }
 
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
     @Provides
     @Singleton
     fun provideOkHttpClient(
@@ -55,10 +61,13 @@ object NetworkModule {
     ): OkHttpClient {
         val timeOut = 10
         val httpClient = OkHttpClient().newBuilder()
+            .protocols(listOf(Protocol.HTTP_2,  Protocol.HTTP_1_1))
             .connectTimeout(timeOut.toLong(), TimeUnit.SECONDS)
             .readTimeout(timeOut.toLong(), TimeUnit.SECONDS)
             .writeTimeout(timeOut.toLong(), TimeUnit.SECONDS)
             .addInterceptor(AuthInterceptor(sharedPreferences))
+            .addInterceptor(loggingInterceptor)
+//            .addInterceptor(GzipInterceptor())
             .addInterceptor(ChuckerInterceptor(application))
             .addInterceptor(loggerInterceptor)
         return httpClient.build()
