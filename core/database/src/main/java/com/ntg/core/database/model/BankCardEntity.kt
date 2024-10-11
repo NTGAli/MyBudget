@@ -28,6 +28,7 @@ fun BankCardEntity.asBank() =
     SourceType.BankCard(
         id = id,
         sourceId = sourceId,
+        bankId = bankId,
         number = number,
         date = date,
         cvv = cvv,
@@ -43,6 +44,7 @@ fun SourceType.BankCard.toEntity() =
     BankCardEntity(
         id = id,
         sourceId = sourceId,
+        bankId = bankId,
         number = number,
         date = date.orEmpty(),
         cvv = cvv,

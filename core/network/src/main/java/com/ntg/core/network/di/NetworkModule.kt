@@ -12,7 +12,6 @@ import com.google.gson.GsonBuilder
 import com.ntg.core.network.BuildConfig
 import com.ntg.core.network.service.BudgetService
 import com.ntg.core.network.util.AuthInterceptor
-import com.ntg.core.network.util.GzipInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

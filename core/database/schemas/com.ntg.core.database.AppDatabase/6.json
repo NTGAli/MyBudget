@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "c03c144465d34c47b834fd5d97cc9912",
+    "identityHash": "13727d194278d270264f9537665b2399",
     "entities": [
       {
         "tableName": "accounts",
@@ -500,7 +500,7 @@
       },
       {
         "tableName": "currencies",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nativeName` TEXT, `enName` TEXT, `faName` TEXT, `symbol` TEXT, `country` TEXT, `countryAlpha2` TEXT, `countryAlpha3` TEXT, `isoCode` INTEGER, `precision` TEXT, `isCrypto` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nativeName` TEXT, `enName` TEXT, `faName` TEXT, `symbol` TEXT, `country` TEXT, `countryAlpha2` TEXT, `countryAlpha3` TEXT, `isoCode` TEXT, `precision` TEXT, `isCrypto` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -553,7 +553,7 @@
           {
             "fieldPath": "isoCode",
             "columnName": "isoCode",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": false
           },
           {
@@ -582,7 +582,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c03c144465d34c47b834fd5d97cc9912')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '13727d194278d270264f9537665b2399')"
     ]
   }
 }

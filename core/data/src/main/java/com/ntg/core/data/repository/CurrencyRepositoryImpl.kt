@@ -21,6 +21,7 @@ class CurrencyRepositoryImpl @Inject constructor(
 ): CurrencyRepository {
     override suspend fun upsert() {
         network.currencies().collect{
+
             if (it is Result.Success){
                 currencyDao.upsert(it.data.orEmpty().map { it.toCurrencyEntity() })
             }

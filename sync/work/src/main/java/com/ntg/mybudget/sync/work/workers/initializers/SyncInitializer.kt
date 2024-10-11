@@ -14,7 +14,7 @@ object Sync {
             // Run sync on app startup and ensure only one sync worker runs at any time
             enqueueUniqueWork(
                 SYNC_WORK_NAME,
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 SyncWorker.startUpSyncWork(),
             )
         }

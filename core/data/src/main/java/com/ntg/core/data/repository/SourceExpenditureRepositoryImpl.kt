@@ -144,12 +144,16 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                         sourceExpenditureDao.forceDelete(row.id)
                         if (row.type == 1){
                             cardDao.forceDelete(row.id)
+                            sourceExpenditureDao.forceDelete(row.id)
                         }
                     } else {
                         // wallet already sync, wait server remove
                         network.removeWallet(row.sId!!).collect {
                             if (it is Result.Success) {
-                                sourceExpenditureDao.forceDelete(row.id)
+                                if (row.type == 1){
+                                    cardDao.forceDelete(row.id)
+                                    sourceExpenditureDao.forceDelete(row.id)
+                                }
                             }
                         }
                     }

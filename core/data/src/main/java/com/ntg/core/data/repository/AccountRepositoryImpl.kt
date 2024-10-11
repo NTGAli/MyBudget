@@ -269,7 +269,7 @@ class AccountRepositoryImpl @Inject constructor(
             if (it.type == 1){
                 bankCardDao.forceDelete(sourceId = it.id)
             }
-            sourceDao.forceDelete(accountId = accountId)
+            sourceDao.forceDeleteByAccountId(accountId = accountId)
             transactionsDao.deleteByAccount(accountId = accountId)
         }
     }

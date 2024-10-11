@@ -21,8 +21,11 @@ interface SourceExpenditureDao {
     @Delete
     suspend fun delete(sourceExpenditure: SourceExpenditureEntity)
 
+    @Query("DELETE FROM sourceExpenditures WHERE id=:id")
+    suspend fun forceDelete(id: Int)
+
     @Query("DELETE FROM sourceExpenditures WHERE accountId=:accountId")
-    suspend fun forceDelete(accountId: Int)
+    suspend fun forceDeleteByAccountId(accountId: Int)
 
     @Query("SELECT * FROM sourceExpenditures")
     suspend fun getAll(): List<SourceExpenditureEntity>

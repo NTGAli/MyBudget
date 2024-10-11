@@ -1,5 +1,6 @@
 package com.ntg.features.setup
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -97,11 +98,13 @@ fun SourceRoute(
         mutableStateOf("")
     }
 
-    var localBanks by rememberSaveable {
+    var localBanks by remember {
         mutableStateOf<List<Bank>?>(null)
     }
 
-    val walletTypes = setupViewModel.walletTypes().collectAsStateWithLifecycle().value
+    var walletTypes by remember {
+        mutableStateOf<List<WalletType>?>(null)
+    }
 
     val editSource = setupViewModel.getSourcesById(sourceId ?: -1).collectAsStateWithLifecycle(
         initialValue = null
@@ -218,6 +221,12 @@ fun SourceRoute(
         }
     }
 
+    LaunchedEffect(key1 = Unit) {
+        setupViewModel.walletTypes().collect{
+            walletTypes = it
+        }
+    }
+
     LaunchedEffect(editSource) {
         if (editSource != null) {
             sourceType = editSource.type
@@ -248,6 +257,10 @@ private fun SourceScreen(
 
     var bankCard by remember {
         mutableStateOf<SourceType.BankCard?>(null)
+    }
+
+    var bankCardId by rememberSaveable {
+        mutableStateOf<Int?>(null)
     }
 
     var editMode by rememberSaveable {
