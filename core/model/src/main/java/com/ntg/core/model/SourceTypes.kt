@@ -1,7 +1,7 @@
 package com.ntg.core.model
 
 enum class SourceTypes {
-    BankCard,
+    BankCard ,
     ForeignCurrency,
     Gold
 }

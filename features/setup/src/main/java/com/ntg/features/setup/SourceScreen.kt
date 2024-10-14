@@ -1,6 +1,5 @@
 package com.ntg.features.setup
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -60,16 +59,11 @@ import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.model.res.Currency
-import com.ntg.core.mybudget.common.logd
 
 @Composable
 fun SourceRoute(
@@ -122,7 +116,7 @@ fun SourceRoute(
         editSource, onBack = onBack,
         deleteSource = {
             if (sourceId != null) {
-                setupViewModel.tempRemove(sourceId)
+                setupViewModel.tempRemoveWallet(sourceId, context)
                 onBack()
             }
         },

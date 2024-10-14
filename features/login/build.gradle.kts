@@ -10,9 +10,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
+    implementation(projects.core.designsystem)
+    implementation(projects.core.common)
+    implementation(projects.core.data)
+    implementation(projects.core.model)
+    implementation(projects.sync.work)
     implementation(libs.androidx.runtime.livedata)
 }

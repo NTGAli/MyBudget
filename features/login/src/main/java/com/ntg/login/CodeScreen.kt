@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,16 +29,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
+import com.ntg.core.designsystem.components.LoadingView
 import com.ntg.core.designsystem.components.OtpField
+import com.ntg.core.model.Account
+import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.SourceType
 import com.ntg.core.model.req.VerifyOtp
+import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
+import com.ntg.core.mybudget.common.logd
+import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.Result
 import com.ntg.feature.login.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun CodeRoute(
     phone: String,
     onBack: () -> Unit,
+    finishLogin: (String) -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel(),
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ) {
@@ -56,6 +67,25 @@ fun CodeRoute(
     val isLoading = remember {
         mutableStateOf(false)
     }
+
+    val uiState = loginViewModel.loginUiState.collectAsState()
+
+    CodeScreen(
+        phone,
+        onBack = onBack,
+        wasWrong = wasWrong,
+        isSucceeded = isSucceeded,
+        isLoading = isLoading,
+        sendCode = {
+            loginViewModel.verifyCode(
+                VerifyOtp(
+                    query = phone,
+                    otp = it.toInt()
+                )
+            )
+        },
+        uiState
+    )
 
     LaunchedEffect(Unit) {
         loginViewModel.codeVerificationState
@@ -80,38 +110,99 @@ fun CodeRoute(
                         if (it.data?.accessToken.orEmpty()
                                 .isNotEmpty() && it.data?.expiresAt.orEmpty().isNotEmpty()
                         ) {
+                            loginViewModel.saveUserLogin(
+                                it.data?.accessToken.orEmpty(),
+                                it.data?.expiresAt.orEmpty()
+                            )
                             isSucceeded.value = true
-//                            loginViewModel.setDefaultAccount()
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                loginViewModel.saveUserLogin(
-                                    it.data?.accessToken.orEmpty(),
-                                    it.data?.expiresAt.orEmpty()
-                                )
-                            }, 1400)
                         }
                         isLoading.value = false
                     }
                 }
-
             }
     }
 
 
-    CodeScreen(
-        phone,
-        onBack = onBack,
-        wasWrong = wasWrong,
-        isSucceeded = isSucceeded,
-        isLoading = isLoading,
-        sendCode = {
-            loginViewModel.verifyCode(
-                VerifyOtp(
-                    query = phone,
-                    otp = it.toInt()
-                )
-            )
-        }
-    )
+    LaunchedEffect(isSucceeded.value) {
+        if (isSucceeded.value) {
+            loginViewModel.serverAccounts()
+            delay(800)
+            loginViewModel.serverAccounts.collect {
+                when (it) {
+                    is Result.Error -> {
+                        loginViewModel.loginUiState.value = LoginUiState.Error
+                        scope.launch {
+                            onShowSnackbar(R.string.err_fetch_data, null)
+                        }
+                        loginViewModel.logout()
+                        onBack()
+                    }
+
+                    is Result.Loading -> {
+//                        loginViewModel.loginUiState.value = LoginUiState.Loading
+                    }
+
+                    is Result.Success -> {
+                        loginViewModel.loginUiState.value = LoginUiState.Success
+                        it.data?.forEach { account ->
+                            val localAccountId = if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
+                            loginViewModel.insertNewAccount(
+                                Account(
+                                    id = localAccountId,
+                                    sId = account.id,
+                                    name = account.name.orEmpty(),
+                                    isDefault = account.isDefault.orFalse(),
+                                    isSelected = (account.isDefault.orFalse() && (it.data.orEmpty()
+                                        .first().wallets.orEmpty().isNotEmpty() || it.data.orEmpty().size > 1)),
+                                    isSynced = true,
+                                    dateCreated = account.createdAt.orEmpty()
+                                )
+                            )
+                            account.wallets.orEmpty().forEach { wallet ->
+                                val sourceId = generateUniqueFiveDigitId()
+                                logd("received sources ---> $sourceId -- $wallet")
+                                loginViewModel.insertNewSource(
+                                    SourceExpenditure(
+                                        id = sourceId,
+                                        sId = wallet.id.orEmpty(),
+                                        type = wallet.walletType,
+                                        accountId = localAccountId,
+                                        icon = null,
+                                        currencyId = wallet.currencyId,
+                                        isSelected = false,
+                                        isSynced = true,
+                                        dateCreated = wallet.createdAt.orEmpty()
+                                    )
+                                )
+
+                                if (wallet.walletType == 1) {
+                                    loginViewModel.insertNewBankCard(
+                                        SourceType.BankCard(
+                                            id = generateUniqueFiveDigitId(),
+                                            sourceId = sourceId,
+                                            number = wallet.details.cardNumber.orEmpty(),
+                                            cvv = wallet.details.cvv2.orEmpty(),
+                                            sheba = wallet.details.sheba,
+                                            name = wallet.details.cardOwner.orEmpty(),
+                                            bankId = try {
+                                                wallet.details.bankId!!.toInt()
+                                            } catch (e: Exception) {
+                                                -1
+                                            }
+                                        )
+                                    )
+                                }
+
+                            }
+
+                        }
+                        finishLogin(if (it.data.orEmpty().size == 1 && it.data.orEmpty().first().wallets.orEmpty().isEmpty()) "SetupRoute" else "home_route")
+                    }
+                }
+
+            }
+        } else loginViewModel.loginUiState.value = LoginUiState.Success
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,6 +214,7 @@ private fun CodeScreen(
     isSucceeded: MutableState<Boolean>,
     isLoading: MutableState<Boolean>,
     sendCode: (String) -> Unit,
+    loginUiState: State<LoginUiState>,
 ) {
 
     var code by remember {
@@ -137,43 +229,50 @@ private fun CodeScreen(
             )
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-                .padding(top = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
 
-            Text(
-                text = stringResource(id = R.string.entere_code),
-                style = MaterialTheme.typography.titleSmall.copy(MaterialTheme.colorScheme.onBackground)
-            )
-
-            Text(
+        if (loginUiState.value == LoginUiState.Success){
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 8.dp),
-                text = stringResource(id = R.string.sent_code_format, phone),
-                style = MaterialTheme.typography.bodySmall.copy(MaterialTheme.colorScheme.outline)
-                    .copy(textAlign = TextAlign.Center)
-            )
+                    .fillMaxSize()
+                    .padding(it)
+                    .padding(top = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            OtpField(
-                modifier = Modifier.padding(top = 32.dp),
-                wasWrong = wasWrong.value, isSucceeded = isSucceeded.value, isLoading = isLoading.value
-            ) { userInputCode, _ ->
-                code = userInputCode
-                wasWrong.value = false
-            }
+                Text(
+                    text = stringResource(id = R.string.entere_code),
+                    style = MaterialTheme.typography.titleSmall.copy(MaterialTheme.colorScheme.onBackground)
+                )
+
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 8.dp),
+                    text = stringResource(id = R.string.sent_code_format, phone),
+                    style = MaterialTheme.typography.bodySmall.copy(MaterialTheme.colorScheme.outline)
+                        .copy(textAlign = TextAlign.Center)
+                )
+
+                OtpField(
+                    modifier = Modifier.padding(top = 32.dp),
+                    wasWrong = wasWrong.value, isSucceeded = isSucceeded.value, isLoading = isLoading.value
+                ) { userInputCode, _ ->
+                    code = userInputCode
+                    wasWrong.value = false
+                }
 
 
-            LaunchedEffect(code.length) {
-                if (code.length == 5) {
-                    sendCode(code)
+                LaunchedEffect(code.length) {
+                    if (code.length == 5) {
+                        sendCode(code)
+                    }
                 }
             }
+        }else{
+            LoadingView()
         }
+
+
     }
 
 }

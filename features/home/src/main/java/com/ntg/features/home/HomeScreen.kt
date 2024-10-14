@@ -150,6 +150,8 @@ private fun HomeScreen(
                 enableNavigation = false
             )
         },
+        sheetTonalElevation = 0.dp,
+        sheetContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
         sheetContent = {

@@ -196,7 +196,7 @@ private fun Item(
         if (isImage){
             when(type){
 
-                SourceTypes.BankCard.ordinal -> {
+                1 -> {
                     val bankData = getCardDetailsFromAssets(context, subtitle.orEmpty().replace(" ", ""))
                     val onSurface = MaterialTheme.colorScheme.onSurface
                     var defaultTint by remember {

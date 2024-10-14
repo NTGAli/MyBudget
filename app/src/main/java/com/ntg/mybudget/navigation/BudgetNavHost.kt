@@ -29,6 +29,7 @@ fun BudgetNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = Login_Route,
     sharedViewModel: SharedViewModel,
+    finishLogin:(String)-> Unit
 ) {
     val navController = appState.navController
     val loginViewModel: LoginViewModel = hiltViewModel()
@@ -47,7 +48,8 @@ fun BudgetNavHost(
             navigateToCode = navController::navigateToCode,
             navigateToSetup = navController::navigateToSetup,
             onBack = navController::popBackStack,
-            onShowSnackbar = onShowSnackbar
+            onShowSnackbar = onShowSnackbar,
+            finishLogin = finishLogin
         )
 
         setupScreen(

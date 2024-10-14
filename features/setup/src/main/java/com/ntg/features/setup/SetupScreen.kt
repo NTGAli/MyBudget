@@ -81,84 +81,6 @@ fun SetupRoute(
     val accounts =
         setupViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = null)
 
-    LaunchedEffect(accounts.value) {
-        if (accounts.value != null && accounts.value.orEmpty().isEmpty()) {
-            setupViewModel.serverAccounts()
-            setupViewModel.serverAccounts.collect {
-                when (it) {
-                    is Result.Error -> {
-                        setupViewModel.homeUiState.value = SetupUiState.Error
-                        scope.launch {
-                            onShowSnackbar(R.string.err_fetch_data, null)
-                        }
-                    }
-
-                    is Result.Loading -> {
-                        setupViewModel.homeUiState.value = SetupUiState.Loading
-                    }
-
-                    is Result.Success -> {
-                        setupViewModel.homeUiState.value = SetupUiState.Success
-                        it.data?.forEach { account ->
-                            val localAccountId = if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
-                            setupViewModel.insertNewAccount(
-                                Account(
-                                    id = localAccountId,
-                                    sId = account.id,
-                                    name = account.name.orEmpty(),
-                                    isDefault = account.isDefault.orFalse(),
-                                    isSelected = false,
-                                    isSynced = true,
-                                    dateCreated = account.createdAt.orEmpty()
-                                )
-                            )
-                            account.wallets.orEmpty().forEach { wallet ->
-                                val sourceId = generateUniqueFiveDigitId()
-                                logd("received sources ---> $sourceId -- $wallet")
-                                setupViewModel.insertNewSource(
-                                    SourceExpenditure(
-                                        id = sourceId,
-                                        sId = wallet.id.orEmpty(),
-                                        type = wallet.walletType,
-                                        accountId = localAccountId,
-                                        icon = null,
-                                        currencyId = wallet.currencyId,
-                                        isSelected = false,
-                                        isSynced = true,
-                                        dateCreated = wallet.createdAt.orEmpty()
-                                    )
-                                )
-
-                                if (wallet.walletType == 1) {
-                                    setupViewModel.insertNewBankCard(
-                                        SourceType.BankCard(
-                                            id = generateUniqueFiveDigitId(),
-                                            sourceId = sourceId,
-                                            number = wallet.details.cardNumber.orEmpty(),
-                                            cvv = wallet.details.cvv2.orEmpty(),
-                                            sheba = wallet.details.sheba,
-                                            name = wallet.details.cardOwner.orEmpty(),
-                                            bankId = try {
-                                                wallet.details.bankId!!.toInt()
-                                            } catch (e: Exception) {
-                                                -1
-                                            }
-                                        )
-                                    )
-                                }
-
-                            }
-
-                        }
-
-                    }
-                }
-
-            }
-        } else setupViewModel.homeUiState.value = SetupUiState.Success
-
-    }
-
     val uiSate = setupViewModel.homeUiState.collectAsStateWithLifecycle()
 
     SetupScreen(
@@ -175,6 +97,10 @@ fun SetupRoute(
         },
         deleteAccount = {
             setupViewModel.deleteAccount(it, context = context)
+            setupViewModel.homeUiState.value = SetupUiState.Success
+        },
+        deleteWallet = {
+            setupViewModel.tempRemoveWallet(it, context)
             setupViewModel.homeUiState.value = SetupUiState.Success
         },
         onShowSnackbar = onShowSnackbar
@@ -218,6 +144,7 @@ private fun SetupScreen(
     navigateToAccount: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
     deleteAccount: (id: Int) -> Unit,
+    deleteWallet: (id: Int) -> Unit,
     backToLogin: () -> Unit
 ) {
 
@@ -237,6 +164,10 @@ private fun SetupScreen(
     }
 
     var selectedAccount by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    var selectedWallet by remember {
         mutableStateOf<Int?>(null)
     }
 
@@ -285,6 +216,7 @@ private fun SetupScreen(
                                 showDialog = true
                                 dialogTitle = context.getString(R.string.delete_source)
                                 dialogDiscription = context.getString(R.string.delete_source_desc)
+                                selectedWallet = it
                             }, deleteAccount = {
                                 if (!account.isDefault) {
                                     showDialog = true
@@ -321,6 +253,7 @@ private fun SetupScreen(
         AlertDialog(
             onDismissRequest = {
                 selectedAccount = null
+                selectedWallet = null
                 showDialog = false
             },
             title = { Text(dialogTitle) },
@@ -335,6 +268,8 @@ private fun SetupScreen(
                     showDialog = false
                     if (selectedAccount != null) {
                         deleteAccount(selectedAccount!!)
+                    }else if (selectedWallet != null){
+                        deleteWallet(selectedWallet!!)
                     }
                 }
             },
@@ -346,6 +281,7 @@ private fun SetupScreen(
                 ) {
                     showDialog = false
                     selectedAccount = null
+                    selectedWallet = null
                 }
             },
         )

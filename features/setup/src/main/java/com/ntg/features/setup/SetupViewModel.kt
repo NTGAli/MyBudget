@@ -1,7 +1,6 @@
 package com.ntg.features.setup
 
 import android.content.Context
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
@@ -29,10 +28,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -62,8 +58,6 @@ class SetupViewModel
 
     fun getSourcesById(id: Int) = sourceRepository.getSourceDetails(id)
 
-    private val _serverAccounts = MutableStateFlow<Result<List<ServerAccount>?>>(Result.Loading(false))
-    val serverAccounts: StateFlow<Result<List<ServerAccount>?>> = _serverAccounts
 
     private val _walletTypes = MutableStateFlow<List<WalletType>?>(emptyList())
     val walletTypes: StateFlow<List<WalletType>?> = _walletTypes
@@ -141,9 +135,12 @@ class SetupViewModel
         }
     }
 
-    fun tempRemove(sourceId: Int) {
+    fun tempRemoveWallet(sourceId: Int, context: Context?) {
         viewModelScope.launch {
             sourceRepository.tempRemove(sourceId)
+        }
+        if (context != null) {
+            Sync.initialize(context = context)
         }
     }
 
@@ -158,17 +155,6 @@ class SetupViewModel
                     0, amount = initAmount, accountId = accountId, sourceId = sourceId, date = System.currentTimeMillis()
                 )
             )
-        }
-    }
-
-    fun serverAccounts(){
-        viewModelScope.launch {
-            _serverAccounts.value = Result.Loading(true)
-            authRepository.serverAccounts()
-                .collect { result ->
-                    _serverAccounts.value =
-                        result
-                }
         }
     }
 

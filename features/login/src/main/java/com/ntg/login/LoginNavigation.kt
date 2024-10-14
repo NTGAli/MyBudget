@@ -40,11 +40,13 @@ fun NavGraphBuilder.loginScreen(
     navigateToCode: (String) -> Unit = {},
     navigateToSetup: () -> Unit = {},
     onBack: () -> Unit = {},
+    finishLogin: (String) -> Unit = {},
 ) {
 
     composable(
         route = Login_Route,
     ) {
+        loginViewModel.sendCode("")
         LoginRoute(
             sharedViewModel,
             navigateToDetail = navigateToCountries,
@@ -73,6 +75,7 @@ fun NavGraphBuilder.loginScreen(
         CodeRoute(
             it.arguments?.getString(PHONE).orEmpty(),
             onBack,
+            finishLogin = finishLogin,
             onShowSnackbar = onShowSnackbar
         )
     }

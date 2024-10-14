@@ -212,8 +212,8 @@ private fun CharView(
 
     if (isSuccess) {
         LaunchedEffect(key1 = Unit) {
-            colorSuccess.animateTo(defaultColor, animationSpec = tween((index + 1) * 200))
-            colorSuccess.animateTo(successColor, animationSpec = tween(200))
+            colorSuccess.animateTo(defaultColor, animationSpec = tween((index + 1) * 50))
+            colorSuccess.animateTo(successColor, animationSpec = tween(50))
         }
     }
 

@@ -44,7 +44,9 @@ import com.ntg.core.designsystem.components.scrollbar.BudgetBackground
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.features.home.Home_Route
 import com.ntg.features.setup.Setup_Route
+import com.ntg.login.LoginUiState
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
@@ -110,6 +112,14 @@ internal fun BudgetApp(
 
     var isLoading by remember {
         mutableStateOf(false)
+    }
+
+    var startDestination by remember {
+        mutableStateOf(Login_Route)
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        startDestination = if (isUserLogged) Home_Route else Login_Route
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -199,8 +209,11 @@ internal fun BudgetApp(
                     } else {
                         Modifier
                     },
-                    startDestination = if (isUserLogged) Setup_Route else Login_Route,
-                    sharedViewModel
+                    startDestination = startDestination,
+                    sharedViewModel,
+                    finishLogin = {
+                        startDestination = it
+                    }
                 )
             }
         }
