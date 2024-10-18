@@ -1,6 +1,6 @@
 package com.ntg.features.home
 
-import android.widget.Toast
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,7 +27,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -42,13 +42,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -58,8 +54,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
+import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.CardReport
-import com.ntg.core.designsystem.components.CurrencyTextField
 import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.SampleAddAccountButton
@@ -68,6 +64,7 @@ import com.ntg.core.designsystem.components.SwitchText
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.Transaction
 import com.ntg.core.mybudget.common.LoginEventListener
@@ -86,28 +83,38 @@ fun HomeRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-){
+) {
     val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
 
-    val accounts = homeViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = emptyList())
-    val currentAccount = homeViewModel.selectedAccount().collectAsStateWithLifecycle(initialValue = null)
-    val currentResource = homeViewModel.selectedSources().collectAsStateWithLifecycle(initialValue = emptyList())
+    val accounts =
+        homeViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = emptyList())
+    val currentAccount =
+        homeViewModel.selectedAccount().collectAsStateWithLifecycle(initialValue = null)
+    val currentResource =
+        homeViewModel.selectedSources().collectAsStateWithLifecycle(initialValue = emptyList())
 
-    if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()){
+    if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
 
-        val transactions = homeViewModel.transactions(sourceIds).collectAsStateWithLifecycle(initialValue = null)
-        HomeScreen(accounts, currentAccount.value.orEmpty().first(), currentResource.value, transactions, expandTransaction, navigateToSource, navigateToAccount, onShowSnackbar,
+        val transactions =
+            homeViewModel.transactions(sourceIds).collectAsStateWithLifecycle(initialValue = null)
+        HomeScreen(accounts,
+            currentAccount.value.orEmpty().first(),
+            currentResource.value,
+            transactions,
+            expandTransaction,
+            navigateToSource,
+            navigateToAccount,
+            onShowSnackbar,
             onUpdateSelectedAccount = { id, sourcesId ->
                 homeViewModel.updatedSelectedAccount(id)
                 homeViewModel.updatedSelectedSources(sourcesId)
             },
             onUpdateSelectedSource = { sourcesId ->
                 homeViewModel.updatedSelectedSources(sourcesId)
-            }
-        )
+            })
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -131,96 +138,111 @@ private fun HomeScreen(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-    onUpdateSelectedAccount:(id: Int, sourcesId: List<Int>) -> Unit,
-    onUpdateSelectedSource:(sourcesId: List<Int>) -> Unit
+    onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
+    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
 
-    BottomSheetScaffold(
-        topBar = {
-            AppBar(
-                titleState = {
-                    AccountSelector(title = currentAccount.accountName, subTitle = stringResource(
+    BottomSheetScaffold(topBar = {
+        AppBar(
+            titleState = {
+                AccountSelector(
+                    title = currentAccount.accountName, subTitle = stringResource(
                         id = R.string.items_format, currentAccount.sources.size
-                    )){
-                        scope.launch { scaffoldState.bottomSheetState.expand() }
-                    }
-                },
-                enableNavigation = false
-            )
-        },
+                    )
+                ) {
+                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                }
+            }, enableNavigation = false
+        )
+    },
         sheetTonalElevation = 0.dp,
         sheetContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
         sheetContent = {
-            AccountSelectorSheet(accounts, currentAccount, currentResource, navigateToSource, navigateToAccount,onShowSnackbar, onUpdateSelectedAccount, onUpdateSelectedSource)
-        }
-        ) { padding ->
+            AccountSelectorSheet(
+                accounts,
+                currentAccount,
+                currentResource,
+                navigateToSource,
+                navigateToAccount,
+                onShowSnackbar,
+                onUpdateSelectedAccount,
+                onUpdateSelectedSource
+            )
+        }) { padding ->
 
         LazyColumn(
             Modifier
                 .padding(padding)
-                .fillMaxSize()) {
+                .fillMaxSize()
+        ) {
 
             item {
 
             }
 
             item {
-                CardReport(
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .padding(horizontal = 24.dp),
-                    title = formatCurrency(
-                        amount = transactions.value?.sumOf { it.amount } ?: 0L,
+                CardReport(modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 24.dp),
+                    title = formatCurrency(amount = transactions.value?.sumOf { it.amount } ?: 0L,
+                        mask = "###,###",
+                        currency = "ت",
+                        pos = 2),
+                    subTitle = "موجودی همه حساب ها",
+                    out = formatCurrency(amount = transactions.value?.filter { it.type == "out" }
+                        .orEmpty().sumOf { it.amount },
                         mask = "###,###",
                         currency = "ت",
                         pos = 2
-                    ), subTitle = "موجودی همه حساب ها", out =
-                    formatCurrency(
-                        amount = transactions.value?.filter { it.type == "out" }.orEmpty()
-                            .sumOf { it.amount },
+                    ),
+                    inValue = formatCurrency(amount = transactions.value?.filter { it.type == "in" }
+                        .orEmpty().sumOf { it.amount },
                         mask = "###,###",
                         currency = "ت",
                         pos = 2
-                    ), inValue = formatCurrency(
-                        amount = transactions.value?.filter { it.type == "in" }.orEmpty()
-                            .sumOf { it.amount },
-                        mask = "###,###",
-                        currency = "ت",
-                        pos = 2
-                    ))
+                    )
+                )
 
                 Text(
                     modifier = Modifier.padding(top = 16.dp, start = 32.dp, bottom = 16.dp),
-                    text = stringResource(id = R.string.transactions), style = MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outline))
+                    text = stringResource(id = R.string.transactions),
+                    style = MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outline)
+                )
             }
 
         }
 
 
-
     }
 
-    InsertTransactionView(expandTransaction)
+    InsertTransactionView(expandTransaction, currentResource)
 
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsertTransactionView(
-    expandTransaction : MutableState<Boolean>
-){
+    expandTransaction: MutableState<Boolean>,
+    currentResource: List<SourceWithDetail>?,
+) {
 
-    val balance = remember {
-        mutableStateOf("")
-    }
+    val balance = remember { mutableStateOf("") }
+    var input by remember { mutableStateOf("") }
+    var lastInput by remember { mutableStateOf("") }
+
+    var sheetType by remember { mutableIntStateOf(0) }
 
     val concurrency = remember {
         mutableStateOf("تومن")
     }
+
+    val scope = rememberCoroutineScope()
+
+    val sheetState = rememberModalBottomSheetState()
 
     var opendKeyboard by remember {
         mutableStateOf(false)
@@ -229,132 +251,229 @@ fun InsertTransactionView(
 
 
     FullScreenBottomSheet(showSheet = expandTransaction, appbar = {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .padding(start = 16.dp),
-                onClick = { /*TODO*/ }) {
-                Icon(painter = painterResource(id = BudgetIcons.directionDown), contentDescription = "close")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(modifier = Modifier
+                .padding(vertical = 16.dp)
+                .padding(start = 16.dp),
+                onClick = {
+                    expandTransaction.value = false
+                }) {
+                Icon(
+                    painter = painterResource(id = BudgetIcons.directionDown),
+                    contentDescription = "close"
+                )
             }
 
             Text(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 4.dp)
-                ,
-                text = stringResource(id = R.string.new_transaction), style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                    .padding(start = 4.dp),
+                text = stringResource(id = R.string.new_transaction),
+                style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
 
             DateItem(unixTime = 123L)
         }
     }) {
-        Column(modifier = Modifier
+        Column(
+            modifier = Modifier
 //            .padding(it)
-            .verticalScroll(rememberScrollState())) {
+                .verticalScroll(rememberScrollState())
+        ) {
 
 
             val items = listOf(
-                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.outcome), tint = MaterialTheme.colorScheme.onError, backColor = MaterialTheme.colorScheme.error),
-                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income), tint = MaterialTheme.colorScheme.onSecondary, backColor = MaterialTheme.colorScheme.secondary),
-                SwitchItem(0, stringResource(id = com.ntg.mybudget.core.designsystem.R.string.internal_transfer), tint = MaterialTheme.colorScheme.onPrimary, backColor = MaterialTheme.colorScheme.primary),
+                SwitchItem(
+                    0,
+                    stringResource(id = com.ntg.mybudget.core.designsystem.R.string.outcome),
+                    tint = MaterialTheme.colorScheme.onError,
+                    backColor = MaterialTheme.colorScheme.error
+                ),
+                SwitchItem(
+                    0,
+                    stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income),
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                    backColor = MaterialTheme.colorScheme.secondary
+                ),
+                SwitchItem(
+                    0,
+                    stringResource(id = com.ntg.mybudget.core.designsystem.R.string.internal_transfer),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    backColor = MaterialTheme.colorScheme.primary
+                ),
 
 
-            )
+                )
 
             SwitchText(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                items = items) {
+                    .padding(horizontal = 24.dp), items = items
+            ) {
 
             }
 
 
-            CurrencyTextField(
+            BudgetTextField(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
-                onChange = {
-                    balance.value = it
-                },
-                currencySymbol = "",
-                currencyName = concurrency.value,
-                maxNoOfDecimal = 2,
+                text = balance,
                 label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.balance),
-                maxLines = 1,
-                divider = ",",
                 fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                 fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                readOnly = true
-            ){
-                opendKeyboard = true
-            }
+                readOnly = true,
+                onClick = {
+                    sheetType = 0
+                    opendKeyboard = true
+                    input = balance.value
+                    lastInput = balance.value
+                }
+            )
+
+
+            BudgetTextField(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                text = balance,
+                label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.source_expenditure),
+                trailingIcon = painterResource(id = BudgetIcons.directionLeft),
+                readOnly = true,
+                onClick = {
+                    sheetType = 1
+                    opendKeyboard = true
+                }
+            )
+
 
         }
     }
 
-    if (opendKeyboard){
+    LaunchedEffect(key1 = sheetState.currentValue) {
+        opendKeyboard = sheetState.isVisible
+    }
 
-        ModalBottomSheet(onDismissRequest = { /* Executed when the sheet is dismissed */ }) {
-            var input by remember { mutableStateOf("") }
+    if (opendKeyboard) {
 
-            Column(
-                modifier = Modifier
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = {
+                opendKeyboard = false
+            }) {
 
-                var textSize by remember { mutableStateOf(36.sp) }
+            when (sheetType) {
+                0 -> {
+                    val isExpressionComplete = remember(input, lastInput) {
+                        logd("isExpressionComplete :: $input --- $lastInput")
+                        input.isNotEmpty() && (if (input.last()
+                                .isDigit()
+                        ) input else input.dropLast(1)) != lastInput.replace(",", "")
+                    }
 
-                LaunchedEffect(formatInput(input)) {
-                    textSize = if (formatInput(input).length > 20) 20.sp else 36.sp
+                    // Font size based on the condition
+                    val topTextFontSize by animateIntAsState(
+                        targetValue = if (isExpressionComplete) MaterialTheme.typography.bodyLarge.fontSize.value.toInt() else MaterialTheme.typography.titleLarge.fontSize.value.toInt(),
+                        label = ""
+                    )
+
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+
+                        Text(
+                            text = formatInput(input),
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .padding(horizontal = 4.dp)
+                                .fillMaxWidth(),
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontSize = topTextFontSize.sp, textDirection = TextDirection.Ltr
+                            )
+                        )
+
+                        if (isExpressionComplete) {
+                            lastInput = formatInput(
+                                calculateExpression(
+                                    (if (input.last()
+                                            .isDigit()
+                                    ) input else input.dropLast(1)).replace(
+                                        ",", ""
+                                    )
+                                ).toString()
+                            )
+
+                            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                                Row(
+                                    modifier = Modifier.padding(bottom = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    Icon(
+                                        painter = painterResource(id = BudgetIcons.equal),
+                                        contentDescription = "equal"
+                                    )
+                                    Text(
+                                        text = formatInput(
+                                            calculateExpression(
+                                                lastInput.replace(
+                                                    ",", ""
+                                                )
+                                            ).toString()
+                                        ),
+                                        style = MaterialTheme.typography.titleLarge,
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                    )
+                                }
+                            }
+                        }
+
+                        CustomKeyboard(onKeyPressed = { key ->
+                            input += key
+                        }, onBackspace = {
+                            if (input.isNotEmpty()) {
+                                input = input.dropLast(1)
+                            }
+                        }, onConfirm = {
+                            balance.value = lastInput
+                            scope.launch {
+                                sheetState.hide()
+                            }
+                        })
+                    }
                 }
 
-//                BasicTextField(
-//                    value = formatInput(input),
-//                    onValueChange = {
-////                        text = it
-//                    },
-//                    modifier = Modifier.fillMaxWidth(),
-//                    textStyle = TextStyle(fontSize = textSize),
-//                    maxLines = 1, // Force text to stay on one line
-//                )
+                1 -> {
+                    
+                    LazyColumn {
+                        items(currentResource.orEmpty()){
+                            val data = if (it.sourceType is SourceType.BankCard){
+                                (it.sourceType as SourceType.BankCard).nativeName.orEmpty()
+                            }else ""
 
-                Text(
-                    text = formatInput(input),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                    style = MaterialTheme.typography.headlineMedium.copy(textDirection = TextDirection.Ltr)
-                )
+                            SampleItem(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                title = data, setRadio = true) {
 
-                Text(
-                    text = calculateExpression(input.replace(",","")).toString(),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                    style = TextStyle(textDirection = TextDirection.Ltr)
-                )
-
-                CustomKeyboard(
-                    onKeyPressed = { key ->
-                        input += key
-                    },
-                    onBackspace = {
-                        if (input.isNotEmpty()) {
-                            input = input.dropLast(1)
+                            }
                         }
-                    },
-                    onConfirm = {
-                        // Perform confirm action, e.g., calculation
-                        input = "Confirmed: $input"
                     }
-                )
+                    
+                }
+
+
             }
+
         }
     }
 
@@ -363,28 +482,38 @@ fun InsertTransactionView(
 
 @Composable
 fun DateItem(
-    modifier: Modifier = Modifier,
-    unixTime: Long
-){
+    modifier: Modifier = Modifier, unixTime: Long
+) {
 
     Row(
         modifier = modifier
             .padding(end = 16.dp)
             .background(
-                shape = RoundedCornerShape(4.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer
+                shape = RoundedCornerShape(4.dp), color = MaterialTheme.colorScheme.surfaceContainer
             )
             .padding(vertical = 2.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = "12 مرداد 1402", style = MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant))
-        Box(modifier = Modifier
-            .padding(horizontal = 8.dp)
-            .size(4.dp)
-            .background(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceDim))
-        Text(text = "12:14", style = MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant))
-        
-        Icon(painter = painterResource(id = BudgetIcons.CalenderTick), contentDescription = "calender", tint = MaterialTheme.colorScheme.outline)
+        Text(
+            text = "12 مرداد 1402",
+            style = MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .size(4.dp)
+                .background(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceDim)
+        )
+        Text(
+            text = "12:14",
+            style = MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
+
+        Icon(
+            painter = painterResource(id = BudgetIcons.CalenderTick),
+            contentDescription = "calender",
+            tint = MaterialTheme.colorScheme.outline
+        )
     }
 
 }
@@ -397,8 +526,8 @@ fun AccountSelectorSheet(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
-    onUpdateSelectedAccount:(id: Int, sourcesId: List<Int>) -> Unit,
-    onUpdateSelectedSource:(sourcesId: List<Int>) -> Unit
+    onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
+    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
 ) {
 
     var selectedAccountId by remember { mutableIntStateOf(currentAccount.accountId) }
@@ -417,10 +546,9 @@ fun AccountSelectorSheet(
 
         accounts.value?.let { mAccounts ->
             items(mAccounts) { account ->
-                AccountSection(
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .padding(top = 8.dp),
+                AccountSection(modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 8.dp),
                     account = account,
                     canEdit = false,
                     isAccountSelected = account.accountId == selectedAccountId,
@@ -429,14 +557,17 @@ fun AccountSelectorSheet(
                         navigateToSource(account.accountId, null)
                     },
                     onSourceEdit = { sourceId ->
-                            navigateToSource(account.accountId, sourceId)
+                        navigateToSource(account.accountId, sourceId)
                     },
                     onAccountSelect = { accountId ->
                         selectedAccountId = accountId
-                        mAccounts.find { it.accountId == selectedAccountId }?.let { selectedAccount ->
-                            selectedResources.clear()
-                            selectedResources.addAll(selectedAccount.sources.map { it?.id ?: 0 })
-                        }
+                        mAccounts.find { it.accountId == selectedAccountId }
+                            ?.let { selectedAccount ->
+                                selectedResources.clear()
+                                selectedResources.addAll(selectedAccount.sources.map {
+                                    it?.id ?: 0
+                                })
+                            }
 
                         onUpdateSelectedAccount.invoke(accountId, selectedResources)
                     },
@@ -449,7 +580,7 @@ fun AccountSelectorSheet(
                             selectedResources.clear()
                         }
 
-                        if (selectedResources.contains(sourceId)){
+                        if (selectedResources.contains(sourceId)) {
                             if (selectedResources.size > 1) {
                                 selectedResources.remove(sourceId)
                             } else {
@@ -461,8 +592,7 @@ fun AccountSelectorSheet(
                             selectedResources.add(sourceId)
                         }
                         onUpdateSelectedSource.invoke(selectedResources)
-                    }
-                )
+                    })
             }
         }
 
@@ -481,7 +611,10 @@ fun AccountSelectorSheet(
 
             }
 
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp), color = MaterialTheme.colorScheme.surfaceContainerHighest)
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest
+            )
 
             SampleItem(
                 modifier = Modifier.padding(horizontal = 24.dp),

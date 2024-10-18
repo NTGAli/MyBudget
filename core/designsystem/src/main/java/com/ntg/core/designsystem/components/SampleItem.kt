@@ -28,6 +28,8 @@ fun SampleItem(
     secondText: String? = null,
     imagePainter: Painter? = null,
     iconPainter: Painter? = null,
+    setRadio: Boolean = false,
+    isRadioCheck: Boolean = false,
     iconTint: Color = LocalContentColor.current,
     type: ButtonType = ButtonType.Neutral,
     onClick: () -> Unit,
@@ -35,15 +37,23 @@ fun SampleItem(
 
     Row(
         modifier = modifier
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(8.dp))
-          .clickable(interactionSource = remember { MutableInteractionSource() }, indication = rememberRipple(
-            color = if(type == ButtonType.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surfaceDim
-          ), onClick = {
-            onClick()
-          }),
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(
+                    color = if (type == ButtonType.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surfaceDim
+                ),
+                onClick = {
+                    onClick()
+                }),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
+        if (setRadio){
+            RadioCheck(
+                modifier = Modifier.padding(start = 4.dp),
+                isChecked = isRadioCheck, isCircle = true)
+        }
 
         if (iconPainter != null) {
             Icon(
@@ -59,9 +69,9 @@ fun SampleItem(
 
         Text(
             modifier = Modifier
-              .padding(start = 8.dp)
-              .padding(vertical = 16.dp)
-              .weight(1f),
+                .padding(start = 8.dp)
+                .padding(vertical = 16.dp)
+                .weight(1f),
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(if(type == ButtonType.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
         )
@@ -69,8 +79,8 @@ fun SampleItem(
         if (secondText != null) {
             Text(
                 modifier = Modifier
-                  .padding(end = 8.dp)
-                  .padding(vertical = 16.dp),
+                    .padding(end = 8.dp)
+                    .padding(vertical = 16.dp),
                 text = secondText,
                 style = MaterialTheme.typography.titleSmall.copy(if(type == ButtonType.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
             )

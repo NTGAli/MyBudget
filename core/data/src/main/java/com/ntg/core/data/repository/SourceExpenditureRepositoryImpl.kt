@@ -86,17 +86,18 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
             emit(
                 sourceExpenditureDao.getSelectedSources().map { row ->
                     val sourceType = when (row.type) {
-                        0 -> SourceType.BankCard(
+                        1 -> SourceType.BankCard(
                             id = row.bankId ?: -1,
                             number = row.number ?: "",
                             cvv = row.cvv ?: "",
                             sheba = row.sheba ?: "",
                             accountNumber = row.accountNumber ?: "",
                             date = row.expire ?: "",
-                            name = row.cardName.orEmpty()
+                            name = row.cardName.orEmpty(),
+                            nativeName = row.bankName.orEmpty(),
                         )
 
-                        1 -> SourceType.Gold(
+                        2 -> SourceType.Gold(
                             value = row.value ?: 0.0,
                             weight = row.weight ?: 0.0
                         )

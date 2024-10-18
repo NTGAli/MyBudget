@@ -137,11 +137,17 @@ interface SourceExpenditureDao {
 
     @Transaction
     @Query(
-        "SELECT se.id, se.accountId, se.type,\n" +
-                "            bc.number, bc.cvv, bc.date as expire, bc.name as cardName, bc.id as bankId, bc.sheba, bc.accountNumber\n" +
-                "        FROM sourceExpenditures se\n" +
-                "        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId AND se.type = 0\n" +
-                " WHERE se.isSelected = 1"
+        """
+            SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId, se.isRemoved,
+        bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.bankId as bankId,
+        b.nativeName as bankName, ac.sId as accountSId
+        FROM sourceExpenditures se
+        LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
+        LEFT JOIN currencies cr ON se.currencyId = cr.id
+        LEFT JOIN banks b ON bc.bankId = b.id
+        LEFT JOIN accounts ac ON ac.id = se.accountId
+        WHERE se.isSelected = 1
+        """
     )
     suspend fun getSelectedSources(): List<RawSourceDetail>
 

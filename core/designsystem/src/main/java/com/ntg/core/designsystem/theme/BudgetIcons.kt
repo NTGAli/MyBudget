@@ -13,6 +13,8 @@ object BudgetIcons {
   val wallet = R.drawable.wallet
   val directionDown = R.drawable.direction_down_01
   val directionUp = R.drawable.direction_up
+  val directionLeft = R.drawable.direction_left
+  val directionRight = R.drawable.direction_right
   val food = R.drawable.mdi_food_outline
   val ArrowDown = R.drawable.arrow_down
   val ArrowUp = R.drawable.arrow_up
@@ -32,4 +34,7 @@ object BudgetIcons {
   val CalenderTick = R.drawable.calander_tick
   val UserCircle = R.drawable.ic_user_circle
   val Exit = R.drawable.ic_exit
+//  val tick = R.drawable.tick
+  val backspace = R.drawable.remove
+  val equal = R.drawable.equality_rectangle
 }

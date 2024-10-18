@@ -235,7 +235,7 @@ fun formatCurrency(amount: Long, mask: String, currency: String, pos: Int): Stri
 }
 
 
-fun calculateExpression(expression: String): Double? {
+fun calculateExpression(expression: String): Long? {
     // Clean up the input expression by removing spaces
     val sanitizedExpression = expression.replace(" ", "")
 
@@ -261,7 +261,7 @@ fun calculateExpression(expression: String): Double? {
     val expressionWithOperators = sanitizedExpression.replace('×', '*').replace('÷', '/')
 
     return try {
-        evaluate(expressionWithOperators)
+        evaluate(expressionWithOperators).toLong()
     } catch (e: Exception) {
         println("Error: ${e.message}")
         null
