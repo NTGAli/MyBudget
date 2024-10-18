@@ -7,6 +7,7 @@ import com.ntg.core.database.convertor.Converters
 import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.BankDao
+import com.ntg.core.database.dao.CategoryDao
 import com.ntg.core.database.dao.ConfigDao
 import com.ntg.core.database.dao.CurrencyDao
 import com.ntg.core.database.dao.SourceExpenditureDao
@@ -45,4 +46,5 @@ internal abstract class AppDatabase : RoomDatabase() {
     abstract fun bankDao(): BankDao
     abstract fun configDao(): ConfigDao
     abstract fun currencyDao(): CurrencyDao
+    abstract fun categoryDao(): CategoryDao
 }

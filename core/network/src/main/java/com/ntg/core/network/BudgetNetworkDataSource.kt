@@ -4,6 +4,8 @@ import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
+import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.CategoryRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
@@ -41,4 +43,6 @@ interface BudgetNetworkDataSource {
     suspend fun removeWallet(id: String): Flow<Result<ResponseBody<String?>>>
 
     suspend fun updateWallet(id: String, source: SourceWithDetail): Flow<Result<SyncedWallet?>>
+
+    suspend fun categories(): Flow<Result<CategoryRes?>>
 }

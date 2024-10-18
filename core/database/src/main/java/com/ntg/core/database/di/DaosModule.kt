@@ -4,6 +4,7 @@ import com.ntg.core.database.AppDatabase
 import com.ntg.core.database.dao.AccountDao
 import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.BankDao
+import com.ntg.core.database.dao.CategoryDao
 import com.ntg.core.database.dao.ConfigDao
 import com.ntg.core.database.dao.CurrencyDao
 import com.ntg.core.database.dao.SourceExpenditureDao
@@ -58,5 +59,10 @@ internal object DaosModule {
     fun provideCurrencies(
         database: AppDatabase
     ): CurrencyDao = database.currencyDao()
+
+    @Provides
+    fun provideCategory(
+        database: AppDatabase
+    ): CategoryDao = database.categoryDao()
 
 }

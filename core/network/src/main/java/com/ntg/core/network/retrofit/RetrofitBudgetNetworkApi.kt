@@ -7,6 +7,8 @@ import com.ntg.core.model.req.SourceDetailReq
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
+import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.CategoryRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
@@ -133,6 +135,12 @@ internal class RetrofitBudgetNetwork @Inject constructor(
                 ))
             }else ""
             apiService.updateWallet(id, details)
+        }
+    }
+
+    override suspend fun categories(): Flow<Result<CategoryRes?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.categories()
         }
     }
 }

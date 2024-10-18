@@ -2,6 +2,8 @@ package com.ntg.core.network.service
 
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.BankRes
+import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.CategoryRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
@@ -94,4 +96,7 @@ interface BudgetService {
         @Field("wallet_id") id: String,
         @Field("details") details: String,
     ): Response<SyncedWallet?>
+
+    @GET(value = "/api/category/get")
+    suspend fun categories(): Response<CategoryRes?>
 }
