@@ -18,4 +18,6 @@ interface BankCardRepository {
 
     suspend fun getUserLocalBanks(): Flow<List<Bank>>
 
+    suspend fun getLocalBankCount(): Int
+
 }

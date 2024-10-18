@@ -67,4 +67,8 @@ class BankCardRepositoryImpl @Inject constructor(
         }
             .flowOn(ioDispatcher)
     }
+
+    override suspend fun getLocalBankCount(): Int {
+        return bankDao.count()
+    }
 }

@@ -23,6 +23,9 @@ interface BankDao {
     @Query("SELECT * FROM banks")
     suspend fun getBanks(): List<BankEntity>
 
+    @Query("SELECT COUNT(*) FROM banks")
+    suspend fun count(): Int
+
     @Query("UPDATE banks SET colorLogo = :colorLogo")
     suspend fun updateColorLogo(colorLogo: String)
 
