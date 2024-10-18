@@ -24,6 +24,7 @@ sealed class SourceType {
         val name: String,
         val bankId: Int? = null,
         val nativeName: String? = null,
+        val logoName: String? = null,
         val isDeleted: Boolean = false,
         val updatedAt: String? = null
     ) : SourceType()

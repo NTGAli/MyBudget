@@ -95,6 +95,7 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
                             date = row.expire ?: "",
                             name = row.cardName.orEmpty(),
                             nativeName = row.bankName.orEmpty(),
+                            logoName = row.logoName.orEmpty()
                         )
 
                         2 -> SourceType.Gold(

@@ -216,7 +216,6 @@ class SetupViewModel
 
     fun getBankLogoColor(): Flow<ServerConfig?> {
         return configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL)
-
     }
 
     fun loadCurrencies(): MutableStateFlow<List<Currency>?> {

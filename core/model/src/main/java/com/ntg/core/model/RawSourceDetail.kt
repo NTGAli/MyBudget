@@ -7,6 +7,7 @@ data class RawSourceDetail(
     val accountId: Int,
     val currencyId: Int? = null,
     val bankName: String? = null,
+    val logoName: String? = null,
     val type: Int,
     val name: String?=null,
     val number: String?,

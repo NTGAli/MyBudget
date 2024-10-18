@@ -94,6 +94,9 @@ fun HomeRoute(
         homeViewModel.selectedAccount().collectAsStateWithLifecycle(initialValue = null)
     val currentResource =
         homeViewModel.selectedSources().collectAsStateWithLifecycle(initialValue = emptyList())
+    val logoUrlColor =
+        homeViewModel.getBankLogoColor()
+            .collectAsStateWithLifecycle(initialValue = null).value?.value
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
@@ -105,6 +108,7 @@ fun HomeRoute(
             currentResource.value,
             transactions,
             expandTransaction,
+            logoUrlColor,
             navigateToSource,
             navigateToAccount,
             onShowSnackbar,
@@ -135,6 +139,7 @@ private fun HomeScreen(
     currentResource: List<SourceWithDetail>?,
     transactions: State<List<Transaction>?>,
     expandTransaction: MutableState<Boolean>,
+    logoUrl: String? = null,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
@@ -219,7 +224,7 @@ private fun HomeScreen(
 
     }
 
-    InsertTransactionView(expandTransaction, currentResource)
+    InsertTransactionView(expandTransaction, currentResource, logoUrl)
 
 }
 
@@ -228,11 +233,16 @@ private fun HomeScreen(
 fun InsertTransactionView(
     expandTransaction: MutableState<Boolean>,
     currentResource: List<SourceWithDetail>?,
+    logoUrl: String?
 ) {
 
     val balance = remember { mutableStateOf("") }
     var input by remember { mutableStateOf("") }
     var lastInput by remember { mutableStateOf("") }
+
+    var selectedSource by remember {
+        mutableStateOf<SourceWithDetail?>(null)
+    }
 
     var sheetType by remember { mutableIntStateOf(0) }
 
@@ -343,7 +353,17 @@ fun InsertTransactionView(
                     .padding(top = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
-                text = balance,
+                text = try {
+                    mutableStateOf(
+                        "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                            (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                4
+                            )
+                        }"
+                    )
+                } catch (e: Exception) {
+                    mutableStateOf("")
+                },
                 label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.source_expenditure),
                 trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                 readOnly = true,
@@ -454,21 +474,37 @@ fun InsertTransactionView(
                 }
 
                 1 -> {
-                    
+
                     LazyColumn {
-                        items(currentResource.orEmpty()){
-                            val data = if (it.sourceType is SourceType.BankCard){
-                                (it.sourceType as SourceType.BankCard).nativeName.orEmpty()
-                            }else ""
+                        items(currentResource.orEmpty()) {
+                            var logoName = ""
+                            val data = if (it.sourceType is SourceType.BankCard) {
+                                logoName = (it.sourceType as SourceType.BankCard).logoName.orEmpty()
+                                "${(it.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                    (it.sourceType as SourceType.BankCard).number.takeLast(
+                                        4
+                                    )
+                                }"
+                            } else ""
 
                             SampleItem(
                                 modifier = Modifier.padding(horizontal = 8.dp),
-                                title = data, setRadio = true) {
-
+                                title = data, setRadio = true,
+                                imageUrl = if (logoUrl.orEmpty()
+                                        .isNotEmpty() && logoName.isNotEmpty()
+                                ) {
+                                    "${logoUrl}${logoName}.svg"
+                                } else null,
+                                isRadioCheck = selectedSource == it
+                            ) {
+                                selectedSource = it
+                                scope.launch {
+                                    sheetState.hide()
+                                }
                             }
                         }
                     }
-                    
+
                 }
 
 

@@ -140,7 +140,7 @@ interface SourceExpenditureDao {
         """
             SELECT se.id, se.sId, se.accountId, se.type, cr.nativeName as name, se.currencyId, se.isRemoved,
         bc.number, bc.cvv, bc.sheba, bc.accountNumber, bc.date as expire, bc.name as cardName, bc.bankId as bankId,
-        b.nativeName as bankName, ac.sId as accountSId
+        b.nativeName as bankName, b.logoName as logoName, ac.sId as accountSId
         FROM sourceExpenditures se
         LEFT JOIN bank_card_entity bc ON se.id = bc.sourceId
         LEFT JOIN currencies cr ON se.currencyId = cr.id

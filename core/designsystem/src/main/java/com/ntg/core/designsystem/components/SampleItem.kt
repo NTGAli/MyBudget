@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
@@ -16,10 +17,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
+import com.ntg.core.designsystem.theme.BudgetIcons
 
 @Composable
 fun SampleItem(
@@ -28,6 +38,7 @@ fun SampleItem(
     secondText: String? = null,
     imagePainter: Painter? = null,
     iconPainter: Painter? = null,
+    imageUrl: String? = null,
     setRadio: Boolean = false,
     isRadioCheck: Boolean = false,
     iconTint: Color = LocalContentColor.current,
@@ -64,6 +75,21 @@ fun SampleItem(
             Image(
                 modifier = Modifier.padding(start = 8.dp),
                 painter = imagePainter, contentDescription = null
+            )
+        }else if (imageUrl != null){
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .decoderFactory(SvgDecoder.Factory())
+                    .build(),
+                placeholder = painterResource(BudgetIcons.bank),
+                error = painterResource(BudgetIcons.bank),
+                contentDescription = "Bank Logo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(24.dp)
             )
         }
 
