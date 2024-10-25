@@ -46,7 +46,7 @@ class SetupViewModel
     private val syncData: SyncData,
 ) : ViewModel() {
 
-    val homeUiState = MutableStateFlow(SetupUiState.Loading)
+    val homeUiState = MutableStateFlow(SetupUiState.Success)
 
     var selectedCurrency = flowOf<Currency?>(null)
 
@@ -226,6 +226,13 @@ class SetupViewModel
             }
         }
         return _currencies
+    }
+
+    fun selectDefault(){
+        viewModelScope.launch {
+            accountRepository.selectDefault()
+            sourceRepository.selectWalletFronDefault()
+        }
     }
 
 }

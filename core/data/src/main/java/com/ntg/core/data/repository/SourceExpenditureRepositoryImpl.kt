@@ -49,6 +49,10 @@ class SourceExpenditureRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun selectWalletFronDefault() {
+        sourceExpenditureDao.slectDeafultWallet()
+    }
+
     override fun getAll(): Flow<List<SourceExpenditure>> =
         flow {
             emit(

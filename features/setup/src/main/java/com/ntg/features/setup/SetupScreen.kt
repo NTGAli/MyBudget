@@ -117,6 +117,7 @@ fun SetupRoute(
                         }) {
                         onShowSnackbar.invoke(R.string.err_no_sources, null)
                     } else {
+                        setupViewModel.selectDefault()
                         navigateToHome()
                     }
                 }
@@ -182,69 +183,57 @@ private fun SetupScreen(
         }
     ) {
 
-        when (uiSate) {
-            SetupUiState.Error -> {
-                backToLogin()
+        LazyColumn(
+            modifier = Modifier
+                .padding(it)
+        ) {
+
+            item {
+                Spacer(modifier = Modifier.padding(8.dp))
             }
 
-            SetupUiState.Loading -> {
-                LoadingView(Modifier.padding(it))
-            }
-
-            SetupUiState.Success -> {
-                LazyColumn(
+            items(accounts.value.orEmpty()) { account ->
+                AccountSection(
                     modifier = Modifier
-                        .padding(it)
-                ) {
-
-                    item {
-                        Spacer(modifier = Modifier.padding(8.dp))
-                    }
-
-                    items(accounts.value.orEmpty()) { account ->
-                        AccountSection(
-                            modifier = Modifier
-                                .padding(horizontal = 24.dp)
-                                .padding(top = 8.dp),
-                            account = account, canEdit = true, insertNewItem = {
-                                navigateToSource(account.accountId, null)
-                            }, accountEndIconClick = {
-                                editAccount(it)
-                            }, onSourceEdit = {
-                                navigateToSource(account.accountId, it)
-                            }, deleteSource = {
-                                showDialog = true
-                                dialogTitle = context.getString(R.string.delete_source)
-                                dialogDiscription = context.getString(R.string.delete_source_desc)
-                                selectedWallet = it
-                            }, deleteAccount = {
-                                if (!account.isDefault) {
-                                    showDialog = true
-                                    selectedAccount = account.accountId
-                                    dialogTitle = context.getString(R.string.delete_account)
-                                    dialogDiscription =
-                                        context.getString(R.string.delete_account_desc)
-                                } else {
-                                    scope.launch {
-                                        onShowSnackbar(R.string.deleting_deafult_account, null)
-                                    }
-                                }
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 8.dp),
+                    account = account, canEdit = true, insertNewItem = {
+                        navigateToSource(account.accountId, null)
+                    }, accountEndIconClick = {
+                        editAccount(it)
+                    }, onSourceEdit = {
+                        navigateToSource(account.accountId, it)
+                    }, deleteSource = {
+                        showDialog = true
+                        dialogTitle = context.getString(R.string.delete_source)
+                        dialogDiscription = context.getString(R.string.delete_source_desc)
+                        selectedWallet = it
+                    }, deleteAccount = {
+                        if (!account.isDefault) {
+                            showDialog = true
+                            selectedAccount = account.accountId
+                            dialogTitle = context.getString(R.string.delete_account)
+                            dialogDiscription =
+                                context.getString(R.string.delete_account_desc)
+                        } else {
+                            scope.launch {
+                                onShowSnackbar(R.string.deleting_deafult_account, null)
                             }
-                        )
-                    }
-
-                    item {
-                        SampleAddAccountButton() {
-                            navigateToAccount(0)
                         }
                     }
+                )
+            }
 
-                    item {
-                        Spacer(modifier = Modifier.padding(24.dp))
-                    }
-
+            item {
+                SampleAddAccountButton() {
+                    navigateToAccount(0)
                 }
             }
+
+            item {
+                Spacer(modifier = Modifier.padding(24.dp))
+            }
+
         }
     }
 

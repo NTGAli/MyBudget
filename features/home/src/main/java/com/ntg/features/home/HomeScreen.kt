@@ -335,7 +335,7 @@ fun InsertTransactionView(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 text = balance,
-                label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.balance),
+                label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.price),
                 fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                 fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
                 readOnly = true,

@@ -14,6 +14,8 @@ interface SourceExpenditureRepository {
 
     suspend fun updateSelectedSources(sourceIds: List<Int>)
 
+    suspend fun selectWalletFronDefault()
+
     fun getAll(): Flow<List<SourceExpenditure>>
 
     fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>>

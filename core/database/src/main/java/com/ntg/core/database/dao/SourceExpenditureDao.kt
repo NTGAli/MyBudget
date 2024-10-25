@@ -169,4 +169,7 @@ interface SourceExpenditureDao {
 
     @Query("UPDATE sourceExpenditures SET isSynced=0 WHERE id=:id")
     suspend fun unSync(id: Int)
+
+    @Query("UPDATE sourceExpenditures SET isSelected = 1 WHERE accountId = 1")
+    suspend fun slectDeafultWallet()
 }

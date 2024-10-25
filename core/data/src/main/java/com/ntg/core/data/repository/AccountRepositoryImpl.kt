@@ -214,6 +214,10 @@ class AccountRepositoryImpl @Inject constructor(
         accountDao.synced(id, sId)
     }
 
+    override suspend fun selectDefault() {
+        accountDao.selectDeafult()
+    }
+
     override suspend fun updateSelectedAccountAndSources(accountId: Int) {
         accountDao.updateSelectedAccount(accountId)
     }

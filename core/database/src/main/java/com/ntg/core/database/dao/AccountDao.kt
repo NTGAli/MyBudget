@@ -90,4 +90,7 @@ interface AccountDao {
 
     @Query("UPDATE accounts SET isSelected = CASE WHEN id=:id THEN 1 ELSE 0 END")
     suspend fun updateSelectedAccount(id: Int)
+
+    @Query("UPDATE accounts SET isSelected = 1 WHERE isDefault = 1")
+    suspend fun selectDeafult()
 }

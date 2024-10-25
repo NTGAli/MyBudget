@@ -16,6 +16,7 @@ import com.ntg.core.database.dao.WalletDao
 import com.ntg.core.database.model.AccountEntity
 import com.ntg.core.database.model.BankCardEntity
 import com.ntg.core.database.model.BankEntity
+import com.ntg.core.database.model.CategoryEntity
 import com.ntg.core.database.model.ConfigEntity
 import com.ntg.core.database.model.CurrencyEntity
 import com.ntg.core.database.model.SourceExpenditureEntity
@@ -32,7 +33,8 @@ import com.ntg.core.model.res.Bank
         WalletTypeEntity::class,
         BankEntity::class,
         ConfigEntity::class,
-        CurrencyEntity::class
+        CurrencyEntity::class,
+    CategoryEntity::class
     ],
     version = 6, exportSchema = true
 )
