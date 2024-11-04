@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -19,15 +20,20 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 @Composable
 fun Tag(
     modifier: Modifier = Modifier,
-    text: String,
-    type: String,
+    text: String? = null,
+    type: String = "",
+    icon: Painter? = null,
     enableDismiss:Boolean = true,
     dismissClick: () -> Unit = {},
     onClick: () -> Unit,
 ) {
 
     Row(
-        modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceContainerHighest, shape = RoundedCornerShape(8.dp))
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                shape = RoundedCornerShape(8.dp)
+            )
 
             .clip(RoundedCornerShape(8.dp))
             .clickable {
@@ -36,17 +42,21 @@ fun Tag(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (enableDismiss){
-            Icon(
-                modifier = Modifier
-                    .padding(end = 4.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable {
-                        dismissClick()
-                    },
-                painter = painterResource(id = BudgetIcons.Close), contentDescription = "close tag")
+        if (text != null){
+            if (enableDismiss){
+                Icon(
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable {
+                            dismissClick()
+                        },
+                    painter = painterResource(id = BudgetIcons.Close), contentDescription = "close tag")
+            }
+            Text(text = text, style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.inverseSurface))
+        }else if (icon != null){
+            Icon(painter = icon, contentDescription = "icon")
         }
-        Text(text = text, style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.inverseSurface))
     }
 
 }
