@@ -237,6 +237,7 @@ fun formatCurrency(amount: Long, mask: String, currency: String, pos: Int): Stri
 
 
 fun calculateExpression(expression: String): Long? {
+    logd("AWJDLKAWJDKLWAJLDK ::: $expression")
     // Clean up the input expression by removing spaces
     val sanitizedExpression = expression.replace(" ", "")
 
@@ -247,7 +248,7 @@ fun calculateExpression(expression: String): Long? {
     }
 
     // Validate the expression for allowed characters and operators
-    if (!sanitizedExpression.matches(Regex("^[0-9.+\\-*/×÷]+$"))) {
+    if (!sanitizedExpression.matches(Regex("^[0-9.+\\-*/×÷()]+$"))) {
         println("Error: Expression contains invalid characters.")
         return null
     }
@@ -278,9 +279,9 @@ fun evaluate(expression: String): Double {
         val ch = expression[i]
 
         when {
-            // If current character is a number, handle multi-digit numbers or decimals
+            // If current character is a digit or a dot, handle the number
             ch.isDigit() || ch == '.' -> {
-                var num = StringBuilder()
+                val num = StringBuilder()
                 while (i < expression.length && (expression[i].isDigit() || expression[i] == '.')) {
                     num.append(expression[i])
                     i++
@@ -288,24 +289,66 @@ fun evaluate(expression: String): Double {
                 numberStack.push(num.toString().toDouble())
                 continue
             }
-
-            // If it's an operator, handle operator precedence and stacking
-            ch == '+' || ch == '-' || ch == '*' || ch == '/' -> {
-                if (operatorStack.isNotEmpty() && precedence(ch) <= precedence(operatorStack.peek())) {
+            // Handle opening parenthesis
+            ch == '(' -> {
+                operatorStack.push(ch)
+            }
+            // Handle closing parenthesis
+            ch == ')' -> {
+                while (operatorStack.isNotEmpty() && operatorStack.peek() != '(') {
                     numberStack.push(performOperation(operatorStack.pop(), numberStack.pop(), numberStack.pop()))
+                }
+                if (operatorStack.isEmpty() || operatorStack.pop() != '(') {
+                    throw IllegalArgumentException("Mismatched parentheses")
+                }
+            }
+            // If it's an operator
+            isOperator(ch) -> {
+                // Handle unary minus
+                if (ch == '-' && (i == 0 || expression[i - 1] in "+-*/(×÷")) {
+                    // Treat unary minus as a negative number
+                    val num = StringBuilder()
+                    num.append('-')
+                    i++
+                    // Parse the number after the unary minus
+                    while (i < expression.length && (expression[i].isDigit() || expression[i] == '.')) {
+                        num.append(expression[i])
+                        i++
+                    }
+                    numberStack.push(num.toString().toDouble())
+                    continue
+                }
+
+                while (operatorStack.isNotEmpty() && precedence(ch) <= precedence(operatorStack.peek())) {
+                    val op = operatorStack.pop()
+                    val b = numberStack.pop()
+                    val a = numberStack.pop()
+                    numberStack.push(performOperation(op, b, a))
                 }
                 operatorStack.push(ch)
             }
+            else -> throw IllegalArgumentException("Invalid character encountered: $ch")
         }
         i++
     }
 
     // Process remaining operators in the stack
     while (operatorStack.isNotEmpty()) {
-        numberStack.push(performOperation(operatorStack.pop(), numberStack.pop(), numberStack.pop()))
+        val op = operatorStack.pop()
+        if (op == '(' || op == ')') {
+            throw IllegalArgumentException("Mismatched parentheses")
+        }
+        val b = numberStack.pop()
+        val a = numberStack.pop()
+        numberStack.push(performOperation(op, b, a))
     }
 
     return numberStack.pop()
+}
+
+// Helper function to determine if a character is an operator
+fun isOperator(op: Char): Boolean {
+    return op in listOf('+', '-', '*', '/', '×', '÷')
 }
 
 // Helper function to return precedence of operators
@@ -332,7 +375,6 @@ fun performOperation(op: Char, b: Double, a: Double): Double {
         else -> throw UnsupportedOperationException("Operator $op is not supported")
     }
 }
-
 
 fun formatInput(input: String): String {
     // Regex to match any operator (+, -, ×, ÷)
