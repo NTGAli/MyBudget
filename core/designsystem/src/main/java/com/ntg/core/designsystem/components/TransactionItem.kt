@@ -15,9 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
+import com.ntg.core.mybudget.common.Constants
 
 @Composable
 fun TransactionItem(
@@ -25,7 +29,7 @@ fun TransactionItem(
     title: String,
     amount: String,
     date: String,
-    type: String,
+    type: Int,
     divider: Boolean = false,
     attached: Boolean = false,
 ){
@@ -70,17 +74,21 @@ fun TransactionItem(
             Text(text = amount, style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface))
 
 
-            if (type == "income"){
+            if (type == Constants.BudgetType.INCOME){
                 Icon(
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            brush =  Brush.linearGradient(
+                                colors = listOf(Color(0xFF50AD98), Color(0xFF4DA8BD)),
+                                start = Offset(0f, 0f),
+                                end = Offset(0f, Float.POSITIVE_INFINITY)
+                            ),
                             shape = RoundedCornerShape(4.dp)
                         ),
                     painter = painterResource(id = BudgetIcons.ArrowDown),
                     contentDescription = "Income icon",
-                    tint = MaterialTheme.colorScheme.secondary
+                    tint = Color.White
                 )
             }
             else{
@@ -88,12 +96,16 @@ fun TransactionItem(
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.errorContainer,
+                            brush =  Brush.linearGradient(
+                                colors = listOf(Color(0xFFD1666D), Color(0xFFB04F74)),
+                                start = Offset(0f, 0f), // Top
+                                end = Offset(0f, Float.POSITIVE_INFINITY) // Bottom
+                            ),
                             shape = RoundedCornerShape(4.dp)
                         ),
                     painter = painterResource(id = BudgetIcons.ArrowUp),
                     contentDescription = "Income icon",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = Color.White
                 )
             }
 

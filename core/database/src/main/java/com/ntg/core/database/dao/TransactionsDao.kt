@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.ntg.core.database.model.TransactionEntity
+import com.ntg.core.model.Transaction
 
 @Dao
 interface TransactionsDao {
@@ -15,8 +16,13 @@ interface TransactionsDao {
     @Delete
     suspend fun delete(transactionEntity: TransactionEntity)
 
-    @Query("SELECT * FROM transactions WHERE sourceId IN (:ids)")
-    suspend fun getBySourceIds(ids: List<Int>): List<TransactionEntity>
+    @Query("""
+        SELECT * FROM transactions t
+        INNER JOIN category_table c
+        ON c.id = t.categoryId
+        WHERE t.sourceId IN (:ids)
+    """)
+    suspend fun getBySourceIds(ids: List<Int>): List<Transaction>
 
 
     @Query("DELETE FROM transactions WHERE accountId = :accountId")

@@ -2,7 +2,6 @@ package com.ntg.features.home
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -53,7 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -78,6 +78,7 @@ import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SwitchText
 import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TextDivider
+import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -94,11 +95,12 @@ import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
 import com.ntg.core.mybudget.common.logd
+import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.persianDate.PersianDate
+import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.feature.home.R
 import kotlinx.coroutines.launch
 import java.time.LocalTime
-import kotlin.math.log
 
 @Composable
 fun HomeRoute(
@@ -111,6 +113,26 @@ fun HomeRoute(
     val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
+
+
+//    LaunchedEffect(Unit) {
+//        (1..10).toList().forEachIndexed { index, i ->
+//            homeViewModel.insertTransaction(
+//                Transaction(
+//                    id = 0,
+//                    sId = "",
+//                    accountId = 10001,
+//                    sourceId = 10002,
+//                    amount = (2*index).toLong(),
+//                    categoryId = 1,
+//                    type = Constants.BudgetType.EXPENSE.toString(),
+//                    date = System.currentTimeMillis(),
+//                    note = "478787"
+//                )
+//            )
+//        }
+//
+//    }
 
     val accounts =
         homeViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -175,8 +197,11 @@ private fun HomeScreen(
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    BottomSheetScaffold(topBar = {
+    BottomSheetScaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
         AppBar(
             titleState = {
                 AccountSelector(
@@ -186,7 +211,8 @@ private fun HomeScreen(
                 ) {
                     scope.launch { scaffoldState.bottomSheetState.expand() }
                 }
-            }, enableNavigation = false
+            }, enableNavigation = false,
+            scrollBehavior = scrollBehavior
         )
     },
         sheetTonalElevation = 0.dp,
@@ -212,9 +238,6 @@ private fun HomeScreen(
                 .fillMaxSize()
         ) {
 
-            item {
-
-            }
 
             item {
                 CardReport(modifier = Modifier
@@ -243,6 +266,18 @@ private fun HomeScreen(
                     modifier = Modifier.padding(top = 16.dp, start = 32.dp, bottom = 16.dp),
                     text = stringResource(id = R.string.transactions),
                     style = MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outline)
+                )
+            }
+
+            items(transactions.value.orEmpty()){
+                TransactionItem(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = it.name.toString(),
+                    amount = formatCurrency(it.amount, "###,###", "ت", 2),
+                    date = it.date.toPersianDate(),
+                    divider = transactions.value?.last() != it,
+                    attached = false,
+                    type = it.type.orDefault().toInt()
                 )
             }
 

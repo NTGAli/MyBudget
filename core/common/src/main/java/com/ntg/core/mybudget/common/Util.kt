@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken
 import com.ntg.core.common.R
 import com.ntg.core.model.DataBank
 import com.ntg.core.mybudget.common.persianDate.PersianDate
+import com.ntg.core.mybudget.common.persianDate.PersianDateFormat
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -237,7 +238,6 @@ fun formatCurrency(amount: Long, mask: String, currency: String, pos: Int): Stri
 
 
 fun calculateExpression(expression: String): Long? {
-    logd("AWJDLKAWJDKLWAJLDK ::: $expression")
     // Clean up the input expression by removing spaces
     val sanitizedExpression = expression.replace(" ", "")
 
@@ -441,4 +441,14 @@ fun getCurrentJalaliDate(): Triple<Int, Int, Int> {
     val month = persianDate.shMonth
     val day = persianDate.shDay
     return Triple(year, month, day)
+}
+
+
+fun Long.toPersianDate(): String {
+    val persianDate = PersianDate(Date(this))
+    val month = persianDate.monthName()
+    val dayOfMonth = persianDate.dayOfWeek()
+    val year = persianDate.shYear
+
+    return "$dayOfMonth $month $year"
 }

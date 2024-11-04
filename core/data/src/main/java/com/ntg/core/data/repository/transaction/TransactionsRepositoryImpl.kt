@@ -1,8 +1,6 @@
 package com.ntg.core.data.repository.transaction
 
 import com.ntg.core.database.dao.TransactionsDao
-import com.ntg.core.database.model.TransactionEntity
-import com.ntg.core.database.model.asTransaction
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Transaction
 import com.ntg.core.mybudget.common.BudgetDispatchers
@@ -24,7 +22,7 @@ class TransactionsRepositoryImpl @Inject constructor(
 
     override fun getTransactionsBySourceIds(sourceIds: List<Int>): Flow<List<Transaction>> =
         flow {
-            emit(transactionsDao.getBySourceIds(sourceIds).map { it.asTransaction() })
+            emit(transactionsDao.getBySourceIds(sourceIds))
         }
             .flowOn(ioDispatcher)
 }

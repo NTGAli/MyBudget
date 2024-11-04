@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -26,9 +28,22 @@ fun AmountReport(
     income: String?
 ){
 
+
+    val incomeBrush = Brush.linearGradient(
+        colors = listOf(Color(0xFFD1666D), Color(0xFFB04F74)),
+        start = Offset(0f, 0f),
+        end = Offset(0f, Float.POSITIVE_INFINITY)
+    )
+
+    val expenseBrush = Brush.linearGradient(
+        colors = listOf(Color(0xFF50AD98), Color(0xFF4DA8BD)),
+        start = Offset(0f, 0f),
+        end = Offset(0f, Float.POSITIVE_INFINITY)
+    )
+
     Row(modifier = modifier) {
-        Item(value = income.orEmpty(), title = stringResource(id = R.string.income), icon = BudgetIcons.income, tint = MaterialTheme.colorScheme.secondary, backColor = MaterialTheme.colorScheme.secondaryContainer)
-        Item(value = outcome.orEmpty(), title = stringResource(id = R.string.outcome), icon = BudgetIcons.outcome, tint = MaterialTheme.colorScheme.error, backColor = MaterialTheme.colorScheme.errorContainer)
+        Item(value = income.orEmpty(), title = stringResource(id = R.string.income), icon = BudgetIcons.income, tint = Color.White, backColor = expenseBrush)
+        Item(value = outcome.orEmpty(), title = stringResource(id = R.string.outcome), icon = BudgetIcons.outcome, tint = Color.White, backColor = incomeBrush)
     }
 }
 
@@ -39,7 +54,7 @@ private fun RowScope.Item(
     title: String,
     icon: Int,
     tint: Color,
-    backColor: Color
+    backColor: Brush
 ){
     Row(
         modifier = Modifier
@@ -54,7 +69,7 @@ private fun RowScope.Item(
     ) {
 
         Icon(
-            modifier = Modifier.background(color = backColor, shape = RoundedCornerShape(8.dp)).padding(4.dp),
+            modifier = Modifier.background(brush = backColor, shape = RoundedCornerShape(8.dp)).padding(4.dp),
             painter = painterResource(id = icon), contentDescription = null, tint = tint)
 
 
