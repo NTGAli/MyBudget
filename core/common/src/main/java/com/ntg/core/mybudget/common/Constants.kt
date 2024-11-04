@@ -20,5 +20,10 @@ object Constants {
         const val BANK_LOGO_MONO_URL = "banks_logo_no_color_root_url"
     }
 
+    object BudgetType {
+        const val EXPENSE = 0
+        const val INCOME = 1
+        const val TRANSFER = 2
+    }
 
 }

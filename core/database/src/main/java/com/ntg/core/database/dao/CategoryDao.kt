@@ -19,6 +19,6 @@ interface CategoryDao {
     fun getAll(): List<CategoryEntity>
 
     @Upsert
-    fun upsert(map: List<CategoryEntity>)
+    suspend fun upsert(map: List<CategoryEntity>)
 
 }

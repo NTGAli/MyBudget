@@ -97,7 +97,7 @@ fun ImagePicker(
             .border(
                 width = 2.dp,
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
             )
 
             .padding(vertical = 12.dp),

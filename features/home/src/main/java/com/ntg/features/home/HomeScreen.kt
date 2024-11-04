@@ -97,6 +97,7 @@ fun HomeRoute(
     val logoUrlColor =
         homeViewModel.getBankLogoColor()
             .collectAsStateWithLifecycle(initialValue = null).value?.value
+    val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
@@ -109,6 +110,7 @@ fun HomeRoute(
             transactions,
             expandTransaction,
             logoUrlColor,
+            categories.value,
             navigateToSource,
             navigateToAccount,
             onShowSnackbar,
@@ -140,6 +142,7 @@ private fun HomeScreen(
     transactions: State<List<Transaction>?>,
     expandTransaction: MutableState<Boolean>,
     logoUrl: String? = null,
+    categories: List<Category>? = null,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
@@ -224,7 +227,7 @@ private fun HomeScreen(
 
     }
 
-    InsertTransactionView(expandTransaction, currentResource, logoUrl)
+    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories)
 
 }
 
@@ -233,7 +236,8 @@ private fun HomeScreen(
 fun InsertTransactionView(
     expandTransaction: MutableState<Boolean>,
     currentResource: List<SourceWithDetail>?,
-    logoUrl: String?
+    logoUrl: String?,
+    categories: List<Category>?
 ) {
 
     val balance = remember { mutableStateOf("") }
@@ -243,6 +247,14 @@ fun InsertTransactionView(
     var selectedSource by remember {
         mutableStateOf<SourceWithDetail?>(null)
     }
+
+    var selectedCategory by remember {
+        mutableStateOf<Category?>(null)
+    }
+
+    val tags = remember { mutableStateListOf<String>() }
+    val contacts = remember { mutableStateListOf<String>() }
+
 
     var sheetType by remember { mutableIntStateOf(0) }
 
@@ -329,6 +341,7 @@ fun InsertTransactionView(
             }
 
 
+            // price
             BudgetTextField(
                 modifier = Modifier
                     .padding(top = 8.dp)
@@ -347,30 +360,218 @@ fun InsertTransactionView(
                 }
             )
 
+            // bank
+            AnimatedVisibility(visible = budgetType != Constants.BudgetType.TRANSFER) {
+                BudgetTextField(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    text = try {
+                        mutableStateOf(
+                            "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                    4
+                                )
+                            }"
+                        )
+                    } catch (e: Exception) {
+                        mutableStateOf("")
+                    },
+                    label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.source_expenditure),
+                    trailingIcon = painterResource(id = BudgetIcons.directionLeft),
+                    readOnly = true,
+                    onClick = {
+                        sheetType = 1
+                        opendKeyboard = true
+                    }
+                )
+            }
+
+
+            AnimatedVisibility(visible = budgetType == Constants.BudgetType.TRANSFER) {
+                Column {
+                    BudgetTextField(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        text = try {
+                            mutableStateOf(
+                                "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                    (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                        4
+                                    )
+                                }"
+                            )
+                        } catch (e: Exception) {
+                            mutableStateOf("")
+                        },
+                        label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.from),
+                        trailingIcon = painterResource(id = BudgetIcons.directionLeft),
+                        readOnly = true,
+                        onClick = {
+                            sheetType = 1
+                            opendKeyboard = true
+                        }
+                    )
+
+                    BudgetTextField(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        text = try {
+                            mutableStateOf(
+                                "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                    (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                        4
+                                    )
+                                }"
+                            )
+                        } catch (e: Exception) {
+                            mutableStateOf("")
+                        },
+                        label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.to),
+                        trailingIcon = painterResource(id = BudgetIcons.directionLeft),
+                        readOnly = true,
+                        onClick = {
+                            sheetType = 1
+                            opendKeyboard = true
+                        }
+                    )
+
+                    BudgetTextField(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        text = balance,
+                        label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.fee),
+                        fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
+                        fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
+                        readOnly = true,
+                        onClick = {
+                            sheetType = 0
+                            opendKeyboard = true
+                            input = balance.value
+                            lastInput = balance.value
+                        }
+                    )
+                }
+            }
+
+            AnimatedVisibility(visible = budgetType != Constants.BudgetType.TRANSFER) {
+                //category
+                BudgetTextField(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    text = mutableStateOf(selectedCategory?.name.orEmpty()),
+                    label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.catgory),
+                    trailingIcon = painterResource(id = BudgetIcons.directionLeft),
+                    readOnly = true,
+                    onClick = {
+                        sheetType = 2
+                        opendKeyboard = true
+                    }
+                )
+            }
+
+            // tags
+            TextDivider(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                title = stringResource(id = R.string.tags)
+            )
 
             BudgetTextField(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
-                text = try {
-                    mutableStateOf(
-                        "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                            (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
-                                4
-                            )
-                        }"
-                    )
-                } catch (e: Exception) {
-                    mutableStateOf("")
-                },
-                label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.source_expenditure),
-                trailingIcon = painterResource(id = BudgetIcons.directionLeft),
-                readOnly = true,
-                onClick = {
-                    sheetType = 1
-                    opendKeyboard = true
+                text = tag,
+                label = stringResource(id = R.string.tags),
+                trailingIcon = painterResource(id = BudgetIcons.Add),
+                trailingIconOnClick = {
+                    if (it.isNotEmpty()) {
+                        tags.add(it)
+                    }
+                    tag.value = ""
                 }
+            )
+
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 24.dp),
+            ) {
+                tags.forEach {
+                    Tag(
+                        modifier = Modifier.padding(end = 8.dp),
+                        text = it,
+                        dismissClick = {
+                            tags.remove(it)
+                        }
+                    ) {
+                        tags.remove(it)
+                    }
+                }
+            }
+
+            // people
+            TextDivider(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                title = stringResource(id = R.string.people)
+            )
+
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 24.dp)
+            ) {
+
+
+                Tag(
+                    modifier = Modifier.padding(end = 8.dp),
+                    icon = painterResource(id = BudgetIcons.Add)
+                ) {
+                    val intent = Intent(Intent.ACTION_PICK).apply {
+                        type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
+                    }
+                    launcher.launch(intent)
+                }
+
+                contacts.forEach {
+                    Tag(
+                        modifier = Modifier.padding(end = 8.dp),
+                        text = it,
+                        dismissClick = {
+                            contacts.remove(it)
+                        }
+                    ) {
+                        contacts.remove(it)
+                    }
+                }
+
+            }
+
+
+            // images
+            TextDivider(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                title = stringResource(id = R.string.images)
             )
 
 

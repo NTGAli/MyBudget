@@ -41,5 +41,10 @@
     <string name="add_new_account">اضافه کردن حساب جدید</string>
     <string name="select_currency">انتخاب واحد مالی</string>
     <string name="price">مبلغ</string>
+    <string name="catgory">دسته بندی</string>
+    <string name="expenses">مخارج</string>
+    <string name="from">از</string>
+    <string name="to">به</string>
+    <string name="fee">کارمزد</string>
 
 </resources>
