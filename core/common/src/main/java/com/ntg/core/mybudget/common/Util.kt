@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ntg.core.common.R
 import com.ntg.core.model.DataBank
+import com.ntg.core.mybudget.common.persianDate.PersianDate
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -390,4 +391,12 @@ fun formatTimestamp(timestamp: Long, format: String = "yyyy/MM"): String {
     val formatter = SimpleDateFormat(format, Locale.getDefault())
     val date = Date(timestamp)
     return formatter.format(date)
+}
+
+fun getCurrentJalaliDate(): Triple<Int, Int, Int> {
+    val persianDate = PersianDate()
+    val year = persianDate.shYear
+    val month = persianDate.shMonth
+    val day = persianDate.shDay
+    return Triple(year, month, day)
 }

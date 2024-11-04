@@ -1,10 +1,20 @@
 package com.ntg.features.home
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.provider.ContactsContract
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +52,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,27 +67,38 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AccountSection
 import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
+import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
+import com.ntg.core.designsystem.components.ImagePicker
 import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SwitchText
+import com.ntg.core.designsystem.components.Tag
+import com.ntg.core.designsystem.components.TextDivider
+import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.res.Category
+import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatInput
+import com.ntg.core.mybudget.common.getCurrentJalaliDate
 import com.ntg.core.mybudget.common.logd
+import com.ntg.core.mybudget.common.persianDate.PersianDate
 import com.ntg.feature.home.R
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import kotlin.math.log
 
 @Composable
 fun HomeRoute(
@@ -240,9 +264,11 @@ fun InsertTransactionView(
     categories: List<Category>?
 ) {
 
+    val context = LocalContext.current
     val balance = remember { mutableStateOf("") }
     var input by remember { mutableStateOf("") }
     var lastInput by remember { mutableStateOf("") }
+    val tag = remember { mutableStateOf("") }
 
     var selectedSource by remember {
         mutableStateOf<SourceWithDetail?>(null)
@@ -270,6 +296,44 @@ fun InsertTransactionView(
         mutableStateOf(false)
     }
     val layoutDirection = LocalLayoutDirection.current
+
+    var budgetType by remember {
+        mutableIntStateOf(Constants.BudgetType.EXPENSE)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // Get the contact URI from the result data
+            val contactUri = result.data?.data
+
+            contactUri?.let { uri ->
+                // Query contact information from the URI
+                val cursor = context.contentResolver.query(
+                    uri,
+                    arrayOf(
+                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                        ContactsContract.CommonDataKinds.Phone.NUMBER
+                    ),
+                    null,
+                    null,
+                    null
+                )
+
+                cursor?.use {
+                    if (it.moveToFirst()) {
+                        val name =
+                            it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                        val phoneNumber =
+                            it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                        contacts.add(name)
+                    }
+                }
+            }
+        }
+    }
+
 
 
     FullScreenBottomSheet(showSheet = expandTransaction, appbar = {
@@ -328,16 +392,14 @@ fun InsertTransactionView(
                     tint = MaterialTheme.colorScheme.onPrimary,
                     backColor = MaterialTheme.colorScheme.primary
                 ),
-
-
-                )
+            )
 
             SwitchText(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp), items = items
             ) {
-
+                budgetType = it
             }
 
 
@@ -574,6 +636,22 @@ fun InsertTransactionView(
                 title = stringResource(id = R.string.images)
             )
 
+            ImagePicker(
+                modifier = Modifier.padding(top = 16.dp),
+                padding = PaddingValues(horizontal = 24.dp)
+            )
+
+
+            // description
+            BudgetTextField(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 24.dp),
+                singleLine = false,
+                label = stringResource(id = R.string.description)
+            )
+
+            Spacer(modifier = Modifier.padding(vertical = 24.dp))
 
         }
     }
@@ -708,6 +786,57 @@ fun InsertTransactionView(
 
                 }
 
+                2 -> {
+                    LazyColumn {
+
+//                        item {
+//                            Text(
+//                                modifier = Modifier
+//                                    .padding(start = 16.dp)
+//                                    .padding(vertical = 8.dp),
+//                                text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.expenses),
+//                                style = MaterialTheme.typography.titleMedium
+//                            )
+//                        }
+
+                        items(categories.orEmpty().filter { it.type == budgetType }) {
+                            SampleItem(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                title = it.name, setRadio = true,
+                                isRadioCheck = selectedCategory == it
+                            ) {
+                                selectedCategory = it
+                                scope.launch {
+                                    sheetState.hide()
+                                }
+                            }
+                        }
+
+//                        item {
+//                            Text(
+//                                modifier = Modifier
+//                                    .padding(start = 16.dp)
+//                                    .padding(vertical = 8.dp),
+//                                text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income),
+//                                style = MaterialTheme.typography.titleMedium
+//                            )
+//                        }
+//
+//                        items(categories.orEmpty().filter { it.type == 1 }) {
+//                            SampleItem(
+//                                modifier = Modifier.padding(horizontal = 8.dp),
+//                                title = it.name, setRadio = true,
+//                                isRadioCheck = selectedCategory == it
+//                            ) {
+//                                selectedCategory = it
+//                                scope.launch {
+//                                    sheetState.hide()
+//                                }
+//                            }
+//                        }
+
+                    }
+                }
 
             }
 
@@ -717,10 +846,46 @@ fun InsertTransactionView(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateItem(
     modifier: Modifier = Modifier, unixTime: Long
 ) {
+
+    var openSheet by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedDate by remember {
+        mutableStateOf("")
+    }
+
+    var selectedTime by remember {
+        mutableStateOf("")
+    }
+
+    val selectedDateState = remember {
+        mutableStateListOf<String>()
+    }
+
+    val selectedTimeState = remember {
+        mutableStateListOf<String>()
+    }
+
+    var daysInMonth by remember {
+        mutableIntStateOf(31)
+    }
+
+    var currentYear by remember {
+        mutableIntStateOf(1400)
+    }
+
+    var type by remember {
+        mutableStateOf(0)
+    }
+
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
 
     Row(
         modifier = modifier
@@ -728,11 +893,15 @@ fun DateItem(
             .background(
                 shape = RoundedCornerShape(4.dp), color = MaterialTheme.colorScheme.surfaceContainer
             )
+            .clip(RoundedCornerShape(4.dp))
+            .clickable {
+                openSheet = true
+            }
             .padding(vertical = 2.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "12 مرداد 1402",
+            text = selectedDate,
             style = MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant)
         )
         Box(
@@ -741,9 +910,10 @@ fun DateItem(
                 .size(4.dp)
                 .background(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceDim)
         )
+
         Text(
-            text = "12:14",
-            style = MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant)
+            text = selectedTime,
+            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, textDirection = TextDirection.Ltr)
         )
 
         Icon(
@@ -751,6 +921,141 @@ fun DateItem(
             contentDescription = "calender",
             tint = MaterialTheme.colorScheme.outline
         )
+    }
+
+    val months = listOf(
+        "فروردین",
+        "اردیبهشت",
+        "خرداد",
+        "تیر",
+        "مرداد",
+        "شهریور",
+        "مهر",
+        "آبان",
+        "آذر",
+        "دی",
+        "بهمن",
+        "اسفند"
+    )
+
+
+
+    LaunchedEffect(key1 = sheetState.currentValue) {
+        openSheet = sheetState.isVisible
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        selectedDateState.add(0, getCurrentJalaliDate().first.toString())
+        selectedDateState.add(1, months[getCurrentJalaliDate().second])
+        selectedDateState.add(2, getCurrentJalaliDate().third.toString())
+        selectedDate = "${selectedDateState[2]} ${selectedDateState[1]} ${selectedDateState[0]}"
+        currentYear = getCurrentJalaliDate().first
+
+        val currentTime = LocalTime.now()
+        selectedTimeState.add(0,currentTime.hour.toString())
+        selectedTimeState.add(1, currentTime.minute.toString())
+        selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
+    }
+
+    if (selectedDateState.isNotEmpty()){
+        LaunchedEffect(key1 = selectedDateState[1]) {
+            daysInMonth = when (months.indexOfFirst { it == selectedDateState[1] }+1) {
+                in 1..6 -> 31
+                in 7..11 -> 30
+                12 -> if (PersianDate().isLeap(selectedDateState[0].toInt())) 30 else 29
+                else -> throw IllegalArgumentException("Invalid month in Jalali calendar")
+            }
+        }
+    }
+
+    if (openSheet){
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = { openSheet = false }) {
+
+            Column {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 24.dp)
+                    ) {
+
+                        if (type == 0){
+                            WheelList(
+                                modifier = Modifier.weight(1f),
+                                items = (currentYear-5..currentYear).toList(),
+                                initialItem = selectedDateState[0].toInt(),
+                                onItemSelected = { i, item ->
+                                    selectedDateState.removeAt(0)
+                                    selectedDateState.add(0, (currentYear-5..currentYear).toList()[i].toString())
+                                }
+                            )
+
+                            WheelList(
+                                modifier = Modifier.weight(1f),
+                                items = months,
+                                initialItem = selectedDateState[1],
+                                onItemSelected = { i, item ->
+                                    selectedDateState.removeAt(1)
+                                    selectedDateState.add(1, months[i])
+                                }
+                            )
+
+
+                            WheelList(
+                                modifier = Modifier.weight(1f),
+                                items = (1..daysInMonth).toList(),
+                                initialItem = selectedDateState[2].toInt(),
+                                onItemSelected = { i, item ->
+                                    selectedDateState.removeAt(2)
+                                    selectedDateState.add(2, (1..31).toList()[i].toString())
+                                }
+                            )
+                        }else{
+                            Spacer(modifier = Modifier.weight(1f))
+                            WheelList(
+                                modifier = Modifier.weight(1f),
+                                items = (1..24).toList(),
+                                initialItem = selectedTimeState[0].toInt(),
+                                onItemSelected = { i, item ->
+                                    selectedTimeState.removeAt(0)
+                                    selectedTimeState.add(0, item.toString())
+                                }
+                            )
+
+                            WheelList(
+                                modifier = Modifier.weight(1f),
+                                items = (1..59).toList(),
+                                initialItem = selectedTimeState[1].toInt(),
+                                onItemSelected = { i, item ->
+                                    selectedTimeState.removeAt(1)
+                                    selectedTimeState.add(1, item.toString())
+                                }
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                BudgetButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                        .padding(bottom = 24.dp),
+                    text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.submit)){
+                    selectedDate = "${selectedDateState[2]} ${selectedDateState[1]} ${selectedDateState[0]}"
+                    selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
+                    if (type == 1){
+                        scope.launch {
+                            type = 0
+                            sheetState.hide()
+                        }
+                    }
+                    type = 1
+                }
+            }
+
+
+        }
     }
 
 }
