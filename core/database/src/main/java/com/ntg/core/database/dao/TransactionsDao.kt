@@ -21,6 +21,7 @@ interface TransactionsDao {
         INNER JOIN category_table c
         ON c.id = t.categoryId
         WHERE t.sourceId IN (:ids)
+        ORDER BY t.createdAt DESC
     """)
     suspend fun getBySourceIds(ids: List<Int>): List<Transaction>
 

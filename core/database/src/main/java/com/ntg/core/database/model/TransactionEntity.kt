@@ -11,7 +11,7 @@ data class TransactionEntity(
     val sId: String?=null,
     val accountId: Int,
     val sourceId: Int,
-    val type: String? = null,
+    val type: Int? = null,
     val categoryId: Int? = null,
     val amount: Long,
     val isSynced: Boolean = false,
@@ -34,7 +34,8 @@ fun TransactionEntity.asTransaction() =
         amount = amount,
         note = note,
         sourceId = sourceId,
-        date = date
+        date = date,
+        images = images
     )
 
 fun Transaction.toEntity() =
@@ -50,6 +51,7 @@ fun Transaction.toEntity() =
         date = date,
         isSynced = false,
         isDeleted = false,
+        images = images,
         createdAt = System.currentTimeMillis(),
         updatedAt = System.currentTimeMillis()
     )

@@ -11,4 +11,9 @@
     <string name="images">تصاویر</string>
     <string name="description">توضیحات</string>
     <string name="err_negetive_number">مقدار وارد شده صحیح نمی باشد.</string>
+    <string name="submit_first_transacton">ثبت اولین تراکنش</string>
+    <string name="err_non_transacton">تراکنشی وارد نشده!</string>
+    <string name="err_amount">مقدار تراکنش باید بالای 0 باشد!</string>
+    <string name="err_input_source">هیچ منبع خرجی انتخاب نشده!</string>
+    <string name="err_input_category">هیچ دسته بندی انتخاب نشده!</string>
 </resources>

@@ -71,10 +71,12 @@ import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
+import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.ImagePicker
+import com.ntg.core.designsystem.components.Lottie
 import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SwitchText
@@ -95,16 +97,19 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatInput
+import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
 import com.ntg.core.mybudget.common.jalaliToTimestamp
 import com.ntg.core.mybudget.common.isOperator
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
+import com.ntg.core.mybudget.common.orZero
 import com.ntg.core.mybudget.common.persianDate.PersianDate
 import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.feature.home.R
 import kotlinx.coroutines.launch
 import java.time.LocalTime
+import kotlin.math.exp
 
 @Composable
 fun HomeRoute(
@@ -112,31 +117,12 @@ fun HomeRoute(
     homeViewModel: HomeViewModel = hiltViewModel(),
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
     val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
-
-
-//    LaunchedEffect(Unit) {
-//        (1..10).toList().forEachIndexed { index, i ->
-//            homeViewModel.insertTransaction(
-//                Transaction(
-//                    id = 0,
-//                    sId = "",
-//                    accountId = 10001,
-//                    sourceId = 10002,
-//                    amount = (2*index).toLong(),
-//                    categoryId = 1,
-//                    type = Constants.BudgetType.EXPENSE.toString(),
-//                    date = System.currentTimeMillis(),
-//                    note = "478787"
-//                )
-//            )
-//        }
-//
-//    }
+    val scope = rememberCoroutineScope()
 
     val accounts =
         homeViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -148,6 +134,8 @@ fun HomeRoute(
         homeViewModel.getBankLogoColor()
             .collectAsStateWithLifecycle(initialValue = null).value?.value
     val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
+
+    var transaction by remember { mutableStateOf<Transaction?>(null) }
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
@@ -170,13 +158,41 @@ fun HomeRoute(
             },
             onUpdateSelectedSource = { sourcesId ->
                 homeViewModel.updatedSelectedSources(sourcesId)
+            }, onTransactionChanged = {
+                transaction = it
             })
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = transaction) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
-                expandTransaction.value = !expandTransaction.value
+            override fun onBottomButtonClick() {
+
+                if (expandTransaction.value){
+                    if (transaction == null){
+                        scope.launch {
+                            onShowSnackbar(R.string.err_non_transacton, null, null)
+                        }
+                    }else if (transaction?.amount.orDefault() <= 0L){
+                        scope.launch {
+                            onShowSnackbar(R.string.err_amount, null, null)
+                        }
+                    }else if (transaction?.sourceId == 0 || transaction?.sourceId == null){
+                        scope.launch {
+                            onShowSnackbar(R.string.err_input_source, null, null)
+                        }
+                    }else if (transaction?.categoryId == null){
+                        scope.launch {
+                            onShowSnackbar(R.string.err_input_category, null, null)
+                        }
+                    }else{
+                        homeViewModel.insertTransaction(transaction!!)
+                        expandTransaction.value = false
+                    }
+                }else{
+                    expandTransaction.value = true
+                }
+
+
             }
         }
     }
@@ -195,9 +211,10 @@ private fun HomeScreen(
     categories: List<Category>? = null,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
-    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
+    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit,
+    onTransactionChanged:(Transaction) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -206,19 +223,19 @@ private fun HomeScreen(
     BottomSheetScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-        AppBar(
-            titleState = {
-                AccountSelector(
-                    title = currentAccount.accountName, subTitle = stringResource(
-                        id = R.string.items_format, currentAccount.sources.size
-                    )
-                ) {
-                    scope.launch { scaffoldState.bottomSheetState.expand() }
-                }
-            }, enableNavigation = false,
-            scrollBehavior = scrollBehavior
-        )
-    },
+            AppBar(
+                titleState = {
+                    AccountSelector(
+                        title = currentAccount.accountName, subTitle = stringResource(
+                            id = R.string.items_format, currentAccount.sources.size
+                        )
+                    ) {
+                        scope.launch { scaffoldState.bottomSheetState.expand() }
+                    }
+                }, enableNavigation = false,
+                scrollBehavior = scrollBehavior
+            )
+        },
         sheetTonalElevation = 0.dp,
         sheetContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         scaffoldState = scaffoldState,
@@ -244,22 +261,26 @@ private fun HomeScreen(
 
 
             item {
+
+                val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
+                    .orEmpty().sumOf { it.amount }
+                val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
+                    .orEmpty().sumOf { it.amount }
+
                 CardReport(modifier = Modifier
                     .padding(top = 8.dp)
                     .padding(horizontal = 24.dp),
-                    title = formatCurrency(amount = transactions.value?.sumOf { it.amount } ?: 0L,
+                    title = formatCurrency(amount = (income - expense),
                         mask = "###,###",
                         currency = "ت",
                         pos = 2),
                     subTitle = "موجودی همه حساب ها",
-                    out = formatCurrency(amount = transactions.value?.filter { it.type == "out" }
-                        .orEmpty().sumOf { it.amount },
+                    out = formatCurrency(amount = expense,
                         mask = "###,###",
                         currency = "ت",
                         pos = 2
                     ),
-                    inValue = formatCurrency(amount = transactions.value?.filter { it.type == "in" }
-                        .orEmpty().sumOf { it.amount },
+                    inValue = formatCurrency(amount = income,
                         mask = "###,###",
                         currency = "ت",
                         pos = 2
@@ -273,7 +294,7 @@ private fun HomeScreen(
                 )
             }
 
-            items(transactions.value.orEmpty()){
+            items(transactions.value.orEmpty()) {
                 TransactionItem(
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = it.name.toString(),
@@ -281,8 +302,29 @@ private fun HomeScreen(
                     date = it.date.toPersianDate(),
                     divider = transactions.value?.last() != it,
                     attached = false,
-                    type = it.type.orDefault().toInt()
+                    type = it.type.orZero()
                 )
+            }
+
+            if (transactions.value.orEmpty().isEmpty()) {
+                item {
+                    Lottie(
+                        modifier = Modifier.padding(horizontal = 64.dp),
+                        res = com.ntg.mybudget.core.designsystem.R.raw.happy
+                    )
+
+
+                    BudgetButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .padding(horizontal = 24.dp),
+                        text = stringResource(R.string.submit_first_transacton),
+                        style = ButtonStyle.TextOnly
+                    ) {
+                        expandTransaction.value = true
+                    }
+                }
             }
 
         }
@@ -290,7 +332,9 @@ private fun HomeScreen(
 
     }
 
-    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories, onShowSnackbar)
+    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories, onShowSnackbar) {
+        onTransactionChanged(it)
+    }
 
 }
 
@@ -301,11 +345,13 @@ fun InsertTransactionView(
     currentResource: List<SourceWithDetail>?,
     logoUrl: String?,
     categories: List<Category>?,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
+    onTransactionChange: (Transaction) -> Unit
 ) {
 
     val context = LocalContext.current
-    val balance = remember { mutableStateOf("") }
+    val amount = remember { mutableStateOf("") }
+    val note = remember { mutableStateOf("") }
     var input by remember { mutableStateOf("") }
     var lastInput by remember { mutableStateOf("") }
     val tag = remember { mutableStateOf("") }
@@ -376,6 +422,30 @@ fun InsertTransactionView(
     }
 
 
+    if (amount.value.isNotEmpty()) {
+        onTransactionChange(
+            Transaction(
+                id = generateUniqueFiveDigitId(),
+                accountId = selectedSource?.accountId.orZero(),
+                sourceId = selectedSource?.id.orZero(),
+                categoryId = selectedCategory?.id.orZero(),
+                amount = amount.value.replace(",", "").toLong(),
+                type = budgetType,
+                date = System.currentTimeMillis(),
+                note = note.value
+            )
+        )
+    }
+
+    LaunchedEffect(expandTransaction.value) {
+        if (!expandTransaction.value){
+            amount.value = ""
+            selectedCategory = null
+            selectedSource = null
+            note.value = ""
+        }
+    }
+
 
     FullScreenBottomSheet(showSheet = expandTransaction, appbar = {
         Row(
@@ -404,7 +474,7 @@ fun InsertTransactionView(
                 style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
 
-            DateItem{
+            DateItem {
                 selectedTime = it
             }
         }
@@ -446,13 +516,13 @@ fun InsertTransactionView(
             }
 
 
-            // price
+            // amount
             BudgetTextField(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
-                text = balance,
+                text = amount,
                 label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.price),
                 fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                 fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
@@ -460,7 +530,7 @@ fun InsertTransactionView(
                 onClick = {
                     sheetType = 0
                     opendKeyboard = true
-                    input = balance.value.replace(",", "")
+                    input = amount.value.replace(",", "")
                     lastInput = ""
                 }
             )
@@ -472,16 +542,18 @@ fun InsertTransactionView(
                         .padding(top = 8.dp)
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
-                    text = try {
-                        mutableStateOf(
-                            "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
-                                    4
-                                )
-                            }"
-                        )
-                    } catch (e: Exception) {
-                        mutableStateOf("")
+                    text = remember(selectedSource) {
+                        if (selectedSource != null){
+                            mutableStateOf(
+                                "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                    (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                        4
+                                    )
+                                }"
+                            )
+                        }else{
+                            mutableStateOf("")
+                        }
                     },
                     label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.source_expenditure),
                     trailingIcon = painterResource(id = BudgetIcons.directionLeft),
@@ -501,16 +573,18 @@ fun InsertTransactionView(
                             .padding(top = 8.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
-                        text = try {
-                            mutableStateOf(
-                                "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                    (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
-                                        4
-                                    )
-                                }"
-                            )
-                        } catch (e: Exception) {
-                            mutableStateOf("")
+                        text = remember(selectedSource) {
+                            if (selectedSource != null){
+                                mutableStateOf(
+                                    "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                        (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                            4
+                                        )
+                                    }"
+                                )
+                            }else{
+                                mutableStateOf("")
+                            }
                         },
                         label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.from),
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
@@ -526,16 +600,18 @@ fun InsertTransactionView(
                             .padding(top = 8.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
-                        text = try {
-                            mutableStateOf(
-                                "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                    (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
-                                        4
-                                    )
-                                }"
-                            )
-                        } catch (e: Exception) {
-                            mutableStateOf("")
+                        text = remember(selectedSource) {
+                            if (selectedSource != null){
+                                mutableStateOf(
+                                    "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                        (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                            4
+                                        )
+                                    }"
+                                )
+                            }else{
+                                mutableStateOf("")
+                            }
                         },
                         label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.to),
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
@@ -551,7 +627,7 @@ fun InsertTransactionView(
                             .padding(top = 8.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
-                        text = balance,
+                        text = amount,
                         label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.fee),
                         fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                         fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
@@ -559,8 +635,8 @@ fun InsertTransactionView(
                         onClick = {
                             sheetType = 0
                             opendKeyboard = true
-                            input = balance.value
-                            lastInput = balance.value
+                            input = amount.value
+                            lastInput = amount.value
                         }
                     )
                 }
@@ -573,7 +649,7 @@ fun InsertTransactionView(
                         .padding(top = 8.dp)
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
-                    text = mutableStateOf(selectedCategory?.name.orEmpty()),
+                    text = remember(selectedCategory) { mutableStateOf(selectedCategory?.name.orEmpty()) },
                     label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.catgory),
                     trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                     readOnly = true,
@@ -691,7 +767,8 @@ fun InsertTransactionView(
                     .padding(top = 16.dp)
                     .padding(horizontal = 24.dp),
                 singleLine = false,
-                label = stringResource(id = R.string.description)
+                label = stringResource(id = R.string.description),
+                text = note
             )
 
             Spacer(modifier = Modifier.padding(vertical = 24.dp))
@@ -760,7 +837,10 @@ fun InsertTransactionView(
                                         text = formatInput(
                                             lastInput
                                         ),
-                                        style = MaterialTheme.typography.titleLarge.copy(textDirection = TextDirection.Rtl, textAlign = TextAlign.End),
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            textDirection = TextDirection.Rtl,
+                                            textAlign = TextAlign.End
+                                        ),
                                         modifier = Modifier
                                             .fillMaxWidth(),
                                     )
@@ -769,13 +849,13 @@ fun InsertTransactionView(
                         }
 
                         CustomKeyboard(onKeyPressed = { key ->
-                            if (input.isNotEmpty()){
-                                if (isOperator(input.last()) && isOperator(key.last())){
+                            if (input.isNotEmpty()) {
+                                if (isOperator(input.last()) && isOperator(key.last())) {
                                     input = input.dropLast(1)
                                     input += key
                                     return@CustomKeyboard
                                 }
-                            }else{
+                            } else {
                                 if (isOperator(key.last())) return@CustomKeyboard
                             }
                             input += key
@@ -784,14 +864,14 @@ fun InsertTransactionView(
                                 input = input.dropLast(1)
                             }
                         }, onConfirm = {
-                            if (lastInput.toLong() > 0L){
-                                balance.value = formatInput(lastInput)
+                            if (lastInput.toLong() > 0L) {
+                                amount.value = formatInput(lastInput)
                                 scope.launch {
                                     sheetState.hide()
                                 }
-                            }else{
+                            } else {
                                 scope.launch {
-                                    onShowSnackbar(R.string.err_negetive_number, null)
+                                    onShowSnackbar(R.string.err_negetive_number, null, null)
                                 }
                             }
                         })
@@ -896,7 +976,7 @@ fun InsertTransactionView(
 @Composable
 fun DateItem(
     modifier: Modifier = Modifier,
-    onChangeTime:(Long) -> Unit
+    onChangeTime: (Long) -> Unit
 ) {
 
     var openSheet by remember {
@@ -960,7 +1040,10 @@ fun DateItem(
 
         Text(
             text = selectedTime,
-            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, textDirection = TextDirection.Ltr)
+            style = MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textDirection = TextDirection.Ltr
+            )
         )
 
         Icon(
@@ -999,14 +1082,14 @@ fun DateItem(
         currentYear = getCurrentJalaliDate().first
 
         val currentTime = LocalTime.now()
-        selectedTimeState.add(0,currentTime.hour.toString())
+        selectedTimeState.add(0, currentTime.hour.toString())
         selectedTimeState.add(1, currentTime.minute.toString())
         selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
     }
 
-    if (selectedDateState.isNotEmpty()){
+    if (selectedDateState.isNotEmpty()) {
         LaunchedEffect(key1 = selectedDateState[1]) {
-            daysInMonth = when (months.indexOfFirst { it == selectedDateState[1] }+1) {
+            daysInMonth = when (months.indexOfFirst { it == selectedDateState[1] } + 1) {
                 in 1..6 -> 31
                 in 7..11 -> 30
                 12 -> if (PersianDate().isLeap(selectedDateState[0].toInt())) 30 else 29
@@ -1015,7 +1098,7 @@ fun DateItem(
         }
     }
 
-    if (openSheet){
+    if (openSheet) {
         ModalBottomSheet(
             sheetState = sheetState,
             onDismissRequest = { openSheet = false }) {
@@ -1026,15 +1109,18 @@ fun DateItem(
                         modifier = Modifier.padding(vertical = 24.dp)
                     ) {
 
-                        if (type == 0){
+                        if (type == 0) {
                             // year
                             WheelList(
                                 modifier = Modifier.weight(1f),
-                                items = (currentYear-5..currentYear).toList(),
+                                items = (currentYear - 5..currentYear).toList(),
                                 initialItem = selectedDateState[0].toInt(),
                                 onItemSelected = { i, item ->
                                     selectedDateState.removeAt(0)
-                                    selectedDateState.add(0, (currentYear-5..currentYear).toList()[i].toString())
+                                    selectedDateState.add(
+                                        0,
+                                        (currentYear - 5..currentYear).toList()[i].toString()
+                                    )
                                 }
                             )
 
@@ -1059,7 +1145,7 @@ fun DateItem(
                                     selectedDateState.add(2, (1..31).toList()[i].toString())
                                 }
                             )
-                        }else{
+                        } else {
                             Spacer(modifier = Modifier.weight(1f))
                             WheelList(
                                 modifier = Modifier.weight(1f),
@@ -1090,10 +1176,12 @@ fun DateItem(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 8.dp)
                         .padding(bottom = 24.dp),
-                    text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.submit)){
-                    selectedDate = "${selectedDateState[2]} ${selectedDateState[1]} ${selectedDateState[0]}"
+                    text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.submit)
+                ) {
+                    selectedDate =
+                        "${selectedDateState[2]} ${selectedDateState[1]} ${selectedDateState[0]}"
                     selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
-                    if (type == 1){
+                    if (type == 1) {
                         onChangeTime(
                             jalaliToTimestamp(
                                 year = selectedDateState[1].toInt(),
@@ -1135,7 +1223,7 @@ fun AccountSelectorSheet(
     currentResource: List<SourceWithDetail>?,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
     onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
 ) {
@@ -1195,7 +1283,7 @@ fun AccountSelectorSheet(
                                 selectedResources.remove(sourceId)
                             } else {
                                 scope.launch {
-                                    onShowSnackbar(R.string.err_min_resource, null)
+                                    onShowSnackbar(R.string.err_min_resource, null, null)
                                 }
                             }
                         } else {
