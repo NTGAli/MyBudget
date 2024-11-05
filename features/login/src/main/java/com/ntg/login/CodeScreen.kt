@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +41,7 @@ import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.Result
 import com.ntg.feature.login.R
+import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -55,6 +57,7 @@ fun CodeRoute(
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentLifecycleState = lifecycleOwner.lifecycle
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val wasWrong = remember {
         mutableStateOf(false)
@@ -196,6 +199,7 @@ fun CodeRoute(
                             }
 
                         }
+                        Sync.updateConfigs(context = context)
                         finishLogin(if (it.data.orEmpty().size == 1 && it.data.orEmpty().first().wallets.orEmpty().isEmpty()) "SetupRoute" else "home_route")
                     }
                 }

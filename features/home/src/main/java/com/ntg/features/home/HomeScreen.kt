@@ -45,6 +45,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +59,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -94,6 +96,7 @@ import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
+import com.ntg.core.mybudget.common.jalaliToTimestamp
 import com.ntg.core.mybudget.common.isOperator
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
@@ -287,7 +290,7 @@ private fun HomeScreen(
 
     }
 
-    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories)
+    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories, onShowSnackbar)
 
 }
 
@@ -297,7 +300,8 @@ fun InsertTransactionView(
     expandTransaction: MutableState<Boolean>,
     currentResource: List<SourceWithDetail>?,
     logoUrl: String?,
-    categories: List<Category>?
+    categories: List<Category>?,
+    onShowSnackbar: suspend (Int, String?) -> Boolean,
 ) {
 
     val context = LocalContext.current
@@ -319,6 +323,7 @@ fun InsertTransactionView(
 
 
     var sheetType by remember { mutableIntStateOf(0) }
+    var selectedTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     val concurrency = remember {
         mutableStateOf("تومن")
@@ -455,8 +460,8 @@ fun InsertTransactionView(
                 onClick = {
                     sheetType = 0
                     opendKeyboard = true
-                    input = balance.value
-                    lastInput = balance.value
+                    input = balance.value.replace(",", "")
+                    lastInput = ""
                 }
             )
 
@@ -710,7 +715,6 @@ fun InsertTransactionView(
                 //calculator
                 0 -> {
                     val isExpressionComplete = remember(input, lastInput) {
-                        logd("isExpressionComplete :: $input --- $lastInput")
                         input.isNotEmpty() && (if (input.last()
                                 .isDigit()
                         ) input else input.dropLast(1)) != lastInput.replace(",", "")
@@ -739,17 +743,8 @@ fun InsertTransactionView(
                             )
                         )
 
-                        if (isExpressionComplete) {
-                            lastInput = formatInput(
-                                calculateExpression(
-                                    (if (input.last()
-                                            .isDigit()
-                                    ) input else input.dropLast(1)).replace(
-                                        ",", ""
-                                    )
-                                ).toString()
-                            )
-
+                        if (isExpressionComplete && calculateExpression(input) != null) {
+                            lastInput = calculateExpression(input).toString()
                             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                                 Row(
                                     modifier = Modifier.padding(bottom = 16.dp),
@@ -760,15 +755,12 @@ fun InsertTransactionView(
                                         painter = painterResource(id = BudgetIcons.equal),
                                         contentDescription = "equal"
                                     )
+
                                     Text(
                                         text = formatInput(
-                                            calculateExpression(
-                                                lastInput.replace(
-                                                    ",", ""
-                                                )
-                                            ).toString()
+                                            lastInput
                                         ),
-                                        style = MaterialTheme.typography.titleLarge,
+                                        style = MaterialTheme.typography.titleLarge.copy(textDirection = TextDirection.Rtl, textAlign = TextAlign.End),
                                         modifier = Modifier
                                             .fillMaxWidth(),
                                     )
@@ -779,10 +771,12 @@ fun InsertTransactionView(
                         CustomKeyboard(onKeyPressed = { key ->
                             if (input.isNotEmpty()){
                                 if (isOperator(input.last()) && isOperator(key.last())){
-                                    input.dropLast(1)
+                                    input = input.dropLast(1)
                                     input += key
                                     return@CustomKeyboard
                                 }
+                            }else{
+                                if (isOperator(key.last())) return@CustomKeyboard
                             }
                             input += key
                         }, onBackspace = {
@@ -790,9 +784,15 @@ fun InsertTransactionView(
                                 input = input.dropLast(1)
                             }
                         }, onConfirm = {
-                            balance.value = lastInput
-                            scope.launch {
-                                sheetState.hide()
+                            if (lastInput.toLong() > 0L){
+                                balance.value = formatInput(lastInput)
+                                scope.launch {
+                                    sheetState.hide()
+                                }
+                            }else{
+                                scope.launch {
+                                    onShowSnackbar(R.string.err_negetive_number, null)
+                                }
                             }
                         })
                     }

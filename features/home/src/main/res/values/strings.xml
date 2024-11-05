@@ -10,4 +10,5 @@
     <string name="people">اشخاص</string>
     <string name="images">تصاویر</string>
     <string name="description">توضیحات</string>
+    <string name="err_negetive_number">مقدار وارد شده صحیح نمی باشد.</string>
 </resources>
