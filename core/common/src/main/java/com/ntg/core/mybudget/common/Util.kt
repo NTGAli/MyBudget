@@ -452,3 +452,14 @@ fun Long.toPersianDate(): String {
 
     return "$dayOfMonth $month $year"
 }
+
+fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long {
+    val persianDate = PersianDate()
+    persianDate.setShYear(year)
+    persianDate.setShMonth(month)
+    persianDate.setShDay(day)
+    persianDate.setHour(hour)
+    persianDate.setMinute(minute)
+    persianDate.setSecond(0)
+    return persianDate.toDate().time
+}

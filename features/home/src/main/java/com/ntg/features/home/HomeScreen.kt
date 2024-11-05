@@ -399,7 +399,9 @@ fun InsertTransactionView(
                 style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
 
-            DateItem(unixTime = 123L)
+            DateItem{
+                selectedTime = it
+            }
         }
     }) {
         Column(
@@ -893,7 +895,8 @@ fun InsertTransactionView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateItem(
-    modifier: Modifier = Modifier, unixTime: Long
+    modifier: Modifier = Modifier,
+    onChangeTime:(Long) -> Unit
 ) {
 
     var openSheet by remember {
@@ -1024,6 +1027,7 @@ fun DateItem(
                     ) {
 
                         if (type == 0){
+                            // year
                             WheelList(
                                 modifier = Modifier.weight(1f),
                                 items = (currentYear-5..currentYear).toList(),
@@ -1034,6 +1038,7 @@ fun DateItem(
                                 }
                             )
 
+                            //month
                             WheelList(
                                 modifier = Modifier.weight(1f),
                                 items = months,
@@ -1044,7 +1049,7 @@ fun DateItem(
                                 }
                             )
 
-
+                            //day
                             WheelList(
                                 modifier = Modifier.weight(1f),
                                 items = (1..daysInMonth).toList(),
@@ -1089,11 +1094,30 @@ fun DateItem(
                     selectedDate = "${selectedDateState[2]} ${selectedDateState[1]} ${selectedDateState[0]}"
                     selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
                     if (type == 1){
+                        onChangeTime(
+                            jalaliToTimestamp(
+                                year = selectedDateState[1].toInt(),
+                                month = selectedDateState[1].toInt(),
+                                day = months.indexOfFirst { it == selectedDateState[0] },
+                                hour = selectedTimeState[0].toInt(),
+                                minute = selectedTimeState[1].toInt()
+                            )
+                        )
                         scope.launch {
                             type = 0
                             sheetState.hide()
                         }
+                        return@BudgetButton
                     }
+                    onChangeTime(
+                        jalaliToTimestamp(
+                            year = selectedDateState[0].toInt(),
+                            month = selectedDateState[1].toInt(),
+                            day = months.indexOfFirst { it == selectedDateState[2] },
+                            hour = selectedTimeState[0].toInt(),
+                            minute = selectedTimeState[1].toInt()
+                        )
+                    )
                     type = 1
                 }
             }
