@@ -6,7 +6,7 @@ import com.ntg.core.model.Transaction
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val id: Int,
     val sId: String?=null,
     val accountId: Int,
@@ -18,6 +18,8 @@ data class TransactionEntity(
     val isDeleted: Boolean = false,
     val note: String? = null,
     val date: Long,
+    val tags: List<String>? = null,
+    val images: List<String>? = null,
     val createdAt: Long,
     val updatedAt: Long,
 )

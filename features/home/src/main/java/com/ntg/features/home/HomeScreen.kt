@@ -94,6 +94,7 @@ import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
+import com.ntg.core.mybudget.common.isOperator
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.persianDate.PersianDate
@@ -704,6 +705,7 @@ fun InsertTransactionView(
             }) {
 
             when (sheetType) {
+                //calculator
                 0 -> {
                     val isExpressionComplete = remember(input, lastInput) {
                         logd("isExpressionComplete :: $input --- $lastInput")
@@ -773,6 +775,13 @@ fun InsertTransactionView(
                         }
 
                         CustomKeyboard(onKeyPressed = { key ->
+                            if (input.isNotEmpty()){
+                                if (isOperator(input.last()) && isOperator(key.last())){
+                                    input.dropLast(1)
+                                    input += key
+                                    return@CustomKeyboard
+                                }
+                            }
                             input += key
                         }, onBackspace = {
                             if (input.isNotEmpty()) {
