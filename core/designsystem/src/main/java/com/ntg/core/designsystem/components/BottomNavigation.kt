@@ -71,6 +71,7 @@ fun BottomNavigation(
 
     Column(
         modifier = modifier
+            .clickable(enabled = true, interactionSource = null, indication = null, onClick = {})
             .height(IntrinsicSize.Min)
             .background(MaterialTheme.colorScheme.background)
     ) {

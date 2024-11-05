@@ -253,7 +253,9 @@ private fun AppBottomBar(
         txtButton = title,
         isLoading = isLoading
     ) {
-        onNavigateToDestination(TopLevelDestination.HOME)
+        if (it == -1){
+            onNavigateToDestination(TopLevelDestination.HOME)
+        }
 //        if (it == 1) {
 //            onNavigateToDestination(TopLevelDestination.HOME)
 //        } else if (it == 2) {
