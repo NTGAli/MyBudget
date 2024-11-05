@@ -71,7 +71,7 @@ fun SourceRoute(
     setupViewModel: SetupViewModel = hiltViewModel(),
     accountId: Int = 1,
     sourceId: Int? = null,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onBack: () -> Unit,
     navigateToCurrencies: () -> Unit
 ) {
@@ -139,29 +139,29 @@ fun SourceRoute(
 
     LaunchedEffect(key1 = bankCard) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
 
                 when (sourceType) {
                     //Bank card
                     1 -> {
                         if (bankCard?.number.orEmpty().isEmpty()) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_empty_card_number, null)
+                                onShowSnackbar(R.string.err_empty_card_number, null, null)
                             }
                             return
                         } else if (bankCard?.number.orEmpty().length != 16) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_length_number, null)
+                                onShowSnackbar(R.string.err_length_number, null, null)
                             }
                             return
                         } else if (bankCard?.name.orEmpty().isEmpty()) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_empty_name, null)
+                                onShowSnackbar(R.string.err_empty_name, null, null)
                             }
                             return
                         } else if (cardBalance.isEmpty() && editSource == null) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_balance_empty, null)
+                                onShowSnackbar(R.string.err_balance_empty, null, null)
                             }
                             return
                         }
@@ -184,7 +184,7 @@ fun SourceRoute(
                             onBack()
                         } else {
                             scope.launch {
-                                onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null)
+                                onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null, null)
                             }
                         }
                     }

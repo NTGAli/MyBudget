@@ -69,7 +69,7 @@ fun SetupRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToHome: () -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToLogin: (Boolean) -> Unit
 ) {
 
@@ -108,14 +108,14 @@ fun SetupRoute(
 
     LaunchedEffect(key1 = accounts) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
                 scope.launch {
                     if (accounts.value.orEmpty().isEmpty()) {
-                        onShowSnackbar.invoke(R.string.err_no_aacount, null)
+                        onShowSnackbar.invoke(R.string.err_no_aacount, null, null)
                     } else if (accounts.value.orEmpty().none {
                             it.sources.isNotEmpty()
                         }) {
-                        onShowSnackbar.invoke(R.string.err_no_sources, null)
+                        onShowSnackbar.invoke(R.string.err_no_sources, null, null)
                     } else {
                         setupViewModel.selectDefault()
                         navigateToHome()
@@ -141,7 +141,7 @@ private fun SetupScreen(
     accounts: State<List<AccountWithSources>?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     uiSate: SetupUiState,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToAccount: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
     deleteAccount: (id: Int) -> Unit,
@@ -217,7 +217,7 @@ private fun SetupScreen(
                                 context.getString(R.string.delete_account_desc)
                         } else {
                             scope.launch {
-                                onShowSnackbar(R.string.deleting_deafult_account, null)
+                                onShowSnackbar(R.string.deleting_deafult_account, null, null)
                             }
                         }
                     }

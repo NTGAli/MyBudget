@@ -51,7 +51,7 @@ fun CodeRoute(
     onBack: () -> Unit,
     finishLogin: (String) -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel(),
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -98,7 +98,7 @@ fun CodeRoute(
                     is Result.Error -> {
                         wasWrong.value = true
                         scope.launch {
-                            onShowSnackbar.invoke(R.string.err_invalid_code, null)
+                            onShowSnackbar.invoke(R.string.err_invalid_code, null, null)
                         }
                         isLoading.value = false
                     }
@@ -135,7 +135,7 @@ fun CodeRoute(
                     is Result.Error -> {
                         loginViewModel.loginUiState.value = LoginUiState.Error
                         scope.launch {
-                            onShowSnackbar(R.string.err_fetch_data, null)
+                            onShowSnackbar(R.string.err_fetch_data, null, null)
                         }
                         loginViewModel.logout()
                         onBack()

@@ -43,7 +43,7 @@ fun NavGraphBuilder.setupScreen(
     navigateToHome: () -> Unit,
     navigateToCurrencies: () -> Unit,
     onBack:() -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToLogin:(Boolean) -> Unit
 ) {
 

@@ -35,7 +35,7 @@ fun CreateAccountRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
     id: Int? = null,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onBack:()-> Unit
 ) {
     sharedViewModel.setExpand.postValue(true)
@@ -53,7 +53,7 @@ fun CreateAccountRoute(
     val scope = rememberCoroutineScope()
     LaunchedEffect(key1 = account) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
                 if (upsertAccount != null){
                     if (upsertAccount?.name.orEmpty().isNotEmpty()){
                         if (account != null){
@@ -66,12 +66,12 @@ fun CreateAccountRoute(
                         }
                     }else{
                         scope.launch {
-                            onShowSnackbar(R.string.err_empty_account_name, null)
+                            onShowSnackbar(R.string.err_empty_account_name, null, null)
                         }
                     }
                 }else{
                     scope.launch {
-                        onShowSnackbar(R.string.err_in_submit, null)
+                        onShowSnackbar(R.string.err_in_submit, null, null)
                     }
                 }
             }
