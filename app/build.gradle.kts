@@ -66,6 +66,7 @@ dependencies {
     implementation(projects.features.login)
     implementation(projects.features.setup)
     implementation(projects.features.home)
+    implementation(projects.features.profile)
     implementation(projects.sync.work)
 
     implementation(libs.androidx.activity.compose)

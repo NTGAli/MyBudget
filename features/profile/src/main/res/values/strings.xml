@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="UserAccount">حساب کاربری</string>
+    <string name="ActiveSessions">نشست های فعال</string>
+    <string name="AppUi">ظاهر برنامه</string>
+    <string name="Notifications">اعلان ها</string>
+    <string name="BankMessages">پیامک های بانکی</string>
+    <string name="Update">به روزرسانی</string>
+    <string name="AboutApp">درباره ی اپ</string>
+    <string name="RulesAndRegulations">قوانین و مقررات</string>
+    <string name="AppVertion">نسخه ⁨%s⁩ اندروید</string>
+</resources>

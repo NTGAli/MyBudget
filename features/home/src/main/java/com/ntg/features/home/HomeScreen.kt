@@ -113,6 +113,7 @@ fun HomeRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
+    navigateToProfile: () -> Unit
 ) {
     val expandTransaction = remember { mutableStateOf(false) }
     sharedViewModel.setExpand.postValue(expandTransaction.value)
@@ -170,7 +171,9 @@ fun HomeRoute(
             },
             onUpdateSelectedSource = { sourcesId ->
                 homeViewModel.updatedSelectedSources(sourcesId)
-            })
+            },
+            navigateToProfile
+        )
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -197,7 +200,8 @@ private fun HomeScreen(
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
-    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
+    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit,
+    navigateToProfile: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -232,7 +236,8 @@ private fun HomeScreen(
                 navigateToAccount,
                 onShowSnackbar,
                 onUpdateSelectedAccount,
-                onUpdateSelectedSource
+                onUpdateSelectedSource,
+                navigateToProfile
             )
         }) { padding ->
 
@@ -1137,7 +1142,8 @@ fun AccountSelectorSheet(
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
-    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
+    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit,
+    navigateToProfile: () -> Unit
 ) {
 
     var selectedAccountId by remember { mutableIntStateOf(currentAccount.accountId) }
@@ -1218,7 +1224,7 @@ fun AccountSelectorSheet(
                 iconPainter = painterResource(id = BudgetIcons.UserCircle),
                 iconTint = MaterialTheme.colorScheme.outline
             ) {
-
+                navigateToProfile.invoke()
             }
 
             HorizontalDivider(

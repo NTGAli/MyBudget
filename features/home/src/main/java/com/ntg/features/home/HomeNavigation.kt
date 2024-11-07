@@ -18,6 +18,7 @@ fun NavGraphBuilder.homeScreen(
     sharedViewModel: SharedViewModel,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
+    navigateToProfile: () -> Unit,
     onShowSnackbar: suspend (Int, String?) -> Boolean,
 ){
 
@@ -28,9 +29,8 @@ fun NavGraphBuilder.homeScreen(
             sharedViewModel = sharedViewModel,
             navigateToSource = navigateToSource,
             navigateToAccount = navigateToAccount,
+            navigateToProfile = navigateToProfile,
             onShowSnackbar = onShowSnackbar
         )
     }
-
-
 }

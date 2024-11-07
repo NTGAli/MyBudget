@@ -1,0 +1,5 @@
+package com.ntg.core.model
+
+enum class ProfileActions {
+    CHANGE_INFO, SESSIONS, APP_UI, NOTIFICATIONS, BANK_MESSAGE, UPDATES, ABOUT_APP, RULES_REGULATIONS
+}

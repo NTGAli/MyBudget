@@ -4,9 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
+import com.ntg.core.model.ProfileActions
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.homeScreen
 import com.ntg.features.home.navigateToHome
+import com.ntg.features.profile.navigateToProfile
+import com.ntg.features.profile.profileScreen
 import com.ntg.features.setup.SetupViewModel
 import com.ntg.features.setup.navigateToCreateAccount
 import com.ntg.features.setup.navigateToCurrencies
@@ -20,7 +23,6 @@ import com.ntg.login.navigateToCode
 import com.ntg.login.navigateToCountries
 import com.ntg.login.navigateToLogin
 import com.ntg.mybudget.ui.BudgetAppState
-import javax.annotation.Untainted
 
 @Composable
 fun BudgetNavHost(
@@ -68,8 +70,21 @@ fun BudgetNavHost(
             sharedViewModel = sharedViewModel,
             navigateToSource = navController::navigateToSource,
             navigateToAccount = navController::navigateToCreateAccount,
+            navigateToProfile = navController::navigateToProfile,
             onShowSnackbar = onShowSnackbar
         )
 
+        profileScreen(
+            profileActions = { action ->
+                when (action) {
+                    ProfileActions.CHANGE_INFO -> navController.navigateToHome()
+                    ProfileActions.SESSIONS -> navController.navigateToHome()
+                    ProfileActions.APP_UI -> navController.navigateToHome()
+                    ProfileActions.NOTIFICATIONS -> navController.navigateToHome()
+                    ProfileActions.BANK_MESSAGE -> navController.navigateToHome()
+                    else -> {}
+                }
+            }
+        )
     }
 }

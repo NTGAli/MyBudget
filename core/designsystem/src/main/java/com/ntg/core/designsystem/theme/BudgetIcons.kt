@@ -37,4 +37,12 @@ object BudgetIcons {
 //  val tick = R.drawable.tick
   val backspace = R.drawable.remove
   val equal = R.drawable.equality_rectangle
+  val shield = R.drawable.ic_shield
+  val edit = R.drawable.ic_edit
+  val paintBucket = R.drawable.ic_paint_bucket
+  val notification = R.drawable.ic_notification
+  val bankMessages = R.drawable.ic_bank_messages
+  val update = R.drawable.ic_warning
+  val help = R.drawable.ic_help
+  val rules = R.drawable.ic_clear_circle
 }

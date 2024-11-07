@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "ea31bc658b6e173615de83fdb7a169cc",
+    "identityHash": "3a4079a2bbe5793520eee7b4c1249880",
     "entities": [
       {
         "tableName": "accounts",
@@ -234,7 +234,7 @@
       },
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sId` TEXT, `accountId` INTEGER NOT NULL, `sourceId` INTEGER NOT NULL, `type` TEXT, `categoryId` INTEGER, `amount` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `isDeleted` INTEGER NOT NULL, `note` TEXT, `date` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sId` TEXT, `accountId` INTEGER NOT NULL, `sourceId` INTEGER NOT NULL, `type` TEXT, `categoryId` INTEGER, `amount` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, `isDeleted` INTEGER NOT NULL, `note` TEXT, `date` INTEGER NOT NULL, `tags` TEXT, `images` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -303,6 +303,18 @@
             "notNull": true
           },
           {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "images",
+            "columnName": "images",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "INTEGER",
@@ -316,7 +328,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
             "id"
           ]
@@ -614,7 +626,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ea31bc658b6e173615de83fdb7a169cc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3a4079a2bbe5793520eee7b4c1249880')"
     ]
   }
 }
