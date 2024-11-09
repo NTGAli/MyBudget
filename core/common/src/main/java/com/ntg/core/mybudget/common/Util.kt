@@ -4,14 +4,11 @@ import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.ntg.core.common.R
 import com.ntg.core.model.DataBank
 import com.ntg.core.mybudget.common.persianDate.PersianDate
-import com.ntg.core.mybudget.common.persianDate.PersianDateFormat
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.security.MessageDigest
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.text.DecimalFormat
@@ -21,7 +18,6 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import java.text.NumberFormat
 import java.util.Stack
-import java.util.zip.ZipInputStream
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
@@ -446,8 +442,8 @@ fun getCurrentJalaliDate(): Triple<Int, Int, Int> {
 
 fun Long.toPersianDate(): String {
     val persianDate = PersianDate(Date(this))
-    val month = persianDate.monthName()
-    val dayOfMonth = persianDate.dayOfWeek()
+    val month = persianDate.monthName
+    val dayOfMonth = persianDate.shDay
     val year = persianDate.shYear
 
     return "$dayOfMonth $month $year"
@@ -455,11 +451,6 @@ fun Long.toPersianDate(): String {
 
 fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long {
     val persianDate = PersianDate()
-    persianDate.setShYear(year)
-    persianDate.setShMonth(month)
-    persianDate.setShDay(day)
-    persianDate.setHour(hour)
-    persianDate.setMinute(minute)
-    persianDate.setSecond(0)
-    return persianDate.toDate().time
+    persianDate.initJalaliDate(year, month, day, hour, minute,0)
+    return persianDate.time
 }
