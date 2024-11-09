@@ -454,3 +454,8 @@ fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): 
     persianDate.initJalaliDate(year, month, day, hour, minute,0)
     return persianDate.time
 }
+
+fun formatTimestampToTime(timestamp: Long): String {
+    val dateFormat = SimpleDateFormat("h:mm a", Locale("fa", "IR"))
+    return dateFormat.format(Date(timestamp))
+}

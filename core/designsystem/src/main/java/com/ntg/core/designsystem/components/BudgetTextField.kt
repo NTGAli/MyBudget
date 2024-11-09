@@ -114,6 +114,8 @@ fun BudgetTextField(
     trailingIconOnClick: (String) -> Unit = {},
     searchMode: Boolean = false,
     singleLine: Boolean = true,
+    maxLines: Int = 1,
+    minLines: Int = 1,
     keyboardType: KeyboardType = KeyboardType.Text,
     onClick: () -> Unit = {},
     onChange: (String) -> Unit = {}
@@ -261,7 +263,8 @@ fun BudgetTextField(
             }
 
         } else null,
-        maxLines = 1,
+        maxLines = maxLines,
+        minLines = minLines,
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             imeAction = ImeAction.Done

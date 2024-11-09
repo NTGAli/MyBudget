@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -55,6 +56,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -74,6 +77,7 @@ import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.components.CustomKeyboard
+import com.ntg.core.designsystem.components.DateDivider
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.ImagePicker
 import com.ntg.core.designsystem.components.Lottie
@@ -87,6 +91,7 @@ import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.Contact
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.Transaction
@@ -97,11 +102,10 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatInput
-import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
+import com.ntg.core.mybudget.common.formatTimestampToTime
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
-import com.ntg.core.mybudget.common.jalaliToTimestamp
 import com.ntg.core.mybudget.common.isOperator
-import com.ntg.core.mybudget.common.logd
+import com.ntg.core.mybudget.common.jalaliToTimestamp
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.core.mybudget.common.persianDate.PersianDate
@@ -109,7 +113,6 @@ import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.feature.home.R
 import kotlinx.coroutines.launch
 import java.time.LocalTime
-import kotlin.math.exp
 
 @Composable
 fun HomeRoute(
@@ -172,7 +175,13 @@ fun HomeRoute(
                         scope.launch {
                             onShowSnackbar(R.string.err_non_transacton, null, null)
                         }
-                    }else if (transaction?.amount.orDefault() <= 0L){
+                    }
+                    else if (transaction?.type == Constants.BudgetType.TRANSFER){
+                        scope.launch {
+                            onShowSnackbar(R.string.err_not_impelemnted, null, com.ntg.mybudget.core.designsystem.R.raw.shy2)
+                        }
+                    }
+                    else if (transaction?.amount.orDefault() <= 0L){
                         scope.launch {
                             onShowSnackbar(R.string.err_amount, null, null)
                         }
@@ -199,7 +208,7 @@ fun HomeRoute(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun HomeScreen(
     accounts: State<List<AccountWithSources>?>,
@@ -219,6 +228,7 @@ private fun HomeScreen(
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var stickyHeaderText by remember { mutableStateOf("") }
 
     BottomSheetScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -256,7 +266,8 @@ private fun HomeScreen(
         LazyColumn(
             Modifier
                 .padding(padding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
 
@@ -288,22 +299,45 @@ private fun HomeScreen(
                 )
 
                 Text(
-                    modifier = Modifier.padding(top = 16.dp, start = 32.dp, bottom = 16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 32.dp, bottom = 16.dp),
                     text = stringResource(id = R.string.transactions),
                     style = MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outline)
                 )
             }
 
-            items(transactions.value.orEmpty()) {
-                TransactionItem(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    title = it.name.toString(),
-                    amount = formatCurrency(it.amount, "###,###", "ت", 2),
-                    date = it.date.toPersianDate(),
-                    divider = transactions.value?.last() != it,
-                    attached = false,
-                    type = it.type.orZero()
-                )
+
+            val groupedItems = transactions.value.orEmpty().groupBy  { it.date.toPersianDate() }
+
+
+            groupedItems.forEach { (date, items) ->
+                stickyHeader {
+                    DateDivider(
+                        modifier = Modifier
+                            .onGloballyPositioned { coordinates ->
+                                val position = coordinates.positionInParent()
+                                stickyHeaderText = if (position.y <= 0) date
+                                else ""
+                            }
+                            .padding(horizontal = 24.dp).padding(top = 12.dp, bottom = 8.dp),
+                        date = date, amount = (items.filter { it.type == Constants.BudgetType.INCOME }.sumOf { it.amount.orDefault() }
+                                - items.filter { it.type == Constants.BudgetType.EXPENSE }.sumOf { it.amount.orDefault() }), type = "",
+                        isCollapse = stickyHeaderText == date
+                        )
+                }
+
+                items(items){
+                    TransactionItem(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        title = it.name.toString(),
+                        amount = formatCurrency(it.amount, "###,###", "ت", 2),
+                        date = formatTimestampToTime(it.date),
+                        divider = it != items.last(),
+                        attached = false,
+                        type = it.type.orZero()
+                    )
+                }
             }
 
             if (transactions.value.orEmpty().isEmpty()) {

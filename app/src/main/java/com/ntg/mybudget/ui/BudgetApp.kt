@@ -146,7 +146,7 @@ internal fun BudgetApp(
             if (snackData.value != null){
                 AnimatedSnackbarHost(
                     snackbarHostState = snackbarHostState,
-                    durationMillis = 1500,
+                    durationMillis = if (snackData.value?.raw == null) 1500 else 3000,
                     data = snackData.value!!
                 )
             }
