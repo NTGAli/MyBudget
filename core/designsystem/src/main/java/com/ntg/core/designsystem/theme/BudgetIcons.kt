@@ -37,4 +37,6 @@ object BudgetIcons {
 //  val tick = R.drawable.tick
   val backspace = R.drawable.remove
   val equal = R.drawable.equality_rectangle
+  val minus = R.drawable.minus
+  val plus = R.drawable.plus
 }
