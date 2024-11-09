@@ -11,7 +11,7 @@ import com.ntg.core.model.Transaction
 interface TransactionsDao {
 
     @Insert
-    suspend fun insert(transactionEntity: TransactionEntity)
+    suspend fun insert(transactionEntity: TransactionEntity): Long
 
     @Delete
     suspend fun delete(transactionEntity: TransactionEntity)

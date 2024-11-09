@@ -11,5 +11,7 @@ data class Transaction(
     val type: Int? = null,
     val date: Long,
     val note: String? = null,
-    val images: List<String>? = null
+    val images: List<String>? = null,
+    val tags: List<String>? = null,
+    val contacts: List<Contact>? = null
 )
