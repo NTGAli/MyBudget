@@ -360,15 +360,21 @@ fun InsertTransactionView(
         mutableStateOf<SourceWithDetail?>(null)
     }
 
+    var secondSource by remember {
+        mutableStateOf<SourceWithDetail?>(null)
+    }
+
     var selectedCategory by remember {
         mutableStateOf<Category?>(null)
     }
 
     val tags = remember { mutableStateListOf<String>() }
-    val contacts = remember { mutableStateListOf<String>() }
+    val contacts = remember { mutableStateListOf<Contact>() }
+    val images = remember { mutableStateListOf<String>() }
 
 
     var sheetType by remember { mutableIntStateOf(0) }
+    var selectSourceType by remember { mutableIntStateOf(0) }
     var selectedTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     val concurrency = remember {
@@ -376,7 +382,7 @@ fun InsertTransactionView(
     }
 
     val scope = rememberCoroutineScope()
-
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val sheetState = rememberModalBottomSheetState()
 
     var opendKeyboard by remember {
@@ -414,7 +420,12 @@ fun InsertTransactionView(
                             it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
                         val phoneNumber =
                             it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                        contacts.add(name)
+                        val contact = Contact(
+                            fullName = name,
+                            phoneNumber = phoneNumber,
+                        )
+
+                        contacts.add(contact)
                     }
                 }
             }
@@ -425,14 +436,17 @@ fun InsertTransactionView(
     if (amount.value.isNotEmpty()) {
         onTransactionChange(
             Transaction(
-                id = generateUniqueFiveDigitId(),
+                id = 0,
                 accountId = selectedSource?.accountId.orZero(),
                 sourceId = selectedSource?.id.orZero(),
                 categoryId = selectedCategory?.id.orZero(),
                 amount = amount.value.replace(",", "").toLong(),
                 type = budgetType,
-                date = System.currentTimeMillis(),
-                note = note.value
+                date = selectedTime,
+                note = note.value,
+                images = images,
+                tags = tags,
+                contacts = contacts
             )
         )
     }
@@ -443,11 +457,21 @@ fun InsertTransactionView(
             selectedCategory = null
             selectedSource = null
             note.value = ""
+            budgetType = Constants.BudgetType.EXPENSE
+            tags.clear()
+            contacts.clear()
+            images.clear()
         }
     }
 
+    LaunchedEffect(key1 = budgetType) {
+        selectedCategory = null
+    }
 
-    FullScreenBottomSheet(showSheet = expandTransaction, appbar = {
+
+    FullScreenBottomSheet(showSheet = expandTransaction,
+        scrollBehavior = scrollBehavior,
+        appbar = {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -456,7 +480,7 @@ fun InsertTransactionView(
         ) {
             IconButton(modifier = Modifier
                 .padding(vertical = 16.dp)
-                .padding(start = 16.dp),
+                .padding(start = 12.dp),
                 onClick = {
                     expandTransaction.value = false
                 }) {
@@ -481,7 +505,7 @@ fun InsertTransactionView(
     }) {
         Column(
             modifier = Modifier
-//            .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
         ) {
 
@@ -560,6 +584,7 @@ fun InsertTransactionView(
                     readOnly = true,
                     onClick = {
                         sheetType = 1
+                        selectSourceType = 1
                         opendKeyboard = true
                     }
                 )
@@ -591,6 +616,7 @@ fun InsertTransactionView(
                         readOnly = true,
                         onClick = {
                             sheetType = 1
+                            selectSourceType = 1
                             opendKeyboard = true
                         }
                     )
@@ -600,11 +626,11 @@ fun InsertTransactionView(
                             .padding(top = 8.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
-                        text = remember(selectedSource) {
-                            if (selectedSource != null){
+                        text = remember(secondSource) {
+                            if (secondSource != null){
                                 mutableStateOf(
-                                    "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                        (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                    "${(secondSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                        (secondSource?.sourceType as SourceType.BankCard).number.takeLast(
                                             4
                                         )
                                     }"
@@ -618,6 +644,7 @@ fun InsertTransactionView(
                         readOnly = true,
                         onClick = {
                             sheetType = 1
+                            selectSourceType = 2
                             opendKeyboard = true
                         }
                     )
@@ -734,7 +761,7 @@ fun InsertTransactionView(
                 contacts.forEach {
                     Tag(
                         modifier = Modifier.padding(end = 8.dp),
-                        text = it,
+                        text = it.fullName,
                         dismissClick = {
                             contacts.remove(it)
                         }
@@ -758,7 +785,11 @@ fun InsertTransactionView(
             ImagePicker(
                 modifier = Modifier.padding(top = 16.dp),
                 padding = PaddingValues(horizontal = 24.dp)
-            )
+            ){
+                if (it.isNotEmpty()) {
+                    images.addAll(it)
+                }
+            }
 
 
             // description
@@ -768,7 +799,9 @@ fun InsertTransactionView(
                     .padding(horizontal = 24.dp),
                 singleLine = false,
                 label = stringResource(id = R.string.description),
-                text = note
+                text = note,
+                maxLines = 5,
+                minLines = 5
             )
 
             Spacer(modifier = Modifier.padding(vertical = 24.dp))
@@ -900,9 +933,13 @@ fun InsertTransactionView(
                                 ) {
                                     "${logoUrl}${logoName}.svg"
                                 } else null,
-                                isRadioCheck = selectedSource == it
+                                isRadioCheck = if (selectSourceType == 1) selectedSource == it else secondSource == it
                             ) {
-                                selectedSource = it
+                                if (selectSourceType == 1){
+                                    selectedSource = it
+                                }else{
+                                    secondSource = it
+                                }
                                 scope.launch {
                                     sheetState.hide()
                                 }
@@ -1085,6 +1122,16 @@ fun DateItem(
         selectedTimeState.add(0, currentTime.hour.toString())
         selectedTimeState.add(1, currentTime.minute.toString())
         selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
+
+        onChangeTime(
+            jalaliToTimestamp(
+                year = selectedDateState[0].toInt(),
+                month = months.indexOfFirst { it == selectedDateState[1] }+1,
+                day = selectedDateState[2].toInt(),
+                hour = selectedTimeState[0].toInt(),
+                minute = selectedTimeState[1].toInt()
+            )
+        )
     }
 
     if (selectedDateState.isNotEmpty()) {
@@ -1184,9 +1231,9 @@ fun DateItem(
                     if (type == 1) {
                         onChangeTime(
                             jalaliToTimestamp(
-                                year = selectedDateState[1].toInt(),
-                                month = selectedDateState[1].toInt(),
-                                day = months.indexOfFirst { it == selectedDateState[0] },
+                                year = selectedDateState[0].toInt(),
+                                month = months.indexOfFirst { it == selectedDateState[1] }+1,
+                                day = selectedDateState[2].toInt(),
                                 hour = selectedTimeState[0].toInt(),
                                 minute = selectedTimeState[1].toInt()
                             )
@@ -1200,8 +1247,8 @@ fun DateItem(
                     onChangeTime(
                         jalaliToTimestamp(
                             year = selectedDateState[0].toInt(),
-                            month = selectedDateState[1].toInt(),
-                            day = months.indexOfFirst { it == selectedDateState[2] },
+                            month = months.indexOfFirst { it == selectedDateState[1] }+1,
+                            day = selectedDateState[2].toInt(),
                             hour = selectedTimeState[0].toInt(),
                             minute = selectedTimeState[1].toInt()
                         )

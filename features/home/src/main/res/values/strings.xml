@@ -16,4 +16,5 @@
     <string name="err_amount">مقدار تراکنش باید بالای 0 باشد!</string>
     <string name="err_input_source">هیچ منبع خرجی انتخاب نشده!</string>
     <string name="err_input_category">هیچ دسته بندی انتخاب نشده!</string>
+    <string name="err_not_impelemnted">این کار داره</string>
 </resources>

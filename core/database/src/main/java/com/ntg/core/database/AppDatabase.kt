@@ -9,6 +9,7 @@ import com.ntg.core.database.dao.BankCardDao
 import com.ntg.core.database.dao.BankDao
 import com.ntg.core.database.dao.CategoryDao
 import com.ntg.core.database.dao.ConfigDao
+import com.ntg.core.database.dao.ContactDao
 import com.ntg.core.database.dao.CurrencyDao
 import com.ntg.core.database.dao.SourceExpenditureDao
 import com.ntg.core.database.dao.TransactionsDao
@@ -18,6 +19,7 @@ import com.ntg.core.database.model.BankCardEntity
 import com.ntg.core.database.model.BankEntity
 import com.ntg.core.database.model.CategoryEntity
 import com.ntg.core.database.model.ConfigEntity
+import com.ntg.core.database.model.ContactEntity
 import com.ntg.core.database.model.CurrencyEntity
 import com.ntg.core.database.model.SourceExpenditureEntity
 import com.ntg.core.database.model.TransactionEntity
@@ -34,7 +36,8 @@ import com.ntg.core.model.res.Bank
         BankEntity::class,
         ConfigEntity::class,
         CurrencyEntity::class,
-    CategoryEntity::class
+        CategoryEntity::class,
+        ContactEntity::class
     ],
     version = 6, exportSchema = true
 )
@@ -49,4 +52,5 @@ internal abstract class AppDatabase : RoomDatabase() {
     abstract fun configDao(): ConfigDao
     abstract fun currencyDao(): CurrencyDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun contactDao(): ContactDao
 }

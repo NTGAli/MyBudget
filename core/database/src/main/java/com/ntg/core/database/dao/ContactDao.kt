@@ -11,6 +11,9 @@ interface ContactDao {
     @Insert
     suspend fun insertContact(contact: ContactEntity)
 
+    @Insert
+    suspend fun insertAll(contacts: List<ContactEntity>)
+
     @Query("SELECT * FROM contacts")
     suspend fun getContacts(): List<ContactEntity>
 
