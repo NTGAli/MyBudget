@@ -9,4 +9,6 @@
     <string name="AboutApp">درباره ی اپ</string>
     <string name="RulesAndRegulations">قوانین و مقررات</string>
     <string name="AppVertion">نسخه ⁨%s⁩ اندروید</string>
+    <string name="UserEmail">ایمیل کاربر</string>
+    <string name="UserName">نام کاربر</string>
 </resources>

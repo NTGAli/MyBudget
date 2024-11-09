@@ -6,8 +6,6 @@ import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.req.SourceDetailReq
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
-import com.ntg.core.model.res.BankRes
-import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.CategoryRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
@@ -15,6 +13,7 @@ import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
+import com.ntg.core.model.res.UserInfo
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
@@ -141,6 +140,12 @@ internal class RetrofitBudgetNetwork @Inject constructor(
     override suspend fun categories(): Flow<Result<CategoryRes?>> {
         return networkBoundResources.downloadData(ioDispatcher){
             apiService.categories()
+        }
+    }
+
+    override suspend fun getUser(): Flow<Result<UserInfo>> {
+        return networkBoundResources.downloadData(ioDispatcher) {
+            apiService.getUser()
         }
     }
 }

@@ -3,8 +3,6 @@ package com.ntg.core.network
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
-import com.ntg.core.model.res.BankRes
-import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.CategoryRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
@@ -12,6 +10,7 @@ import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
+import com.ntg.core.model.res.UserInfo
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
@@ -45,4 +44,6 @@ interface BudgetNetworkDataSource {
     suspend fun updateWallet(id: String, source: SourceWithDetail): Flow<Result<SyncedWallet?>>
 
     suspend fun categories(): Flow<Result<CategoryRes?>>
+
+    suspend fun getUser(): Flow<Result<UserInfo>>
 }

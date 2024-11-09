@@ -11,6 +11,8 @@ import com.ntg.core.data.repository.ConfigRepositoryImpl
 import com.ntg.core.data.repository.CurrencyRepository
 import com.ntg.core.data.repository.CurrencyRepositoryImpl
 import com.ntg.core.data.repository.MainUserDataRepository
+import com.ntg.core.data.repository.ProfileRepository
+import com.ntg.core.data.repository.ProfileRepositoryImpl
 import com.ntg.core.data.repository.SourceExpenditureRepository
 import com.ntg.core.data.repository.SourceExpenditureRepositoryImpl
 import com.ntg.core.data.repository.UserDataRepository
@@ -58,4 +60,6 @@ internal abstract class DataModule {
         authRepository: AuthRequestRepository,
     ): AuthRepository
 
+    @Binds
+    internal abstract fun bindProfileRepository(impl: ProfileRepositoryImpl): ProfileRepository
 }

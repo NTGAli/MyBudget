@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
 import com.ntg.features.home.Home_Route
+import com.ntg.features.profile.Profile_Route
 import com.ntg.features.setup.Create_Account_Route
 import com.ntg.features.setup.Setup_Route
 import com.ntg.features.setup.Source_Route
@@ -76,6 +77,7 @@ class BudgetAppState(
             Login_Route,
             Setup_Route,
             Source_Route,
+            Profile_Route,
             Home_Route-> {
                 true
             }
