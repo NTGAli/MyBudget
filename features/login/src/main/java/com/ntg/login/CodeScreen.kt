@@ -1,7 +1,5 @@
 package com.ntg.login
 
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -42,7 +40,6 @@ import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.Result
 import com.ntg.feature.login.R
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -129,7 +126,7 @@ fun CodeRoute(
     LaunchedEffect(isSucceeded.value) {
         if (isSucceeded.value) {
             loginViewModel.serverAccounts()
-            delay(800)
+//            delay(800)
             loginViewModel.serverAccounts.collect {
                 when (it) {
                     is Result.Error -> {
