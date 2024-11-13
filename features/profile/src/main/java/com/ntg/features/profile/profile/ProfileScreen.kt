@@ -1,4 +1,4 @@
-package com.ntg.features.profile
+package com.ntg.features.profile.profile
 
 import android.content.pm.PackageInfo
 import androidx.compose.foundation.layout.padding
@@ -11,68 +11,40 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.ProfileCell
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.ProfileActions
 import com.ntg.core.model.res.UserInfo
-import com.ntg.core.network.model.Result
+import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.mybudget.common.orDefault
 import com.ntg.feature.profile.R
 
 @Composable
 fun ProfileRoute(
+    sharedViewModel: SharedViewModel,
     profileViewModel: ProfileViewModel = hiltViewModel(),
     profileActions: (action: ProfileActions) -> Unit
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val currentLifecycleState = lifecycleOwner.lifecycle
-    var isLoading by remember { mutableStateOf(false) }
-    val userData = remember { mutableStateOf(UserInfo(id = "", full_name = "", email = "", avatar_url = "", phone = "")) }
+
+    sharedViewModel.setExpand.postValue(false)
+    val userInfo = profileViewModel.getUserInfoFlow().collectAsStateWithLifecycle(UserInfo(id = "", full_name = "", email = "", avatar_url = "", phone = ""))
 
     ProfileScreen(
         profileActions = profileActions,
-        userInfo = userData.value,
-        isLoading = isLoading
+        userInfo = userInfo.value,
+        isLoading = userInfo.value.avatar_url.isEmpty() // first time load this screen and dataStore is empty
     )
-
-    LaunchedEffect(Unit) {
-        profileViewModel.userInfoState
-            .flowWithLifecycle(currentLifecycleState, Lifecycle.State.STARTED)
-            .collect {
-            when (it) {
-                is Result.Success -> {
-                    isLoading = false
-                    userData.value = it.data
-                }
-
-                is Result.Loading -> {
-                    isLoading = true
-                }
-
-                is Result.Error -> {
-                    isLoading = false
-                    userData.value = UserInfo(id = "", full_name = null, email = null, avatar_url = "", phone = "")
-                }
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,16 +79,16 @@ fun ProfileScreen(
             )
         },
 
-    ) {
+    ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             item {
                 ProfileCell(
-                    email = userInfo.email ?: stringResource(id = R.string.UserEmail),
-                    name = userInfo.full_name ?: stringResource(id = R.string.UserName),
+                    email = userInfo.email.orDefault(stringResource(id = R.string.UserEmail)),
+                    name = userInfo.full_name.orDefault(stringResource(id = R.string.UserName)),
                     imageUrl = userInfo.avatar_url,
                     isLoading = isLoading
                 ) {

@@ -8,8 +8,10 @@ import com.ntg.core.model.ProfileActions
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.homeScreen
 import com.ntg.features.home.navigateToHome
-import com.ntg.features.profile.navigateToProfile
-import com.ntg.features.profile.profileScreen
+import com.ntg.features.profile.editProfile.editProfileScreen
+import com.ntg.features.profile.editProfile.navigateToEditProfile
+import com.ntg.features.profile.profile.navigateToProfile
+import com.ntg.features.profile.profile.profileScreen
 import com.ntg.features.setup.SetupViewModel
 import com.ntg.features.setup.navigateToCreateAccount
 import com.ntg.features.setup.navigateToCurrencies
@@ -75,9 +77,10 @@ fun BudgetNavHost(
         )
 
         profileScreen(
+            sharedViewModel = sharedViewModel,
             profileActions = { action ->
                 when (action) {
-                    ProfileActions.CHANGE_INFO -> navController.navigateToHome()
+                    ProfileActions.CHANGE_INFO -> navController.navigateToEditProfile()
                     ProfileActions.SESSIONS -> navController.navigateToHome()
                     ProfileActions.APP_UI -> navController.navigateToHome()
                     ProfileActions.NOTIFICATIONS -> navController.navigateToHome()
@@ -85,6 +88,11 @@ fun BudgetNavHost(
                     else -> {}
                 }
             }
+        )
+
+        editProfileScreen(
+            sharedViewModel = sharedViewModel,
+            onShowSnackbar = onShowSnackbar,
         )
     }
 }

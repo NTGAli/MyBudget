@@ -103,6 +103,7 @@ import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.persianDate.PersianDate
 import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.feature.home.R
+import com.ntg.mybudget.core.designsystem.R.*
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -424,19 +425,19 @@ fun InsertTransactionView(
             val items = listOf(
                 SwitchItem(
                     0,
-                    stringResource(id = com.ntg.mybudget.core.designsystem.R.string.outcome),
+                    stringResource(id = string.outcome),
                     tint = MaterialTheme.colorScheme.onError,
                     backColor = MaterialTheme.colorScheme.error
                 ),
                 SwitchItem(
                     0,
-                    stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income),
+                    stringResource(id = string.income),
                     tint = MaterialTheme.colorScheme.onSecondary,
                     backColor = MaterialTheme.colorScheme.secondary
                 ),
                 SwitchItem(
                     0,
-                    stringResource(id = com.ntg.mybudget.core.designsystem.R.string.internal_transfer),
+                    stringResource(id = string.internal_transfer),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     backColor = MaterialTheme.colorScheme.primary
                 ),
@@ -458,7 +459,7 @@ fun InsertTransactionView(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 text = balance,
-                label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.price),
+                label = stringResource(id = string.price),
                 fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                 fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
                 readOnly = true,
@@ -488,7 +489,7 @@ fun InsertTransactionView(
                     } catch (e: Exception) {
                         mutableStateOf("")
                     },
-                    label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.source_expenditure),
+                    label = stringResource(id = string.source_expenditure),
                     trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                     readOnly = true,
                     onClick = {
@@ -517,7 +518,7 @@ fun InsertTransactionView(
                         } catch (e: Exception) {
                             mutableStateOf("")
                         },
-                        label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.from),
+                        label = stringResource(id = string.from),
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                         readOnly = true,
                         onClick = {
@@ -542,7 +543,7 @@ fun InsertTransactionView(
                         } catch (e: Exception) {
                             mutableStateOf("")
                         },
-                        label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.to),
+                        label = stringResource(id = string.to),
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                         readOnly = true,
                         onClick = {
@@ -557,7 +558,7 @@ fun InsertTransactionView(
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                         text = balance,
-                        label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.fee),
+                        label = stringResource(id = string.fee),
                         fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                         fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
                         readOnly = true,
@@ -579,7 +580,7 @@ fun InsertTransactionView(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     text = mutableStateOf(selectedCategory?.name.orEmpty()),
-                    label = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.catgory),
+                    label = stringResource(id = string.catgory),
                     trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                     readOnly = true,
                     onClick = {
@@ -1095,7 +1096,7 @@ fun DateItem(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 8.dp)
                         .padding(bottom = 24.dp),
-                    text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.submit)){
+                    text = stringResource(id = string.submit)){
                     selectedDate = "${selectedDateState[2]} ${selectedDateState[1]} ${selectedDateState[0]}"
                     selectedTime = "${selectedTimeState[0]} : ${selectedTimeState[1]}"
                     if (type == 1){
