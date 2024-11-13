@@ -11,4 +11,5 @@ interface UserDataRepository {
 
     suspend fun logout()
 
+    suspend fun saveUserBasicData(name: String, email: String, phone: String, image: String)
 }

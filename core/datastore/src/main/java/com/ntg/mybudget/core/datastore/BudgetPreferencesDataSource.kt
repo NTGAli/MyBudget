@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import com.nt.com.core.datastore.UserPreferences
 import com.nt.com.core.datastore.copy
 import com.ntg.core.model.UserData
+import com.ntg.core.mybudget.common.logd
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
@@ -18,7 +19,11 @@ class BudgetPreferencesDataSource @Inject constructor(
             UserData(
                 isLogged = it.isLogged,
                 token = it.token,
-                expire = it.expire
+                expire = it.expire,
+                email = it.email,
+                name = it.name,
+                phone = it.phone,
+                avatarImage = it.avatarImage
             )
         }
 
@@ -29,6 +34,8 @@ class BudgetPreferencesDataSource @Inject constructor(
                     isLogged = true
                     this.token = token
                     this.expire = expire
+                    this.name = ""
+                    this.email = ""
                 }
             }
         } catch (ioException: IOException) {
@@ -43,6 +50,10 @@ class BudgetPreferencesDataSource @Inject constructor(
                     isLogged = false
                     token = ""
                     expire = ""
+                    name = ""
+                    email = ""
+                    phone = ""
+                    avatarImage = ""
 
                 }
             }
@@ -52,6 +63,21 @@ class BudgetPreferencesDataSource @Inject constructor(
     }
 
 
+    suspend fun saveBasicUserData(
+        name: String,
+        email: String,
+        phone: String,
+        image: String
+    ){
+        userPreferences.updateData {
+            it.copy {
+                this.name = name
+                this.email = email
+                this.phone = phone
+                this.avatarImage = image
+            }
+        }
+    }
 
 
 

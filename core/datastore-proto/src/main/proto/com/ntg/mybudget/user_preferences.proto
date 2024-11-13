@@ -7,4 +7,8 @@ message UserPreferences {
     bool is_logged = 1;
     string token = 2;
     string expire = 3;
+    string name = 4;
+    string phone = 5;
+    string email = 6;
+    string avatar_image = 7;
 }

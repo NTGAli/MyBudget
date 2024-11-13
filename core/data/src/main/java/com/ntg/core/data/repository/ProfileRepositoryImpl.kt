@@ -1,10 +1,11 @@
 package com.ntg.core.data.repository
 
+import android.graphics.Bitmap
+import com.ntg.core.model.res.UploadAvatarRes
 import com.ntg.core.model.res.UserInfo
 import com.ntg.core.network.BudgetNetworkDataSource
 import com.ntg.core.network.model.Result
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.mapNotNull
 import javax.inject.Inject
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -12,5 +13,9 @@ class ProfileRepositoryImpl @Inject constructor(
 ) : ProfileRepository {
     override suspend fun getUserInfo(): Flow<Result<UserInfo>> {
         return network.getUser()
+    }
+
+    override suspend fun uploadAvatar(image: Bitmap, mimeType: String): Flow<Result<UploadAvatarRes>> {
+        return network.uploadAvatar(image, mimeType)
     }
 }

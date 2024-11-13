@@ -11,4 +11,11 @@
     <string name="AppVertion">نسخه ⁨%s⁩ اندروید</string>
     <string name="UserEmail">ایمیل کاربر</string>
     <string name="UserName">نام کاربر</string>
+    <string name="UserProfile">پروفایل کاربری</string>
+    <string name="Name">نام و نام خانوادگی</string>
+    <string name="PhoneNumber">شماره تلفن</string>
+    <string name="Email">ایمیل</string>
+    <string name="Submit">ثبت</string>
+    <string name="ImageUploaded">تصویر با موفقیت آپدیت شد.</string>
+    <string name="ImageUploadedFailed">اشکال در آپلود تصویر</string>
 </resources>

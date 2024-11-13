@@ -1,5 +1,6 @@
 package com.ntg.core.network
 
+import android.graphics.Bitmap
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.Bank
@@ -10,11 +11,13 @@ import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
+import com.ntg.core.model.res.UploadAvatarRes
 import com.ntg.core.model.res.UserInfo
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 
 interface BudgetNetworkDataSource {
     suspend fun loginWithPhone(phone: String): Flow<Result<ResponseBody<String?>>>
@@ -46,4 +49,6 @@ interface BudgetNetworkDataSource {
     suspend fun categories(): Flow<Result<CategoryRes?>>
 
     suspend fun getUser(): Flow<Result<UserInfo>>
+
+    suspend fun uploadAvatar(image: Bitmap, mimeType: String): Flow<Result<UploadAvatarRes>>
 }

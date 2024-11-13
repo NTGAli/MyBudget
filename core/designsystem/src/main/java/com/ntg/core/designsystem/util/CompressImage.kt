@@ -17,7 +17,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 
-class CompressImage(private val context: Context) {
+class CompressImage(private val context: Context, private val imageMaxSize: Float = 900.0f) {
     fun compressImage(imageUri: String): Bitmap? {
         val filePath = getRealPathFromURI(imageUri)
         var scaledBitmap: Bitmap? = null
@@ -31,7 +31,7 @@ class CompressImage(private val context: Context) {
         var actualWidth = options.outWidth
 
 //      the image's max dimention is gonna be: 512x512
-        val maxSize = 900.0f
+        val maxSize = imageMaxSize
 
 //      width and height values are set maintaining the aspect ratio of the image
         val ratio =
