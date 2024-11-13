@@ -113,4 +113,11 @@ interface BudgetService {
     suspend fun uploadAvatar(
         @Field("image_base64") image: String
     ): Response<UploadAvatarRes>
+
+    @FormUrlEncoded
+    @POST("/api/user/update_user_data")
+    suspend fun uploadUserData(
+        @Field("full_name") name: String,
+        @Field("username") username: String
+    ): Response<ResponseBody<String?>>
 }

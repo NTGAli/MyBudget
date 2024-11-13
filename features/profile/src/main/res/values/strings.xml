@@ -18,4 +18,6 @@
     <string name="Submit">ثبت</string>
     <string name="ImageUploaded">تصویر با موفقیت آپدیت شد.</string>
     <string name="ImageUploadedFailed">اشکال در آپلود تصویر</string>
+    <string name="UserInfoUpdated">اطلاعات با موفقیت آپدیت شد.</string>
+    <string name="UpdateUserInfoFailed">اشکال در بروزرسانی اطلاعات</string>
 </resources>

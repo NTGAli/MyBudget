@@ -51,4 +51,6 @@ interface BudgetNetworkDataSource {
     suspend fun getUser(): Flow<Result<UserInfo>>
 
     suspend fun uploadAvatar(image: Bitmap, mimeType: String): Flow<Result<UploadAvatarRes>>
+
+    suspend fun updateUserInfo(name: String, username: String): Flow<Result<ResponseBody<String?>>>
 }

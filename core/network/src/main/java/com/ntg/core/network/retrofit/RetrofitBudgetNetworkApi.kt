@@ -171,4 +171,10 @@ class RetrofitBudgetNetwork @Inject constructor(
             apiService.uploadAvatar(base64ImageWithPrefix)
         }
     }
+
+    override suspend fun updateUserInfo(name: String, username: String): Flow<Result<ResponseBody<String?>>> {
+        return networkBoundResources.downloadData(ioDispatcher) {
+            apiService.uploadUserData(name, username)
+        }
+    }
 }

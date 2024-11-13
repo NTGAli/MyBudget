@@ -9,6 +9,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,7 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,8 +28,9 @@ import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.EditAvatarImage
 import com.ntg.core.model.UserData
-import com.ntg.core.model.res.UserInfo
+import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.network.model.Result
 import com.ntg.feature.profile.R
 import kotlinx.coroutines.launch
@@ -48,13 +50,34 @@ fun EditeProfileRout(
     val scope = rememberCoroutineScope()
 
     val userInfo = editProfileViewModel.userData.collectAsStateWithLifecycle(null)
+    val userName = remember(userInfo.value?.name) { mutableStateOf(userInfo.value?.name.orDefault()) }
+    val userEmail = remember(userInfo.value?.email) { mutableStateOf(userInfo.value?.email.orDefault()) }
 
-    EditeProfileScreen(userInfo) { image, mimeType ->
-        editProfileViewModel.uploadImage(image , mimeType)
+    EditeProfileScreen(
+        userInfo,
+        userName = userName,
+        userEmail = userEmail,
+        onImageSelected = { image, mimeType ->
+            editProfileViewModel.uploadImage(image, mimeType)
+        },
+    )
+
+    LaunchedEffect(userName.value, userEmail.value) {
+        editProfileViewModel.name.value = userName.value
+        editProfileViewModel.email.value = userEmail.value
     }
 
     LaunchedEffect(Unit) {
-        editProfileViewModel.uploadState
+
+        sharedViewModel.loginEventListener = object : LoginEventListener {
+            override fun onLoginEvent() {
+                editProfileViewModel.updateServerUserInfo()
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        editProfileViewModel.uploadAvatarState
             .flowWithLifecycle(currentLifecycleState, Lifecycle.State.STARTED)
             .collect {
                 when (it) {
@@ -63,10 +86,10 @@ fun EditeProfileRout(
                         scope.launch {
                             onShowSnackbar(R.string.ImageUploaded, null)
                         }
-                        userInfo.value?.let { userInfo ->
-                            editProfileViewModel.updateUserInfo(userInfo.copy(avatarImage = it.data.avatar_url))
-                        }
 
+                        userInfo.value?.let { userInfo ->
+                            editProfileViewModel.updateLocalUserInfo(userInfo.copy(avatarImage = it.data.avatar_url))
+                        }
                     }
 
                     is Result.Loading -> {
@@ -83,17 +106,51 @@ fun EditeProfileRout(
             }
     }
 
+    LaunchedEffect(Unit) {
+        editProfileViewModel.updateInfoState
+            .flowWithLifecycle(currentLifecycleState, Lifecycle.State.STARTED)
+            .collect {
+                when (it) {
+                    is Result.Success -> {
+                        sharedViewModel.setLoading.postValue(false)
+                        scope.launch {
+                            onShowSnackbar(R.string.UserInfoUpdated, null)
+                        }
+
+                        userInfo.value?.let { userInfo ->
+                            editProfileViewModel.updateLocalUserInfo(
+                                userInfo.copy(name = editProfileViewModel.name.value)
+                            )
+                        }
+                    }
+
+                    is Result.Loading -> {
+                        if (it.loading){
+                            sharedViewModel.setLoading.postValue(true)
+                        }
+                    }
+
+                    is Result.Error -> {
+                        sharedViewModel.setLoading.postValue(false)
+                        onShowSnackbar(R.string.UpdateUserInfoFailed, null)
+                    }
+                }
+            }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditeProfileScreen(userInfo: State<UserData?>, onImageSelected: (Bitmap, String) -> Unit) {
+fun EditeProfileScreen(
+    userInfo: State<UserData?>,
+    userName: MutableState<String>,
+    userEmail: MutableState<String>,
+    onImageSelected: (Bitmap, String) -> Unit,
+) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
-    val userName = remember(userInfo.value?.name) { mutableStateOf(userInfo.value?.name ?: "name") }
-    val userPhone = remember(userInfo.value?.phone) { mutableStateOf(userInfo.value?.phone ?: "phone") }
-    val userEmail = remember(userInfo.value?.email) { mutableStateOf(userInfo.value?.email ?: "email") }
+    val userPhone = remember(userInfo.value?.phone) { mutableStateOf(userInfo.value?.phone.orDefault()) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -112,7 +169,7 @@ fun EditeProfileScreen(userInfo: State<UserData?>, onImageSelected: (Bitmap, Str
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            EditAvatarImage(userInfo.value?.avatarImage ?: "", onImageSelected)
+            EditAvatarImage(userInfo.value?.avatarImage.orDefault(), onImageSelected)
 
             BudgetTextField(
                 text = userName,
@@ -121,7 +178,7 @@ fun EditeProfileScreen(userInfo: State<UserData?>, onImageSelected: (Bitmap, Str
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
                     .padding(top = 24.dp),
-                enabled = false
+                enabled = true
             )
 
             BudgetTextField(
