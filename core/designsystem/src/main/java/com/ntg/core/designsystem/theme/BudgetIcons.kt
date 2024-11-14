@@ -1,6 +1,5 @@
 package com.ntg.core.designsystem.theme
 
-import com.ntg.core.mybudget.common.Constants
 import com.ntg.mybudget.core.designsystem.R
 
 
@@ -44,5 +43,7 @@ object BudgetIcons {
   val bankMessages = R.drawable.ic_bank_messages
   val update = R.drawable.ic_warning
   val help = R.drawable.ic_help
-  val rules = R.drawable.ic_clear_circle
+  val doNotDo = R.drawable.ic_clear_circle
+  val mobile = R.drawable.ic_mobile
+  val desktop = R.drawable.ic_desktop
 }

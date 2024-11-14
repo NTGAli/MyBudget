@@ -66,7 +66,7 @@ fun ProfileScreen(
         ProfileItemsData(stringResource(id = R.string.BankMessages), BudgetIcons.bankMessages, null, ProfileActions.BANK_MESSAGE),
         ProfileItemsData(stringResource(id = R.string.Update), BudgetIcons.update, "نسخه ی 2 به تازگی منتشر شده", ProfileActions.UPDATES),
         ProfileItemsData(stringResource(id = R.string.AboutApp), BudgetIcons.help, null, ProfileActions.ABOUT_APP),
-        ProfileItemsData(stringResource(id = R.string.RulesAndRegulations), BudgetIcons.rules, null, ProfileActions.RULES_REGULATIONS),
+        ProfileItemsData(stringResource(id = R.string.RulesAndRegulations), BudgetIcons.doNotDo, null, ProfileActions.RULES_REGULATIONS),
     )
 
     Scaffold(
