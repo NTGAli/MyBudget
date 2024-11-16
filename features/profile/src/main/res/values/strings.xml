@@ -22,4 +22,8 @@
     <string name="UpdateUserInfoFailed">اشکال در بروزرسانی اطلاعات</string>
     <string name="RemoveOtherSessions">حذف سایر نشست ها</string>
     <string name="OtherSessions">سایر نشست ها</string>
+    <string name="NoActiveSessions">نشست فعالی وجود ندارد.</string>
+    <string name="SessionsTerminate">نشست با موفقیت حذف شد.</string>
+    <string name="SessionsTerminateFailed">نشست حذف با خطا مواجه شد.</string>
+    <string name="GetDataFailed">مشکل در دریافت اطلاعت</string>
 </resources>

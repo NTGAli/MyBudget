@@ -285,37 +285,39 @@ private fun formatInput(str1: String, str2: String): String {
 
 
 fun Modifier.flickerAnimation(
+    isLoading: Boolean = true,
     widthOfShadowBrush: Int = 600,
     angleOfAxisY: Float = 0f,
     durationMillis: Int = 1600,
 ): Modifier {
-    return composed {
+    return if (isLoading) {
+        composed {
+            val shimmerColors = getColours()
+            val transition = rememberInfiniteTransition(label = "")
 
-        val shimmerColors = getColours()
-
-        val transition = rememberInfiniteTransition(label = "")
-
-        val translateAnimation = transition.animateFloat(
-            initialValue = 0f,
-            targetValue = (durationMillis + widthOfShadowBrush).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = durationMillis,
-                    easing = LinearEasing,
+            val translateAnimation = transition.animateFloat(
+                initialValue = 0f,
+                targetValue = (durationMillis + widthOfShadowBrush).toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = durationMillis,
+                        easing = LinearEasing,
+                    ),
                 ),
-            ),
-            label = "flicker animation",
-        )
+                label = "flicker animation",
+            )
 
-        this.background(
-            brush = Brush.linearGradient(
-                colors = shimmerColors,
-                start = Offset(x = translateAnimation.value - widthOfShadowBrush, y = 0.0f),
-                end = Offset(x = translateAnimation.value, y = angleOfAxisY),
-            ),
-        )
+            this.background(
+                brush = Brush.linearGradient(
+                    colors = shimmerColors,
+                    start = Offset(x = translateAnimation.value - widthOfShadowBrush, y = 0.0f),
+                    end = Offset(x = translateAnimation.value, y = angleOfAxisY),
+                ),
+            )
+        }
+    } else {
+        this
     }
-
 }
 
 

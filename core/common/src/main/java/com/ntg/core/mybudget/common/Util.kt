@@ -20,7 +20,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import java.text.NumberFormat
+import java.util.Calendar
 import java.util.Stack
+import java.util.TimeZone
 import java.util.zip.ZipInputStream
 
 fun Float?.orZero() = this ?: 0f
@@ -465,4 +467,21 @@ fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): 
     persianDate.setMinute(minute)
     persianDate.setSecond(0)
     return persianDate.toDate().time
+}
+
+fun convertDateTime(inputDateTime: String): String {
+
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+    inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val date = inputFormat.parse(inputDateTime)
+
+    val persianDate = PersianDate(date)
+
+    val year = persianDate.shYear
+    val month = persianDate.shMonth
+    val day = persianDate.shDay
+    val hour = persianDate.hour
+    val minute = persianDate.minute
+
+    return "$year-$month-$day ساعت $hour:$minute"
 }

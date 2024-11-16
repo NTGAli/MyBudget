@@ -97,6 +97,8 @@ fun BudgetNavHost(
             onShowSnackbar = onShowSnackbar,
         )
 
-        sessionScreen()
+        sessionScreen(
+            onShowSnackbar = onShowSnackbar,
+        )
     }
 }

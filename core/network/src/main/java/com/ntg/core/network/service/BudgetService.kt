@@ -6,6 +6,7 @@ import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.SessionsResItem
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.UploadAvatarRes
@@ -119,5 +120,17 @@ interface BudgetService {
     suspend fun uploadUserData(
         @Field("full_name") name: String,
         @Field("username") username: String
+    ): Response<ResponseBody<String?>>
+
+    @GET("/api/session/list")
+    suspend fun sessionsList(): Response<List<SessionsResItem>>
+
+    @GET("/api/session/terminate_all")
+    suspend fun terminateAllSessions(): Response<ResponseBody<String?>>
+
+    @FormUrlEncoded
+    @POST("/api/session/terminate")
+    suspend fun terminateSession(
+        @Field("session_id") sessionId: String,
     ): Response<ResponseBody<String?>>
 }

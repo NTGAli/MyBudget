@@ -1,6 +1,7 @@
 package com.ntg.core.data.repository
 
 import android.graphics.Bitmap
+import com.ntg.core.model.res.SessionsResItem
 import com.ntg.core.model.res.UploadAvatarRes
 import com.ntg.core.model.res.UserInfo
 import com.ntg.core.network.BudgetNetworkDataSource
@@ -23,4 +24,17 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun updateUserInfo(name: String, username: String): Flow<Result<ResponseBody<String?>>> {
         return network.updateUserInfo(name, username)
     }
+
+    override suspend fun getSessionsList(): Flow<Result<List<SessionsResItem>>> {
+        return network.getSessionsList()
+    }
+
+    override suspend fun terminateAllSessions(): Flow<Result<ResponseBody<String?>>> {
+        return network.terminateAllSessions()
+    }
+
+    override suspend fun terminateSession(sessionId: String): Flow<Result<ResponseBody<String?>>> {
+        return network.terminateSession(sessionId)
+    }
+
 }

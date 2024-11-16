@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -123,5 +125,58 @@ fun SessionItem(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SessionItemShimmer() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .padding(start = 24.dp, end = 18.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .flickerAnimation()
+            )
+
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 83.dp, height = 20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .flickerAnimation()
+                )
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .size(width = 50.dp, height = 18.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .flickerAnimation()
+                )
+
+            }
+        }
+
+        Box(
+            Modifier
+                .width(29.dp)
+                .height(20.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .flickerAnimation()
+        )
     }
 }
