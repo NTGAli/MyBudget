@@ -46,7 +46,7 @@ import com.ntg.core.designsystem.components.SessionItemShimmer
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.res.SessionsResItem
 import com.ntg.core.mybudget.common.convertDateTime
-import com.ntg.feature.profile.R
+import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 
 @Composable

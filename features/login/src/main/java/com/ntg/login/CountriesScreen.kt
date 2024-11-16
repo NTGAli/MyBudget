@@ -31,7 +31,7 @@ import com.ntg.core.designsystem.components.Country
 import com.ntg.core.designsystem.components.CountryItem
 import com.ntg.core.designsystem.model.AppbarItem
 import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.feature.login.R
+import com.ntg.mybudget.core.designsystem.R
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader

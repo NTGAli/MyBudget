@@ -58,7 +58,7 @@ import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.toUnixTimestamp
-import com.ntg.feature.setup.R
+import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 import com.ntg.core.network.model.Result
 

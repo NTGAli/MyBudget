@@ -40,7 +40,7 @@ import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.Result
-import com.ntg.feature.login.R
+import com.ntg.mybudget.core.designsystem.R
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

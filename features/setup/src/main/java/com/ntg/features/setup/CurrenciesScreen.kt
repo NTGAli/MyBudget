@@ -28,7 +28,7 @@ import com.ntg.core.designsystem.components.LoadingView
 import com.ntg.core.designsystem.model.AppbarItem
 import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.SharedViewModel
-import com.ntg.feature.setup.R
+import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.flow.flowOf
 
 @Composable

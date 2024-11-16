@@ -32,7 +32,7 @@ import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.network.model.Result
-import com.ntg.feature.profile.R
+import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 
 @Composable
