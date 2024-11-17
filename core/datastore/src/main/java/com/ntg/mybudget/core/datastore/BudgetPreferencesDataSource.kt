@@ -2,14 +2,14 @@ package com.ntg.mybudget.core.datastore
 
 import android.util.Log
 import androidx.datastore.core.DataStore
+import com.nt.com.core.datastore.ThemeStatus
 import com.nt.com.core.datastore.UserPreferences
 import com.nt.com.core.datastore.copy
+import com.ntg.core.model.ThemeState
 import com.ntg.core.model.UserData
-import com.ntg.core.mybudget.common.logd
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
-import kotlin.math.exp
 
 class BudgetPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>,
@@ -23,7 +23,8 @@ class BudgetPreferencesDataSource @Inject constructor(
                 email = it.email,
                 name = it.name,
                 phone = it.phone,
-                avatarImage = it.avatarImage
+                avatarImage = it.avatarImage,
+                themeState = it.themeStatus.toThemeState()
             )
         }
 
@@ -79,8 +80,20 @@ class BudgetPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun saveThemeChange(themeStatus: ThemeStatus) {
+        userPreferences.updateData {
+            it.copy {
+                this.themeStatus = themeStatus
+            }
+        }
+    }
 
-
+    private fun ThemeStatus.toThemeState(): ThemeState = when (this) {
+        ThemeStatus.Default -> ThemeState.Default
+        ThemeStatus.Light -> ThemeState.Light
+        ThemeStatus.Dark -> ThemeState.Dark
+        else -> ThemeState.Default // Fallback for unknown values
+    }
 }
 
 //private fun UserPreferencesKt.Dsl.updateShouldHideOnboardingIfNecessary() {

@@ -117,4 +117,11 @@
     <string name="delete_source_desc">تمام تراکنش های مربوط به این منبع خرج نیز حذف خواهد شد.</string>
     <string name="deleting_deafult_account">حذف اکانت پیشفرض امکان پذیر نیست.</string>
     <string name="currency">واحدهای مالی</string>
+
+    // appearance
+    <string name="AppTheme">تم برنامه</string>
+    <string name="DeviseDefault">پیشفرض گوشی</string>
+    <string name="LightTheme">روشن</string>
+    <string name="DarkTheme">تاریک</string>
+    <string name="Language">زبان</string>
 </resources>

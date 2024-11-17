@@ -40,6 +40,7 @@ import androidx.lifecycle.flowWithLifecycle
 import com.ntg.core.network.model.Result
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.ButtonType
+import com.ntg.core.designsystem.components.CustomDivider
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SessionItem
 import com.ntg.core.designsystem.components.SessionItemShimmer
@@ -198,11 +199,7 @@ fun TerminateAllButton(
         onTerminateAll()
     }
 
-    HorizontalDivider(
-        thickness = 8.dp,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        modifier = Modifier.padding(top = 4.dp)
-    )
+    CustomDivider(modifier = Modifier.padding(top = 4.dp))
 
     Text(
         text = stringResource(id = R.string.OtherSessions),

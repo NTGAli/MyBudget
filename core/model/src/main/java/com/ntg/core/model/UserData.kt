@@ -7,5 +7,6 @@ data class UserData(
     val name: String? = null,
     val email: String? = null,
     val phone: String? = null,
-    val avatarImage: String? = null
+    val avatarImage: String? = null,
+    val themeState: ThemeState = ThemeState.Default
 )
