@@ -6,16 +6,23 @@ import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.SessionsResItem
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
+import com.ntg.core.model.res.UploadAvatarRes
 import com.ntg.core.model.res.UserInfo
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.network.model.ResponseBody
+import com.ntg.core.network.retrofit.RetrofitBudgetNetwork
+import okhttp3.MultipartBody
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 interface BudgetService {
@@ -101,4 +108,29 @@ interface BudgetService {
 
     @GET(value = "/api/user")
     suspend fun getUser(): Response<UserInfo>
+
+    @FormUrlEncoded
+    @POST("/api/user/upload_avatar")
+    suspend fun uploadAvatar(
+        @Field("image_base64") image: String
+    ): Response<UploadAvatarRes>
+
+    @FormUrlEncoded
+    @POST("/api/user/update_user_data")
+    suspend fun uploadUserData(
+        @Field("full_name") name: String,
+        @Field("username") username: String
+    ): Response<ResponseBody<String?>>
+
+    @GET("/api/session/list")
+    suspend fun sessionsList(): Response<List<SessionsResItem>>
+
+    @GET("/api/session/terminate_all")
+    suspend fun terminateAllSessions(): Response<ResponseBody<String?>>
+
+    @FormUrlEncoded
+    @POST("/api/session/terminate")
+    suspend fun terminateSession(
+        @Field("session_id") sessionId: String,
+    ): Response<ResponseBody<String?>>
 }

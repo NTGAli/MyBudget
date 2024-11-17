@@ -17,14 +17,20 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import java.text.NumberFormat
+import java.util.Calendar
 import java.util.Stack
+import java.util.TimeZone
+import java.util.zip.ZipInputStream
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
-fun String?.orDefault() = this ?: ""
 fun Int?.orZero() = this ?: 0
 fun Boolean?.orFalse() = this ?: false
 fun Boolean?.orTrue() = this ?: true
+fun String?.orDefault() = this ?: ""
+fun String?.orDefault(default: String): String {
+    return if (this.isNullOrEmpty()) default else this
+}
 
 fun getCountryFromPhoneNumber(context: Context, phone_number: String?): String? {
     if (phone_number == null) return null
@@ -455,7 +461,19 @@ fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): 
     return persianDate.time
 }
 
-fun formatTimestampToTime(timestamp: Long): String {
-    val dateFormat = SimpleDateFormat("h:mm a", Locale("fa", "IR"))
-    return dateFormat.format(Date(timestamp))
+fun convertDateTime(inputDateTime: String): String {
+
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+    inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val date = inputFormat.parse(inputDateTime)
+
+    val persianDate = PersianDate(date)
+
+    val year = persianDate.shYear
+    val month = persianDate.shMonth
+    val day = persianDate.shDay
+    val hour = persianDate.hour
+    val minute = persianDate.minute
+
+    return "$year-$month-$day ساعت $hour:$minute"
 }

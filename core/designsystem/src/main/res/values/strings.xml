@@ -46,5 +46,6 @@
     <string name="from">از</string>
     <string name="to">به</string>
     <string name="fee">کارمزد</string>
+    <string name="MySession">شما</string>
 
 </resources>

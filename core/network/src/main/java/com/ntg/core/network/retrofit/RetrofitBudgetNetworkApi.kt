@@ -1,5 +1,9 @@
 package com.ntg.core.network.retrofit
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.webkit.MimeTypeMap
 import com.google.gson.Gson
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
@@ -11,8 +15,10 @@ import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.SessionsResItem
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
+import com.ntg.core.model.res.UploadAvatarRes
 import com.ntg.core.model.res.UserInfo
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
@@ -20,16 +26,17 @@ import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.BudgetNetworkDataSource
 import com.ntg.core.network.NetworkBoundResource
 import com.ntg.core.network.model.ResponseBody
+import com.ntg.core.network.model.Result
 import com.ntg.core.network.service.BudgetService
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
-import com.ntg.core.network.model.Result
 import javax.inject.Singleton
 
 
 @Singleton
-internal class RetrofitBudgetNetwork @Inject constructor(
+class RetrofitBudgetNetwork @Inject constructor(
     private val apiService: BudgetService,
     private val networkBoundResources: NetworkBoundResource,
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -146,6 +153,47 @@ internal class RetrofitBudgetNetwork @Inject constructor(
     override suspend fun getUser(): Flow<Result<UserInfo>> {
         return networkBoundResources.downloadData(ioDispatcher) {
             apiService.getUser()
+        }
+    }
+
+    override suspend fun uploadAvatar(image: Bitmap, mimeType: String): Flow<Result<UploadAvatarRes>> {
+         return networkBoundResources.downloadData(ioDispatcher) {
+
+            val bOut = ByteArrayOutputStream()
+
+            // Set the compression format based on the MIME type
+            val format = if (mimeType == "image/png") Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG
+            image.compress(format, 100, bOut)
+
+            // Encode image to base64
+            val base64Image = Base64.encodeToString(bOut.toByteArray(), Base64.DEFAULT)
+            val base64ImageWithPrefix = "data:$mimeType;base64,$base64Image"
+
+            apiService.uploadAvatar(base64ImageWithPrefix)
+        }
+    }
+
+    override suspend fun updateUserInfo(name: String, username: String): Flow<Result<ResponseBody<String?>>> {
+        return networkBoundResources.downloadData(ioDispatcher) {
+            apiService.uploadUserData(name, username)
+        }
+    }
+
+    override suspend fun getSessionsList(): Flow<Result<List<SessionsResItem>>> {
+        return networkBoundResources.downloadData(ioDispatcher) {
+            apiService.sessionsList()
+        }
+    }
+
+    override suspend fun terminateAllSessions(): Flow<Result<ResponseBody<String?>>> {
+        return networkBoundResources.downloadData(ioDispatcher) {
+            apiService.terminateAllSessions()
+        }
+    }
+
+    override suspend fun terminateSession(sessionId: String): Flow<Result<ResponseBody<String?>>> {
+        return networkBoundResources.downloadData(ioDispatcher) {
+            apiService.terminateSession(sessionId)
         }
     }
 }

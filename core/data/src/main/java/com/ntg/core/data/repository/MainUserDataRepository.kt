@@ -22,4 +22,13 @@ internal class MainUserDataRepository @Inject constructor(
         sharedPreferences.edit().clear().apply()
         budgetPreferencesDataSource.setLogout()
     }
+
+    override suspend fun saveUserBasicData(
+        name: String,
+        email: String,
+        phone: String,
+        image: String
+    ) {
+        budgetPreferencesDataSource.saveBasicUserData(name, email, phone, image)
+    }
 }
