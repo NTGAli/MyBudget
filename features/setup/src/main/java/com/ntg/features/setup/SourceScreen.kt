@@ -78,7 +78,7 @@ fun WalletRoute(
 
     sharedViewModel.setExpand.postValue(true)
     val context = LocalContext.current
-    sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
+    sharedViewModel.bottomNavTitle.postValue(stringResource(id = R.string.submit))
     var wallet by remember {
         mutableStateOf<Wallet?>(null)
     }
@@ -183,7 +183,7 @@ fun WalletRoute(
                             onBack()
                         } else {
                             scope.launch {
-                                onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null, null)
+                                onShowSnackbar(R.string.err_in_submit, null, null)
                             }
                         }
                     }
@@ -697,7 +697,7 @@ private fun BankCardView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
-                    text = stringResource(id = com.ntg.feature.setup.R.string.submit),
+                    text = stringResource(id = R.string.submit),
                     size = ButtonSize.MD
                 ) {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {

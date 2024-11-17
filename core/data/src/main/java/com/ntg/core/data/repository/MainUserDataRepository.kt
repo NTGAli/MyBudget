@@ -1,6 +1,8 @@
 package com.ntg.core.data.repository
 
 import android.content.SharedPreferences
+import com.nt.com.core.datastore.ThemeStatus
+import com.ntg.core.model.ThemeState
 import com.ntg.core.model.UserData
 import com.ntg.mybudget.core.datastore.BudgetPreferencesDataSource
 import kotlinx.coroutines.flow.Flow
@@ -30,5 +32,15 @@ internal class MainUserDataRepository @Inject constructor(
         image: String
     ) {
         budgetPreferencesDataSource.saveBasicUserData(name, email, phone, image)
+    }
+
+    override suspend fun changeTheme(themeState: ThemeState) {
+        budgetPreferencesDataSource.saveThemeChange(themeState.toThemeStatus())
+    }
+
+    private fun ThemeState.toThemeStatus(): ThemeStatus = when (this) {
+        ThemeState.Default -> ThemeStatus.Default
+        ThemeState.Light -> ThemeStatus.Light
+        ThemeState.Dark -> ThemeStatus.Dark
     }
 }

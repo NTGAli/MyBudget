@@ -40,7 +40,7 @@ import com.ntg.core.mybudget.common.getCountryFromPhoneNumber
 import com.ntg.core.mybudget.common.getCountryFullNameFromPhoneNumber
 import com.ntg.core.mybudget.common.isValidIranianPhoneNumber
 import com.ntg.core.network.model.Result
-import com.ntg.feature.login.R
+import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

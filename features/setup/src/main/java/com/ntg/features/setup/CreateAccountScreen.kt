@@ -26,7 +26,7 @@ import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.model.Account
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
-import com.ntg.feature.setup.R
+import com.ntg.mybudget.core.designsystem.R
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import kotlinx.coroutines.launch
 

@@ -40,13 +40,14 @@ import androidx.lifecycle.flowWithLifecycle
 import com.ntg.core.network.model.Result
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.ButtonType
+import com.ntg.core.designsystem.components.CustomDivider
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SessionItem
 import com.ntg.core.designsystem.components.SessionItemShimmer
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.res.SessionsResItem
 import com.ntg.core.mybudget.common.convertDateTime
-import com.ntg.feature.profile.R
+import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 
 @Composable
@@ -198,11 +199,7 @@ fun TerminateAllButton(
         onTerminateAll()
     }
 
-    HorizontalDivider(
-        thickness = 8.dp,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        modifier = Modifier.padding(top = 4.dp)
-    )
+    CustomDivider(modifier = Modifier.padding(top = 4.dp))
 
     Text(
         text = stringResource(id = R.string.OtherSessions),

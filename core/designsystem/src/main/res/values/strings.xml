@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ResourceName">
     <string name="income">ورودی</string>
     <string name="outcome">خروجی</string>
     <string name="internal_transfer">جیب به جیب</string>
@@ -48,4 +48,86 @@
     <string name="fee">کارمزد</string>
     <string name="MySession">شما</string>
 
+    // home
+    <string name="items_format">%s مورد</string>
+    <string name="transactions">تراکنش ها</string>
+    <string name="new_transaction">تراکنش جدید</string>
+    <string name="user_account">حساب کاربری</string>
+    <string name="exit">خروج</string>
+    <string name="err_min_resource">حداقل باید یک منبع خرج انتخاب شود.</string>
+    <string name="tags">برچسب ها</string>
+    <string name="people">اشخاص</string>
+    <string name="images">تصاویر</string>
+    <string name="description">توضیحات</string>
+    <string name="err_negetive_number">مقدار وارد شده صحیح نمی باشد.</string>
+    <string name="submit_first_transacton">ثبت اولین تراکنش</string>
+    <string name="err_non_transacton">تراکنشی وارد نشده!</string>
+    <string name="err_amount">مقدار تراکنش باید بالای 0 باشد!</string>
+    <string name="err_input_source">هیچ منبع خرجی انتخاب نشده!</string>
+    <string name="err_input_category">هیچ دسته بندی انتخاب نشده!</string>
+    <string name="err_not_impelemnted">این کار داره</string>
+
+    // login
+    <string name="login_with_phone">ورود با شماره ی تلفن</string>
+    <string name="choose_country_text">لطفا کشور خود را انتخاب کرده و شماره ی خود را وارد نمایید.</string>
+    <string name="country">کشور</string>
+    <string name="entere_code">کد خود را وارد نمایید</string>
+    <string name="sent_code_format">ما یک پیامک حاوی کد تایید رو به شماره ی %s ارسال کردیم.</string>
+    <string name="send_code">ارسال کد</string>
+    <string name="recieve_code">دریافت کد</string>
+    <string name="choose_your_countries">کشور خود را انتخاب کنید</string>
+    <string name="err">خطایی رخ داده است.</string>
+    <string name="err_invalid_code">کد وارد شده اشتباه است!</string>
+    <string name="err_fetch_data">خطایی رخ داده!</string>
+
+    // profile
+    <string name="UserAccount">حساب کاربری</string>
+    <string name="ActiveSessions">نشست های فعال</string>
+    <string name="AppUi">ظاهر برنامه</string>
+    <string name="Notifications">اعلان ها</string>
+    <string name="BankMessages">پیامک های بانکی</string>
+    <string name="Update">به روزرسانی</string>
+    <string name="AboutApp">درباره ی اپ</string>
+    <string name="RulesAndRegulations">قوانین و مقررات</string>
+    <string name="AppVertion">نسخه ⁨%s⁩ اندروید</string>
+    <string name="UserEmail">ایمیل کاربر</string>
+    <string name="UserName">نام کاربر</string>
+    <string name="UserProfile">پروفایل کاربری</string>
+    <string name="Name">نام و نام خانوادگی</string>
+    <string name="PhoneNumber">شماره تلفن</string>
+    <string name="Email">ایمیل</string>
+    <string name="Submit">ثبت</string>
+    <string name="ImageUploaded">تصویر با موفقیت آپدیت شد.</string>
+    <string name="ImageUploadedFailed">اشکال در آپلود تصویر</string>
+    <string name="UserInfoUpdated">اطلاعات با موفقیت آپدیت شد.</string>
+    <string name="UpdateUserInfoFailed">اشکال در بروزرسانی اطلاعات</string>
+    <string name="RemoveOtherSessions">حذف سایر نشست ها</string>
+    <string name="OtherSessions">سایر نشست ها</string>
+    <string name="NoActiveSessions">نشست فعالی وجود ندارد.</string>
+    <string name="SessionsTerminate">نشست با موفقیت حذف شد.</string>
+    <string name="SessionsTerminateFailed">نشست حذف با خطا مواجه شد.</string>
+    <string name="GetDataFailed">مشکل در دریافت اطلاعت</string>
+
+    // setup
+    <string name="createAccount">ایحاد حساب</string>
+    <string name="account">حساب</string>
+    <string name="save">ذخیره</string>
+    <string name="account_name">اسم حساب</string>
+    <string name="err_in_submit">خطا در ثبت</string>
+    <string name="err_empty_account_name">نام اکانت وارد نشده</string>
+    <string name="err_no_aacount">حداقل یک حساب وارد کنید.</string>
+    <string name="err_no_sources">حداقل یک منبع خرج وارد کنید.</string>
+    <string name="delete_account">حذف اکانت</string>
+    <string name="delete_account_desc">با حذف اکانت، تمام منابع خرج و تراکنش های مربوط به آن حذف خواهد شد.</string>
+    <string name="delete_source">حذف منبع خرج</string>
+    <string name="delete_source_desc">تمام تراکنش های مربوط به این منبع خرج نیز حذف خواهد شد.</string>
+    <string name="deleting_deafult_account">حذف اکانت پیشفرض امکان پذیر نیست.</string>
+    <string name="currency">واحدهای مالی</string>
+
+    // appearance
+    <string name="AppTheme">تم برنامه</string>
+    <string name="DeviseDefault">پیشفرض گوشی</string>
+    <string name="LightTheme">روشن</string>
+    <string name="DarkTheme">تاریک</string>
+    <string name="Language">زبان</string>
 </resources>

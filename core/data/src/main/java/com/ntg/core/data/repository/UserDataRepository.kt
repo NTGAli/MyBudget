@@ -1,5 +1,6 @@
 package com.ntg.core.data.repository
 
+import com.ntg.core.model.ThemeState
 import com.ntg.core.model.UserData
 import kotlinx.coroutines.flow.Flow
 
@@ -12,4 +13,6 @@ interface UserDataRepository {
     suspend fun logout()
 
     suspend fun saveUserBasicData(name: String, email: String, phone: String, image: String)
+
+    suspend fun changeTheme(themeState: ThemeState)
 }

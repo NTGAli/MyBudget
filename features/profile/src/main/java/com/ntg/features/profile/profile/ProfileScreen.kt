@@ -28,7 +28,7 @@ import com.ntg.core.model.ProfileActions
 import com.ntg.core.model.res.UserInfo
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.orDefault
-import com.ntg.feature.profile.R
+import com.ntg.mybudget.core.designsystem.R
 
 @Composable
 fun ProfileRoute(
