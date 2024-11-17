@@ -39,7 +39,6 @@ import com.ntg.core.designsystem.model.PopupType
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.SourceType
-import com.ntg.core.model.SourceTypes
 import com.ntg.core.mybudget.common.getCardDetailsFromAssets
 import com.ntg.core.mybudget.common.mask
 import com.ntg.mybudget.core.designsystem.R
@@ -83,25 +82,28 @@ fun AccountSection(
                 onAccountSelect.invoke(account.accountId)
             }
         ) {
-            if (canEdit) {
-                Popup(popupItems = listOf(
-                    PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
-                    PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
-                    if (it == 1) {
-                        accountEndIconClick(account.accountId)
-                    } else if (it == 2) {
-                        deleteAccount(account.accountId)
-                    }
+            Popup(popupItems = listOf(
+                PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
+                PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
+                if (it == 1) {
+                    accountEndIconClick(account.accountId)
+                } else if (it == 2) {
+                    deleteAccount(account.accountId)
                 }
-            } else {
-                IconButton(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .size(32.dp),
-                    onClick = { expaned = !expaned }
-                ) {
-                    Icon(painter = painterResource(id = BudgetIcons.directionDown), contentDescription = "wallet icon")
-                }
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            IconButton(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(32.dp),
+                onClick = { expaned = !expaned }
+            ) {
+                Icon(
+                    painter = painterResource(id = BudgetIcons.directionDown),
+                    contentDescription = "wallet icon"
+                )
             }
         }
 
@@ -109,15 +111,15 @@ fun AccountSection(
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
             account.sources.forEach { source ->
 
-                val subTitle = if (source?.sourceType is SourceType.BankCard) (source.sourceType as SourceType.BankCard).number.mask("#### #### #### ####")
+                val subTitle = if (source?.data is SourceType.BankCard) (source.data as SourceType.BankCard).number.mask("#### #### #### ####")
                 else ""
 
-                val title = if (source?.sourceType is SourceType.BankCard){
+                val title = if (source?.data is SourceType.BankCard){
                     val bandData = getCardDetailsFromAssets(context,
-                        (source.sourceType as SourceType.BankCard).number)
+                        (source.data as SourceType.BankCard).number)
                     if (bandData != null){
                         "${bandData.bank_title} - ${
-                            (source.sourceType as SourceType.BankCard).number.takeLast(4)
+                            (source.data as SourceType.BankCard).number.takeLast(4)
                         }"
                     }else stringResource(id = R.string.bank_card)
                 }
@@ -130,23 +132,17 @@ fun AccountSection(
                         subtitle = subTitle,
                         canEdit = canEdit,
                         type = source?.type ?: 0,
+                        isChecked = selectedSources.contains(source?.id ?: -1),
                         onCLick = { onSourceSelect.invoke(source?.id ?: -1) }
                     ) {
-                        if (canEdit){
-                            Popup(popupItems = listOf(
-                                PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
-                                PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
-                                if (it == 1) {
-                                    onSourceEdit(source?.id ?: -1)
-                                }else if (it == 2){
-                                    deleteSource(source?.id ?: -1)
-                                }
+                        Popup(popupItems = listOf(
+                            PopupItem(1, BudgetIcons.Pen, stringResource(id = R.string.edit)),
+                            PopupItem(2, BudgetIcons.trash, stringResource(id = R.string.delete), type = PopupType.Error))){
+                            if (it == 1) {
+                                onSourceEdit(source?.id ?: -1)
+                            }else if (it == 2){
+                                deleteSource(source?.id ?: -1)
                             }
-                        } else {
-                            RadioCheck(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                isChecked = selectedSources.contains(source?.id ?: -1), isCircle = false
-                            )
                         }
                     }
                 }
@@ -172,7 +168,7 @@ private fun Item(
     canEdit: Boolean,
     isHeader: Boolean = false,
     onCLick: () -> Unit,
-    endItem: @Composable () -> Unit
+    endItem: @Composable () -> Unit,
 ) {
 
     val context = LocalContext.current
@@ -186,11 +182,14 @@ private fun Item(
 
         if (isHeader && !canEdit) {
             RadioCheck(
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
                 isChecked = isChecked, isCircle = isHeader
             )
         } else {
-            Spacer(modifier = Modifier.padding(start = 16.dp))
+            RadioCheck(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                isChecked = isChecked, isCircle = false
+            )
         }
 
         if (isImage){
@@ -256,7 +255,7 @@ private fun Item(
 
         Column(
             modifier = Modifier
-                .weight(1f)
+                .then(if (!isHeader) Modifier.weight(1f) else Modifier)
                 .padding(start = 12.dp, end = 8.dp)
         ) {
 

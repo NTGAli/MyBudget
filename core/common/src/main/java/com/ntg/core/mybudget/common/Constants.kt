@@ -24,6 +24,7 @@ object Constants {
         const val EXPENSE = 0
         const val INCOME = 1
         const val TRANSFER = 2
+        const val INIT = 3
     }
 
 }

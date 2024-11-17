@@ -15,6 +15,8 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.designsystem)
     implementation(projects.core.common)
+    implementation(projects.sync.work)
+
 
     implementation(libs.gson)
 

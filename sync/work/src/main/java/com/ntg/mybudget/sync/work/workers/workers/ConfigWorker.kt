@@ -6,7 +6,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
-import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.ConfigRepository
 import com.ntg.mybudget.sync.work.workers.initializers.SyncConstraints
@@ -19,13 +18,13 @@ class ConfigWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val configRepository: ConfigRepository,
-    private val bankCardRepository: BankCardRepository
+    private val bankRepository: BankCardRepository
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
         configRepository.updateConfigs()
-        val localBankCount = bankCardRepository.getLocalBankCount()
+        val localBankCount = bankRepository.getLocalBankCount()
         if (localBankCount == 0){
-            bankCardRepository.getUserLocalBanks().collect()
+            bankRepository.getUserLocalBanks().collect()
         }
         return Result.success()
     }

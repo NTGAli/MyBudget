@@ -28,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -74,7 +75,9 @@ import com.ntg.core.designsystem.components.AccountSelector
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
+import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
+import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.CardReport
 import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.DateDivider
@@ -95,6 +98,8 @@ import com.ntg.core.model.Contact
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.Wallet
+import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
@@ -126,6 +131,7 @@ fun HomeRoute(
     sharedViewModel.setExpand.postValue(expandTransaction.value)
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val accounts =
         homeViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -137,6 +143,8 @@ fun HomeRoute(
         homeViewModel.getBankLogoColor()
             .collectAsStateWithLifecycle(initialValue = null).value?.value
     val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
+    val localBanks =
+        homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList())
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
 
@@ -152,6 +160,7 @@ fun HomeRoute(
             expandTransaction,
             logoUrlColor,
             categories.value,
+            localBanks,
             navigateToSource,
             navigateToAccount,
             onShowSnackbar,
@@ -163,6 +172,12 @@ fun HomeRoute(
                 homeViewModel.updatedSelectedSources(sourcesId)
             }, onTransactionChanged = {
                 transaction = it
+            }, deleteWallet = {
+                homeViewModel.tempRemoveWallet(it, context)
+            }, deleteAccount = {
+                homeViewModel.deleteAccount(it, context = context)
+            }, editAccount = {
+                navigateToAccount(it)
             })
     }
 
@@ -178,7 +193,7 @@ fun HomeRoute(
                     }
                     else if (transaction?.type == Constants.BudgetType.TRANSFER){
                         scope.launch {
-                            onShowSnackbar(R.string.err_not_impelemnted, null, com.ntg.mybudget.core.designsystem.R.raw.shy2)
+//                            onShowSnackbar(R.string.err_not_impelemnted, null, com.ntg.mybudget.core.designsystem.R.raw.shy2)
                         }
                     }
                     else if (transaction?.amount.orDefault() <= 0L){
@@ -213,17 +228,21 @@ fun HomeRoute(
 private fun HomeScreen(
     accounts: State<List<AccountWithSources>?>,
     currentAccount: AccountWithSources,
-    currentResource: List<SourceWithDetail>?,
+    currentResource: List<Wallet>?,
     transactions: State<List<Transaction>?>,
     expandTransaction: MutableState<Boolean>,
     logoUrl: String? = null,
     categories: List<Category>? = null,
+    localBanks:State<List<Bank>?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
     onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit,
-    onTransactionChanged:(Transaction) -> Unit
+    onTransactionChanged:(Transaction) -> Unit,
+    deleteAccount: (id: Int) -> Unit,
+    deleteWallet: (id: Int) -> Unit,
+    editAccount: (id: Int) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -259,7 +278,16 @@ private fun HomeScreen(
                 navigateToAccount,
                 onShowSnackbar,
                 onUpdateSelectedAccount,
-                onUpdateSelectedSource
+                onUpdateSelectedSource,
+                deleteWallet = {
+                    deleteWallet(it)
+                },
+                deleteAccount = {
+                    deleteAccount(it)
+                },
+                editAccount = {
+                    editAccount(it)
+                }
             )
         }) { padding ->
 
@@ -366,7 +394,7 @@ private fun HomeScreen(
 
     }
 
-    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories, onShowSnackbar) {
+    InsertTransactionView(expandTransaction, currentResource, logoUrl, categories,localBanks, onShowSnackbar) {
         onTransactionChanged(it)
     }
 
@@ -376,9 +404,10 @@ private fun HomeScreen(
 @Composable
 fun InsertTransactionView(
     expandTransaction: MutableState<Boolean>,
-    currentResource: List<SourceWithDetail>?,
+    currentResource: List<Wallet>?,
     logoUrl: String?,
     categories: List<Category>?,
+    localBanks:State<List<Bank>?>,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onTransactionChange: (Transaction) -> Unit
 ) {
@@ -391,11 +420,11 @@ fun InsertTransactionView(
     val tag = remember { mutableStateOf("") }
 
     var selectedSource by remember {
-        mutableStateOf<SourceWithDetail?>(null)
+        mutableStateOf<Wallet?>(null)
     }
 
     var secondSource by remember {
-        mutableStateOf<SourceWithDetail?>(null)
+        mutableStateOf<Wallet?>(null)
     }
 
     var selectedCategory by remember {
@@ -603,8 +632,8 @@ fun InsertTransactionView(
                     text = remember(selectedSource) {
                         if (selectedSource != null){
                             mutableStateOf(
-                                "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                    (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                "${(selectedSource?.data as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                    (selectedSource?.data as SourceType.BankCard).number.takeLast(
                                         4
                                     )
                                 }"
@@ -635,8 +664,8 @@ fun InsertTransactionView(
                         text = remember(selectedSource) {
                             if (selectedSource != null){
                                 mutableStateOf(
-                                    "${(selectedSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                        (selectedSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                    "${(selectedSource?.data as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                        (selectedSource?.data as SourceType.BankCard).number.takeLast(
                                             4
                                         )
                                     }"
@@ -663,8 +692,8 @@ fun InsertTransactionView(
                         text = remember(secondSource) {
                             if (secondSource != null){
                                 mutableStateOf(
-                                    "${(secondSource?.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                        (secondSource?.sourceType as SourceType.BankCard).number.takeLast(
+                                    "${(secondSource?.data as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                        (secondSource?.data as SourceType.BankCard).number.takeLast(
                                             4
                                         )
                                     }"
@@ -950,10 +979,10 @@ fun InsertTransactionView(
                     LazyColumn {
                         items(currentResource.orEmpty()) {
                             var logoName = ""
-                            val data = if (it.sourceType is SourceType.BankCard) {
-                                logoName = (it.sourceType as SourceType.BankCard).logoName.orEmpty()
-                                "${(it.sourceType as SourceType.BankCard).nativeName.orEmpty()} - ${
-                                    (it.sourceType as SourceType.BankCard).number.takeLast(
+                            val data = if (it.data is SourceType.BankCard) {
+                                logoName = (it.data as SourceType.BankCard).logoName.orEmpty()
+                                "${(it.data as SourceType.BankCard).nativeName.orEmpty()} - ${
+                                    (it.data as SourceType.BankCard).number.takeLast(
                                         4
                                     )
                                 }"
@@ -985,17 +1014,6 @@ fun InsertTransactionView(
 
                 2 -> {
                     LazyColumn {
-
-//                        item {
-//                            Text(
-//                                modifier = Modifier
-//                                    .padding(start = 16.dp)
-//                                    .padding(vertical = 8.dp),
-//                                text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.expenses),
-//                                style = MaterialTheme.typography.titleMedium
-//                            )
-//                        }
-
                         items(categories.orEmpty().filter { it.type == budgetType }) {
                             SampleItem(
                                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -1008,29 +1026,6 @@ fun InsertTransactionView(
                                 }
                             }
                         }
-
-//                        item {
-//                            Text(
-//                                modifier = Modifier
-//                                    .padding(start = 16.dp)
-//                                    .padding(vertical = 8.dp),
-//                                text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.income),
-//                                style = MaterialTheme.typography.titleMedium
-//                            )
-//                        }
-//
-//                        items(categories.orEmpty().filter { it.type == 1 }) {
-//                            SampleItem(
-//                                modifier = Modifier.padding(horizontal = 8.dp),
-//                                title = it.name, setRadio = true,
-//                                isRadioCheck = selectedCategory == it
-//                            ) {
-//                                selectedCategory = it
-//                                scope.launch {
-//                                    sheetState.hide()
-//                                }
-//                            }
-//                        }
 
                     }
                 }
@@ -1301,17 +1296,27 @@ fun DateItem(
 fun AccountSelectorSheet(
     accounts: State<List<AccountWithSources>?>,
     currentAccount: AccountWithSources,
-    currentResource: List<SourceWithDetail>?,
+    currentResource: List<Wallet>?,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
-    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit
+    onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit,
+    deleteAccount: (id: Int) -> Unit,
+    deleteWallet: (id: Int) -> Unit,
+    editAccount: (id: Int) -> Unit,
 ) {
 
     var selectedAccountId by remember { mutableIntStateOf(currentAccount.accountId) }
     val selectedResources = remember { mutableStateListOf<Int>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogTitle by remember { mutableStateOf("") }
+    var dialogDiscription by remember { mutableStateOf("") }
+    var selectedAccount by remember { mutableStateOf<Int?>(null) }
+    var selectedWallet by remember { mutableStateOf<Int?>(null) }
+
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         currentResource?.forEach {
@@ -1337,6 +1342,9 @@ fun AccountSelectorSheet(
                     },
                     onSourceEdit = { sourceId ->
                         navigateToSource(account.accountId, sourceId)
+                    },
+                    accountEndIconClick = {
+                        editAccount(it)
                     },
                     onAccountSelect = { accountId ->
                         selectedAccountId = accountId
@@ -1371,6 +1379,24 @@ fun AccountSelectorSheet(
                             selectedResources.add(sourceId)
                         }
                         onUpdateSelectedSource.invoke(selectedResources)
+                    },
+                    deleteSource = {
+                        showDialog = true
+                        dialogTitle = context.getString(R.string.delete_source)
+                        dialogDiscription = context.getString(R.string.delete_source_desc)
+                        selectedWallet = it
+                    }, deleteAccount = {
+                        if (!account.isDefault) {
+                            showDialog = true
+                            selectedAccount = account.accountId
+                            dialogTitle = context.getString(R.string.delete_account)
+                            dialogDiscription =
+                                context.getString(R.string.delete_account_desc)
+                        } else {
+                            scope.launch {
+                                onShowSnackbar(R.string.deleting_deafult_account, null, null)
+                            }
+                        }
                     })
             }
         }
@@ -1405,6 +1431,44 @@ fun AccountSelectorSheet(
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                selectedAccount = null
+                selectedWallet = null
+                showDialog = false
+            },
+            title = { Text(dialogTitle) },
+            text = { Text(dialogDiscription) },
+            confirmButton = {
+                BudgetButton(
+                    text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.delete),
+                    type = ButtonType.Error,
+                    size = ButtonSize.MD,
+                    style = ButtonStyle.TextOnly
+                ) {
+                    showDialog = false
+                    if (selectedAccount != null) {
+                        deleteAccount(selectedAccount!!)
+                    }else if (selectedWallet != null){
+                        deleteWallet(selectedWallet!!)
+                    }
+                }
+            },
+            dismissButton = {
+                BudgetButton(
+                    text = stringResource(id = com.ntg.mybudget.core.designsystem.R.string.cancel),
+                    size = ButtonSize.MD,
+                    style = ButtonStyle.TextOnly
+                ) {
+                    showDialog = false
+                    selectedAccount = null
+                    selectedWallet = null
+                }
+            },
+        )
     }
 }
 

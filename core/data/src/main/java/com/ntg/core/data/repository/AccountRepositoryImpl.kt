@@ -2,8 +2,7 @@ package com.ntg.core.data.repository
 
 import android.util.Log
 import com.ntg.core.database.dao.AccountDao
-import com.ntg.core.database.dao.BankCardDao
-import com.ntg.core.database.dao.SourceExpenditureDao
+import com.ntg.core.database.dao.WalletsDao
 import com.ntg.core.database.dao.TransactionsDao
 import com.ntg.core.database.dao.WalletDao
 import com.ntg.core.database.model.AccountEntity
@@ -13,8 +12,7 @@ import com.ntg.core.database.model.asWalletType
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
-import com.ntg.core.model.SourceType
-import com.ntg.core.model.SourceWithDetail
+import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
@@ -30,8 +28,7 @@ import javax.inject.Inject
 class AccountRepositoryImpl @Inject constructor(
     @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     private val accountDao: AccountDao,
-    private val sourceDao: SourceExpenditureDao,
-    private val bankCardDao: BankCardDao,
+    private val sourceDao: WalletsDao,
     private val transactionsDao: TransactionsDao,
     private val network: BudgetNetworkDataSource,
     private val walletDao: WalletDao
@@ -89,36 +86,14 @@ class AccountRepositoryImpl @Inject constructor(
                             sources = if (sources.first().sourceId != null){
                                 sources.map { row ->
                                     logd("getAccountBySources ::: $row")
-                                    val sourceType = when (row.type) {
-                                        1 -> {
-                                            if (row.number != null){
-                                                SourceType.BankCard(
-                                                    id = row.bankId ?: -1,
-                                                    number = row.number ?: "",
-                                                    cvv = row.cvv ?: "",
-                                                    date = row.expire ?: "",
-                                                    name = row.name.orEmpty(),
-                                                    sheba = row.sheba.orEmpty(),
-                                                    accountNumber = row.accountNumber.orEmpty()
-                                                )
-                                            }else null
-                                        }
-
-                                        2 -> SourceType.Gold(
-                                            value = row.value ?: 0.0,
-                                            weight = row.weight ?: 0.0
-                                        )
-
-                                        else -> null
-
-                                    }
-                                    if (sourceType != null){
-                                        SourceWithDetail(
+                                    if (row.data != null){
+                                        Wallet(
                                             id = row.sourceId ?: 0,
                                             accountId = row.accountId,
                                             type = row.type ?: 0,
-                                            name = row.name ?: "",
-                                            sourceType = sourceType
+//                                            name = row.name ?: "",
+                                            isSelected = true,
+                                            data = row.data
                                         )
                                     }else null
                                 }
@@ -142,36 +117,15 @@ class AccountRepositoryImpl @Inject constructor(
                             isDefault = sources.first().isDefaultAccount,
                             sources = if (sources.first().sourceId != null){
                                 sources.map { row ->
-                                    val sourceType = when (row.type) {
-                                        1 -> {
-                                            if (row.number != null){
-                                                SourceType.BankCard(
-                                                    id = row.bankId ?: -1,
-                                                    number = row.number ?: "",
-                                                    cvv = row.cvv ?: "",
-                                                    date = row.expire ?: "",
-                                                    name = row.name.orEmpty(),
-                                                    sheba = row.sheba.orEmpty(),
-                                                    accountNumber = row.accountNumber.orEmpty()
-                                                )
-                                            }else null
-                                        }
-
-                                        2 -> SourceType.Gold(
-                                            value = row.value ?: 0.0,
-                                            weight = row.weight ?: 0.0
-                                        )
-
-                                        else -> null
-
-                                    }
-                                    if (sourceType != null){
-                                        SourceWithDetail(
+                                    logd("getAccountBySources ::: $row")
+                                    if (row.data != null){
+                                        Wallet(
                                             id = row.sourceId ?: 0,
                                             accountId = row.accountId,
                                             type = row.type ?: 0,
-                                            name = row.name ?: "",
-                                            sourceType = sourceType
+//                                            name = row.name ?: "",
+                                            isSelected = true,
+                                            data = row.data
                                         )
                                     }else null
                                 }
@@ -269,10 +223,7 @@ class AccountRepositoryImpl @Inject constructor(
 
     private suspend fun deleteAccountData(accountId: Int){
         accountDao.forceDelete(accountId)
-        sourceDao.getSources(accountId).forEach {
-            if (it.type == 1){
-                bankCardDao.forceDelete(sourceId = it.id)
-            }
+        sourceDao.getSources(accountId).forEach { _ ->
             sourceDao.forceDeleteByAccountId(accountId = accountId)
             transactionsDao.deleteByAccount(accountId = accountId)
         }

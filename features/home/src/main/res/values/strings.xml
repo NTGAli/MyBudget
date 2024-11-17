@@ -17,4 +17,9 @@
     <string name="err_input_source">هیچ منبع خرجی انتخاب نشده!</string>
     <string name="err_input_category">هیچ دسته بندی انتخاب نشده!</string>
     <string name="err_not_impelemnted">این کار داره</string>
+    <string name="delete_account">حذف اکانت</string>
+    <string name="delete_account_desc">با حذف اکانت، تمام منابع خرج و تراکنش های مربوط به آن حذف خواهد شد.</string>
+    <string name="deleting_deafult_account">حذف اکانت پیشفرض امکان پذیر نیست.</string>
+    <string name="delete_source">حذف منبع خرج</string>
+    <string name="delete_source_desc">تمام تراکنش های مربوط به این منبع خرج نیز حذف خواهد شد.</string>
 </resources>

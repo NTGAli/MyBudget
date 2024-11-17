@@ -1,40 +1,45 @@
 package com.ntg.features.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
+import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.CategoryRepository
 import com.ntg.core.data.repository.ConfigRepository
-import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepository
-import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.Wallet
+import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.ServerConfig
-import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.Constants
+import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
-    private val sourceRepository: SourceExpenditureRepository,
+    private val sourceRepository: WalletsRepository,
     private val transactionsRepository: TransactionsRepository,
     private val categoryRepository: CategoryRepository,
-    private val configRepository: ConfigRepository
-): ViewModel() {
+    private val configRepository: ConfigRepository,
+    private val bankCardRepository: BankCardRepository,
+    ): ViewModel() {
 
-    private val _walletTypes = MutableStateFlow<List<SourceWithDetail>?>(emptyList())
+    private val _walletTypes = MutableStateFlow<List<Wallet>?>(emptyList())
     private val _categories = MutableStateFlow<List<Category>?>(emptyList())
+    private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
+
 
     fun selectedAccount() = accountRepository.getSelectedAccount()
 
-    fun selectedSources(): MutableStateFlow<List<SourceWithDetail>?> {
+    fun selectedSources(): MutableStateFlow<List<Wallet>?> {
         viewModelScope.launch {
             sourceRepository.getSelectedSources().collect{
                 _walletTypes.value = it
@@ -77,4 +82,31 @@ class HomeViewModel @Inject constructor(
             transactionsRepository.insertNewTransaction(transaction)
         }
     }
+    fun getLocalUserBanks(): MutableStateFlow<List<Bank>?> {
+        viewModelScope.launch {
+            bankCardRepository.getUserLocalBanks().collect{
+                _localUserBanks.value = it
+            }
+        }
+        return _localUserBanks
+    }
+
+    fun tempRemoveWallet(sourceId: Int, context: Context?) {
+        viewModelScope.launch {
+            sourceRepository.tempRemove(sourceId)
+        }
+        if (context != null) {
+            Sync.initialize(context = context)
+        }
+    }
+
+    fun deleteAccount(accountId: Int, context: Context? = null){
+        viewModelScope.launch {
+            accountRepository.delete(accountId)
+        }
+        if (context != null) {
+            Sync.initialize(context = context)
+        }
+    }
+
 }
