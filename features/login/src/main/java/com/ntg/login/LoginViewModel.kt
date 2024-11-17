@@ -6,13 +6,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.AccountRepository
-import com.ntg.core.data.repository.BankCardRepository
-import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.model.Account
-import com.ntg.core.model.SourceExpenditure
-import com.ntg.core.model.SourceType
+import com.ntg.core.model.Wallet
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.ServerAccount
@@ -36,8 +34,8 @@ class LoginViewModel
         private val authRepository: AuthRepository,
         private val sharedPreferences: SharedPreferences,
         private val accountRepository: AccountRepository,
-        private val bankCardRepository: BankCardRepository,
-        private val sourceRepository: SourceExpenditureRepository,
+//        private val bankCardRepository: BankCardRepository,
+        private val sourceRepository: WalletsRepository,
         @Dispatcher(BudgetDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     ) : ViewModel() {
 
@@ -121,16 +119,10 @@ class LoginViewModel
         }
     }
 
-    fun insertNewBankCard(
-        bankCard: SourceType.BankCard
-    ){
-        viewModelScope.launch {
-            bankCardRepository.insert(bankCard)
-        }
-    }
+
 
     fun insertNewSource(
-        source: SourceExpenditure
+        source: Wallet
     ){
         viewModelScope.launch {
             sourceRepository.insert(source)

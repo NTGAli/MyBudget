@@ -4,5 +4,5 @@ data class AccountWithSources(
     val accountId: Int,
     val accountName: String,
     val isDefault: Boolean,
-    val sources: List<SourceWithDetail?> = emptyList()
+    val sources: List<Wallet?> = emptyList()
 )

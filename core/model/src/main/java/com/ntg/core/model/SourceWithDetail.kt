@@ -14,8 +14,6 @@ data class SourceWithDetail(
 
 sealed class SourceType {
     data class BankCard (
-        val id: Int,
-        var sourceId: Int? = null,
         val number: String,
         val date: String?=null,
         val cvv: String? = null,

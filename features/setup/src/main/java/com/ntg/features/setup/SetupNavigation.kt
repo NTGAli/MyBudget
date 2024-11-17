@@ -43,7 +43,7 @@ fun NavGraphBuilder.setupScreen(
     navigateToHome: () -> Unit,
     navigateToCurrencies: () -> Unit,
     onBack:() -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToLogin:(Boolean) -> Unit
 ) {
 
@@ -66,7 +66,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel,setupViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
+        WalletRoute(sharedViewModel,setupViewModel, it.arguments?.getInt(AccountId_Arg) ?: 0, sourceId = it.arguments?.getInt(SourceId_Arg),onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
     }
 
     composable(
@@ -77,7 +77,7 @@ fun NavGraphBuilder.setupScreen(
             }
         )
     ) {
-        SourceRoute(sharedViewModel, setupViewModel,it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
+        WalletRoute(sharedViewModel, setupViewModel,it.arguments?.getInt(AccountId_Arg) ?: 0,onShowSnackbar = onShowSnackbar, onBack = onBack, navigateToCurrencies = navigateToCurrencies)
     }
 
     composable(

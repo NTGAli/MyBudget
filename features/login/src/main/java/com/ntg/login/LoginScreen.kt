@@ -50,7 +50,7 @@ fun LoginRoute(
     loginViewModel: LoginViewModel = hiltViewModel(),
     navigateToDetail: () -> Unit = {},
     navigateToCode: (String) -> Unit = {},
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ){
 
     sharedViewModel.setExpand.postValue(true)
@@ -73,7 +73,7 @@ fun LoginRoute(
         }
 
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
                 if (code.value.isEmpty() || phone.isEmpty() || getCountryFullNameFromPhoneNumber(
                         context,
                         code.value
@@ -96,7 +96,7 @@ fun LoginRoute(
                 is Result.Error -> {
                     sharedViewModel.setLoading.postValue(false)
                     scope.launch {
-                        onShowSnackbar.invoke(R.string.err, null)
+                        onShowSnackbar.invoke(R.string.err, null, null)
                     }
                 }
                 is Result.Loading -> {

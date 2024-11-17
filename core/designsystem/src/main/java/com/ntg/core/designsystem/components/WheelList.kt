@@ -27,6 +27,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ntg.core.designsystem.theme.outlineFonts
 
 @Composable
 fun <T> WheelList(
@@ -106,6 +107,7 @@ fun <T> WheelList(
                         style = textStyle,
                         color = textColorAnimated,
                         fontSize = textAnimated.sp,
+                        fontFamily = outlineFonts
                     )
                 }
             }

@@ -49,9 +49,8 @@ import com.ntg.core.designsystem.components.ExposedDropdownMenuSample
 import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.Wallet
 import com.ntg.core.model.SourceType
-import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
@@ -64,14 +63,15 @@ import androidx.compose.ui.platform.LocalContext
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.model.res.Currency
+import com.ntg.core.mybudget.common.orZero
 
 @Composable
-fun SourceRoute(
+fun WalletRoute(
     sharedViewModel: SharedViewModel,
     setupViewModel: SetupViewModel = hiltViewModel(),
     accountId: Int = 1,
     sourceId: Int? = null,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onBack: () -> Unit,
     navigateToCurrencies: () -> Unit
 ) {
@@ -79,8 +79,8 @@ fun SourceRoute(
     sharedViewModel.setExpand.postValue(true)
     val context = LocalContext.current
     sharedViewModel.bottomNavTitle.postValue(stringResource(id = com.ntg.feature.setup.R.string.submit))
-    var source by remember {
-        mutableStateOf<SourceExpenditure?>(null)
+    var wallet by remember {
+        mutableStateOf<Wallet?>(null)
     }
     var bankCard by remember {
         mutableStateOf<SourceType.BankCard?>(null)
@@ -100,7 +100,7 @@ fun SourceRoute(
         mutableStateOf<List<WalletType>?>(null)
     }
 
-    val editSource = setupViewModel.getSourcesById(sourceId ?: -1).collectAsStateWithLifecycle(
+    val editSource = setupViewModel.getWalletById(sourceId ?: -1).collectAsStateWithLifecycle(
         initialValue = null
     ).value
 
@@ -112,7 +112,7 @@ fun SourceRoute(
         setupViewModel.selectedCurrency.collectAsStateWithLifecycle(initialValue = null)
 
 
-    SourceScreen(
+    WalletScreen(
         editSource, onBack = onBack,
         deleteSource = {
             if (sourceId != null) {
@@ -130,7 +130,7 @@ fun SourceRoute(
         navigateToCurrencies = navigateToCurrencies,
         selectedCurrency = selectedCurrency.value
     ) { sourceValue, card, balance ->
-        source = sourceValue
+        wallet = sourceValue
         bankCard = card
         cardBalance = balance
     }
@@ -139,52 +139,51 @@ fun SourceRoute(
 
     LaunchedEffect(key1 = bankCard) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
 
                 when (sourceType) {
                     //Bank card
                     1 -> {
                         if (bankCard?.number.orEmpty().isEmpty()) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_empty_card_number, null)
+                                onShowSnackbar(R.string.err_empty_card_number, null, null)
                             }
                             return
                         } else if (bankCard?.number.orEmpty().length != 16) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_length_number, null)
+                                onShowSnackbar(R.string.err_length_number, null, null)
                             }
                             return
                         } else if (bankCard?.name.orEmpty().isEmpty()) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_empty_name, null)
+                                onShowSnackbar(R.string.err_empty_name, null, null)
                             }
                             return
                         } else if (cardBalance.isEmpty() && editSource == null) {
                             scope.launch {
-                                onShowSnackbar(R.string.err_balance_empty, null)
+                                onShowSnackbar(R.string.err_balance_empty, null, null)
                             }
                             return
                         }
 
                         if (editSource != null) {
-                            bankCard?.sourceId = sourceId
-                            setupViewModel.updateBankCard(bankCard!!, sourceId!!, context = context)
+                            editSource.data = bankCard
+                            setupViewModel.updateBankCard(editSource, context = context)
                             onBack()
-                        } else if (source != null && bankCard != null) {
-                            source?.accountId = accountId
-                            bankCard?.sourceId = source?.id
-                            setupViewModel.insertNewSource(source!!)
-                            setupViewModel.insertNewBankCard(bankCard!!)
+                        } else if (wallet != null && bankCard != null) {
+                            wallet?.accountId = accountId
+                            wallet?.data = bankCard
+                            setupViewModel.insertNewSource(wallet!!)
 
                             // insert balance value
                             setupViewModel.initCardTransactions(
-                                cardBalance.replace(",", "").toLong(), source?.id!!, accountId
+                                cardBalance.replace(",", "").toLong(), wallet?.id!!, accountId
                             )
 
                             onBack()
                         } else {
                             scope.launch {
-                                onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null)
+                                onShowSnackbar(com.ntg.feature.setup.R.string.err_in_submit, null, null)
                             }
                         }
                     }
@@ -223,15 +222,15 @@ fun SourceRoute(
 
     LaunchedEffect(editSource) {
         if (editSource != null) {
-            sourceType = editSource.type
+            sourceType = editSource.type.orZero()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SourceScreen(
-    editSource: SourceWithDetail?,
+private fun WalletScreen(
+    editSource: Wallet?,
     walletTypes: List<WalletType>?,
     localBanks: List<Bank>,
     logoUrlMono: ServerConfig?,
@@ -241,7 +240,7 @@ private fun SourceScreen(
     selectedSource: (Int) -> Unit,
     navigateToCurrencies: () -> Unit,
     selectedCurrency: Currency?,
-    submitCard: (source: SourceExpenditure, card: SourceType.BankCard?, balance: String) -> Unit
+    submitCard: (source: Wallet, card: SourceType.BankCard?, balance: String) -> Unit
 ) {
 
 
@@ -266,7 +265,7 @@ private fun SourceScreen(
     }
 
     submitCard.invoke(
-        SourceExpenditure(
+        Wallet(
             id = generateUniqueFiveDigitId(),
             accountId = 0,
             currencyId = selectedCurrency?.id,
@@ -281,7 +280,7 @@ private fun SourceScreen(
 
     if (editSource != null) {
         editMode = true
-        when (editSource.sourceType) {
+        when (editSource.data) {
             is SourceType.BankCard -> sourceType = 1
             is SourceType.Gold -> sourceType = 2
             null -> editMode = false
@@ -327,7 +326,7 @@ private fun SourceScreen(
                 1 -> {
 
                     BankCardView(
-                        if (editMode) editSource?.sourceType as SourceType.BankCard else null,
+                        if (editMode) editSource?.data as SourceType.BankCard else null,
                         localBanks = localBanks,
                         logoUrlMono = logoUrlMono,
                         logoUrlColor = logoUrlColor,
@@ -427,7 +426,6 @@ private fun BankCardView(
 
     bankCard(
         SourceType.BankCard(
-            id = editBankCard?.id ?: generateUniqueFiveDigitId(),
             number = cardNumber.value,
             date = "$year/$month",
             name = name.value,
@@ -435,7 +433,9 @@ private fun BankCardView(
             cvv = cvv.value,
             sheba = sheba.value,
             accountNumber = accountNumber.value,
-            bankId = localBank?.id
+            bankId = localBank?.id,
+            nativeName = localBank?.nativeName,
+            logoName = localBank?.logoName
         ),
         balance.value
     )

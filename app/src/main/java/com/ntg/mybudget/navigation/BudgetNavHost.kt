@@ -27,7 +27,7 @@ import com.ntg.mybudget.ui.BudgetAppState
 @Composable
 fun BudgetNavHost(
     appState: BudgetAppState,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     modifier: Modifier = Modifier,
     startDestination: String = Login_Route,
     sharedViewModel: SharedViewModel,

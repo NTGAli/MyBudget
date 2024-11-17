@@ -35,7 +35,7 @@ fun NavController.navigateToCode(phone: String) {
 fun NavGraphBuilder.loginScreen(
     loginViewModel: LoginViewModel,
     sharedViewModel: SharedViewModel,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToCountries: () -> Unit = {},
     navigateToCode: (String) -> Unit = {},
     navigateToSetup: () -> Unit = {},

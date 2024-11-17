@@ -11,10 +11,12 @@ android {
 
 dependencies {
     implementation(libs.accompanist.permissions)
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:common"))
+    implementation(projects.core.data)
+    implementation(projects.core.model)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.common)
+    implementation(projects.sync.work)
+
 
     implementation(libs.gson)
 

@@ -1,7 +1,5 @@
 package com.ntg.login
 
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,7 +31,7 @@ import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.LoadingView
 import com.ntg.core.designsystem.components.OtpField
 import com.ntg.core.model.Account
-import com.ntg.core.model.SourceExpenditure
+import com.ntg.core.model.Wallet
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
@@ -42,7 +40,6 @@ import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.Result
 import com.ntg.feature.login.R
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -51,7 +48,7 @@ fun CodeRoute(
     onBack: () -> Unit,
     finishLogin: (String) -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel(),
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -98,13 +95,13 @@ fun CodeRoute(
                     is Result.Error -> {
                         wasWrong.value = true
                         scope.launch {
-                            onShowSnackbar.invoke(R.string.err_invalid_code, null)
+                            onShowSnackbar.invoke(R.string.err_invalid_code, null, null)
                         }
                         isLoading.value = false
                     }
 
                     is Result.Loading -> {
-                        if (it.loading){
+                        if (it.loading) {
                             isLoading.value = true
                         }
                     }
@@ -129,13 +126,13 @@ fun CodeRoute(
     LaunchedEffect(isSucceeded.value) {
         if (isSucceeded.value) {
             loginViewModel.serverAccounts()
-            delay(800)
+//            delay(800)
             loginViewModel.serverAccounts.collect {
                 when (it) {
                     is Result.Error -> {
                         loginViewModel.loginUiState.value = LoginUiState.Error
                         scope.launch {
-                            onShowSnackbar(R.string.err_fetch_data, null)
+                            onShowSnackbar(R.string.err_fetch_data, null, null)
                         }
                         loginViewModel.logout()
                         onBack()
@@ -148,7 +145,8 @@ fun CodeRoute(
                     is Result.Success -> {
                         loginViewModel.loginUiState.value = LoginUiState.Success
                         it.data?.forEach { account ->
-                            val localAccountId = if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
+                            val localAccountId =
+                                if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
                             loginViewModel.insertNewAccount(
                                 Account(
                                     id = localAccountId,
@@ -156,17 +154,33 @@ fun CodeRoute(
                                     name = account.name.orEmpty(),
                                     isDefault = account.isDefault.orFalse(),
                                     isSelected = (account.isDefault.orFalse() && (it.data.orEmpty()
-                                        .first().wallets.orEmpty().isNotEmpty() || it.data.orEmpty().size > 1)),
+                                        .first().wallets.orEmpty()
+                                        .isNotEmpty() || it.data.orEmpty().size > 1)),
                                     isSynced = true,
                                     dateCreated = account.createdAt.orEmpty()
                                 )
                             )
                             account.wallets.orEmpty().forEach { wallet ->
-                                val sourceId = generateUniqueFiveDigitId()
-                                logd("received sources ---> $sourceId -- $wallet")
+
+                                var data: SourceType? = null
+
+                                if (wallet.walletType == 1) {
+                                    data = SourceType.BankCard(
+                                        number = wallet.details.cardNumber.orEmpty(),
+                                        cvv = wallet.details.cvv2.orEmpty(),
+                                        sheba = wallet.details.sheba,
+                                        name = wallet.details.cardOwner.orEmpty(),
+                                        bankId = try {
+                                            wallet.details.bankId!!.toInt()
+                                        } catch (e: Exception) {
+                                            -1
+                                        }
+                                    )
+                                }
+
                                 loginViewModel.insertNewSource(
-                                    SourceExpenditure(
-                                        id = sourceId,
+                                    Wallet(
+                                        id = 0,
                                         sId = wallet.id.orEmpty(),
                                         type = wallet.walletType,
                                         accountId = localAccountId,
@@ -174,33 +188,21 @@ fun CodeRoute(
                                         currencyId = wallet.currencyId,
                                         isSelected = false,
                                         isSynced = true,
-                                        dateCreated = wallet.createdAt.orEmpty()
+                                        dateCreated = wallet.createdAt.orEmpty(),
+                                        data = data
                                     )
                                 )
 
-                                if (wallet.walletType == 1) {
-                                    loginViewModel.insertNewBankCard(
-                                        SourceType.BankCard(
-                                            id = generateUniqueFiveDigitId(),
-                                            sourceId = sourceId,
-                                            number = wallet.details.cardNumber.orEmpty(),
-                                            cvv = wallet.details.cvv2.orEmpty(),
-                                            sheba = wallet.details.sheba,
-                                            name = wallet.details.cardOwner.orEmpty(),
-                                            bankId = try {
-                                                wallet.details.bankId!!.toInt()
-                                            } catch (e: Exception) {
-                                                -1
-                                            }
-                                        )
-                                    )
-                                }
 
                             }
 
                         }
                         Sync.updateConfigs(context = context)
-                        finishLogin(if (it.data.orEmpty().size == 1 && it.data.orEmpty().first().wallets.orEmpty().isEmpty()) "SetupRoute" else "home_route")
+                        finishLogin(
+                            if (it.data.orEmpty().size == 1 && it.data.orEmpty()
+                                    .first().wallets.orEmpty().isEmpty()
+                            ) "SetupRoute" else "home_route"
+                        )
                     }
                 }
 
@@ -234,7 +236,7 @@ private fun CodeScreen(
         }
     ) {
 
-        if (loginUiState.value == LoginUiState.Success){
+        if (loginUiState.value == LoginUiState.Success) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -259,7 +261,9 @@ private fun CodeScreen(
 
                 OtpField(
                     modifier = Modifier.padding(top = 32.dp),
-                    wasWrong = wasWrong.value, isSucceeded = isSucceeded.value, isLoading = isLoading.value
+                    wasWrong = wasWrong.value,
+                    isSucceeded = isSucceeded.value,
+                    isLoading = isLoading.value
                 ) { userInputCode, _ ->
                     code = userInputCode
                     wasWrong.value = false
@@ -272,7 +276,7 @@ private fun CodeScreen(
                     }
                 }
             }
-        }else{
+        } else {
             LoadingView()
         }
 

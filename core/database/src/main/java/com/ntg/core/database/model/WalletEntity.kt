@@ -2,11 +2,13 @@ package com.ntg.core.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.ntg.core.model.SourceExpenditure
+import com.google.gson.Gson
+import com.ntg.core.model.SourceType
+import com.ntg.core.model.Wallet
 
-@Entity("sourceExpenditures")
-data class SourceExpenditureEntity(
-    @PrimaryKey(autoGenerate = false)
+@Entity("wallets")
+data class WalletEntity(
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     val sId: String? = null,
     val accountId: Int,
@@ -16,10 +18,11 @@ data class SourceExpenditureEntity(
     val isSelected: Boolean,
     val isSynced: Boolean = false,
     val isRemoved: Boolean = false,
+    val data: SourceType? = null,
     val dateCreated: String,
 )
 
-fun SourceExpenditureEntity.asSource() = SourceExpenditure(
+fun WalletEntity.asWallet() = Wallet(
     id = id,
     sId = sId,
     isSynced = isSynced,
@@ -29,10 +32,12 @@ fun SourceExpenditureEntity.asSource() = SourceExpenditure(
     currencyId = currencyId,
     icon = icon,
     type = type,
+    data = data,
+    isRemoved = isRemoved
 )
 
 
-fun SourceExpenditure.toEntity() = SourceExpenditureEntity(
+fun Wallet.toEntity() = WalletEntity(
     id = id,
     sId = sId,
     isSynced = isSynced,
@@ -42,4 +47,5 @@ fun SourceExpenditure.toEntity() = SourceExpenditureEntity(
     currencyId = currencyId,
     icon = icon,
     type = type,
+    data = data
 )

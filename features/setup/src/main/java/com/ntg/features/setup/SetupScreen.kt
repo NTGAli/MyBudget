@@ -1,23 +1,13 @@
 package com.ntg.features.setup
 
-import android.util.Log
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,12 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -43,24 +30,12 @@ import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
-import com.ntg.core.designsystem.components.LoadingView
 import com.ntg.core.designsystem.components.SampleAddAccountButton
-import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.core.model.Account
 import com.ntg.core.model.AccountWithSources
-import com.ntg.core.model.SourceExpenditure
-import com.ntg.core.model.SourceType
-import com.ntg.core.model.SourceTypes
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
-import com.ntg.core.mybudget.common.formatTimestamp
-import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
-import com.ntg.core.mybudget.common.logd
-import com.ntg.core.mybudget.common.orFalse
-import com.ntg.core.mybudget.common.toUnixTimestamp
 import com.ntg.feature.setup.R
 import kotlinx.coroutines.launch
-import com.ntg.core.network.model.Result
 
 @Composable
 fun SetupRoute(
@@ -69,7 +44,7 @@ fun SetupRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToHome: () -> Unit,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToLogin: (Boolean) -> Unit
 ) {
 
@@ -108,14 +83,14 @@ fun SetupRoute(
 
     LaunchedEffect(key1 = accounts) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
                 scope.launch {
                     if (accounts.value.orEmpty().isEmpty()) {
-                        onShowSnackbar.invoke(R.string.err_no_aacount, null)
+                        onShowSnackbar.invoke(R.string.err_no_aacount, null, null)
                     } else if (accounts.value.orEmpty().none {
                             it.sources.isNotEmpty()
                         }) {
-                        onShowSnackbar.invoke(R.string.err_no_sources, null)
+                        onShowSnackbar.invoke(R.string.err_no_sources, null, null)
                     } else {
                         setupViewModel.selectDefault()
                         navigateToHome()
@@ -141,7 +116,7 @@ private fun SetupScreen(
     accounts: State<List<AccountWithSources>?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     uiSate: SetupUiState,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToAccount: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
     deleteAccount: (id: Int) -> Unit,
@@ -217,7 +192,7 @@ private fun SetupScreen(
                                 context.getString(R.string.delete_account_desc)
                         } else {
                             scope.launch {
-                                onShowSnackbar(R.string.deleting_deafult_account, null)
+                                onShowSnackbar(R.string.deleting_deafult_account, null, null)
                             }
                         }
                     }

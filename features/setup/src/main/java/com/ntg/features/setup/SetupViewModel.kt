@@ -7,21 +7,18 @@ import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.ConfigRepository
 import com.ntg.core.data.repository.CurrencyRepository
-import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepository
 import com.ntg.core.model.Account
-import com.ntg.core.model.SourceExpenditure
-import com.ntg.core.model.SourceType
+import com.ntg.core.model.Wallet
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Currency
-import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.Constants
-import com.ntg.core.network.model.Result
 import com.ntg.mybudget.sync.work.workers.SyncData
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,7 +33,7 @@ import javax.inject.Inject
 class SetupViewModel
 @Inject constructor(
     private val accountRepository: AccountRepository,
-    private val sourceRepository: SourceExpenditureRepository,
+    private val sourceRepository: WalletsRepository,
     private val authRepository: AuthRepository,
     private val userDataRepository: UserDataRepository,
     private val bankCardRepository: BankCardRepository,
@@ -56,7 +53,7 @@ class SetupViewModel
 
     fun accountWithSources() = accountRepository.getAccountsWithSources()
 
-    fun getSourcesById(id: Int) = sourceRepository.getSourceDetails(id)
+    fun getWalletById(id: Int) = sourceRepository.getSourceDetails(id)
 
 
     private val _walletTypes = MutableStateFlow<List<WalletType>?>(emptyList())
@@ -110,25 +107,21 @@ class SetupViewModel
 
 
     fun insertNewSource(
-        source: SourceExpenditure
+        source: Wallet
     ){
         viewModelScope.launch {
             sourceRepository.insert(source)
         }
     }
 
-    fun insertNewBankCard(
-        bankCard: SourceType.BankCard
-    ){
-        viewModelScope.launch {
-            bankCardRepository.insert(bankCard)
-        }
-    }
 
-    fun updateBankCard(bankCard: SourceType.BankCard, walletId: Int, context: Context?) {
+
+    fun updateBankCard(wallet: Wallet?, context: Context?) {
         viewModelScope.launch {
-            bankCardRepository.update(bankCard)
-            sourceRepository.needToSync(walletId)
+            if (wallet != null){
+                wallet.isSynced = false
+                sourceRepository.update(wallet)
+            }
         }
         if (context != null){
             Sync.initialize(context = context)
@@ -152,7 +145,7 @@ class SetupViewModel
         viewModelScope.launch {
             transactionRepository.insertNewTransaction(
                 Transaction(
-                    0, amount = initAmount, accountId = accountId, sourceId = sourceId, date = System.currentTimeMillis()
+                    0, amount = initAmount, accountId = accountId, sourceId = sourceId, date = System.currentTimeMillis(), type = Constants.BudgetType.INIT
                 )
             )
         }

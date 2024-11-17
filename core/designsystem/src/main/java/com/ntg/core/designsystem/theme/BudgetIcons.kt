@@ -45,4 +45,6 @@ object BudgetIcons {
   val update = R.drawable.ic_warning
   val help = R.drawable.ic_help
   val rules = R.drawable.ic_clear_circle
+  val minus = R.drawable.minus
+  val plus = R.drawable.plus
 }

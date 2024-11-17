@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -31,22 +29,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.google.firebase.crashlytics.internal.model.CrashlyticsReport.Session.User
 import com.ntg.core.data.repository.UserDataRepository
+import com.ntg.core.designsystem.components.AnimatedSnackbarHost
 import com.ntg.core.designsystem.components.BottomNavigation
-import com.ntg.core.designsystem.components.BudgetSnackBar
+import com.ntg.core.designsystem.components.SnackData
 import com.ntg.core.designsystem.components.scrollbar.BudgetBackground
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.Home_Route
-import com.ntg.features.setup.Setup_Route
-import com.ntg.login.LoginUiState
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
@@ -136,6 +131,7 @@ internal fun BudgetApp(
             isLoading = it
         }
     }
+    val snackData = remember { mutableStateOf<SnackData?>(null) }
 
     Scaffold(
         modifier = modifier
@@ -147,17 +143,19 @@ internal fun BudgetApp(
         contentColor = MaterialTheme.colorScheme.onBackground,
 //        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = {
-            SnackbarHost(
-                snackbarHostState,
-            ) {
-                BudgetSnackBar(data = it)
+            if (snackData.value != null){
+                AnimatedSnackbarHost(
+                    snackbarHostState = snackbarHostState,
+                    durationMillis = if (snackData.value?.raw == null) 1500 else 3000,
+                    data = snackData.value!!
+                )
             }
         },
         bottomBar = {
             if (appState.shouldShowBottomBar) {
                 AppBottomBar(
                     onNavigateToDestination = {
-                        sharedViewModel.sendLoginEvent()
+                        sharedViewModel.bottomMainButton()
 //                        appState::navigateToTopLevelDestination
                     },
                     expandButton = isExpand,
@@ -195,12 +193,13 @@ internal fun BudgetApp(
 
                 BudgetNavHost(
                     appState = appState,
-                    onShowSnackbar = { message, action ->
-                        snackbarHostState.showSnackbar(
+                    onShowSnackbar = { message, action, raw ->
+                        snackData.value = SnackData(
                             message = context.getString(message),
-                            actionLabel = action,
-                            duration = SnackbarDuration.Short
-                        ) == SnackbarResult.ActionPerformed
+                            raw = raw,
+                            action = action
+                        )
+                        snackbarHostState.showSnackbar("") == SnackbarResult.ActionPerformed
                     },
                     modifier = if (shouldShowTopAppBar) {
                         Modifier.consumeWindowInsets(

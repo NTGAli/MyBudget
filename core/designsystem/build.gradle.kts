@@ -32,6 +32,8 @@ dependencies {
 
     implementation(libs.coil.kt.compose)
     implementation(libs.coil.kt.svg)
+    implementation(libs.lottie)
+
 
 
 //    testImplementation(libs.androidx.compose.ui.test)

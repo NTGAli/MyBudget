@@ -72,6 +72,7 @@ gson = "2.10.1"
 runtimeLivedata = "1.6.8"
 annotationJvm = "1.8.2"
 uiTextAndroid = "1.7.2"
+lottieVersion = "6.6.0"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -162,6 +163,7 @@ room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+lottie = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottieVersion" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }

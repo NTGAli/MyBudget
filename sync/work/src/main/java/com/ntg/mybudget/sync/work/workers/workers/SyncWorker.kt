@@ -7,7 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
 import com.ntg.core.data.repository.AccountRepository
-import com.ntg.core.data.repository.SourceExpenditureRepository
+import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.mybudget.sync.work.workers.initializers.SyncConstraints
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -17,7 +17,7 @@ class SyncWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val accountRepository: AccountRepository,
-    private val sourceExpenditureRepository: SourceExpenditureRepository
+    private val sourceExpenditureRepository: WalletsRepository
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
         accountRepository.syncAccounts()
