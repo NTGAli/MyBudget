@@ -14,7 +14,7 @@ fun NavController.navigateToEditProfile() {
 
 fun NavGraphBuilder.editProfileScreen(
     sharedViewModel: SharedViewModel,
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
 
     composable(route = Edit_Profile_Route) {

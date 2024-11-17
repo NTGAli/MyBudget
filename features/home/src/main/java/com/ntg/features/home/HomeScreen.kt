@@ -126,6 +126,7 @@ fun HomeRoute(
     homeViewModel: HomeViewModel = hiltViewModel(),
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
+    navigateToProfile: () -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
     val expandTransaction = remember { mutableStateOf(false) }
@@ -1335,7 +1336,7 @@ fun AccountSelectorSheet(
                     .padding(horizontal = 24.dp)
                     .padding(top = 8.dp),
                     account = account,
-                    canEdit = false,
+                    isCheckBox = true,
                     isAccountSelected = account.accountId == selectedAccountId,
                     selectedSources = selectedResources,
                     insertNewItem = {

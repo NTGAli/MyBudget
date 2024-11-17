@@ -13,7 +13,7 @@ fun NavController.navigateToSession() {
 }
 
 fun NavGraphBuilder.sessionScreen(
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
 
     composable(route = Session_Route) {

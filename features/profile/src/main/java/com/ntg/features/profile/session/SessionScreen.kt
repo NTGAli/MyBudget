@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SessionRout(
     sessionViewModel: SessionViewModel = hiltViewModel(),
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -93,7 +93,7 @@ fun SessionRout(
                     is Result.Error -> {
                         scope.launch {
 //                            onShowSnackbar(res.data.message, null) //TODO: we must pass response message
-                            onShowSnackbar(R.string.GetDataFailed, null)
+                            onShowSnackbar(R.string.GetDataFailed, null, null)
                         }
                     }
                 }
@@ -111,7 +111,7 @@ fun SessionRout(
 
                         scope.launch {
 //                            onShowSnackbar(res.data.message, null) //TODO: we must pass response message
-                            onShowSnackbar(R.string.SessionsTerminate, null)
+                            onShowSnackbar(R.string.SessionsTerminate, null, null)
                         }
                     }
 
@@ -124,7 +124,7 @@ fun SessionRout(
                     is Result.Error -> {
                         scope.launch {
 //                            onShowSnackbar(res.data.message, null) //TODO: we must pass response message
-                            onShowSnackbar(R.string.SessionsTerminateFailed, null)
+                            onShowSnackbar(R.string.SessionsTerminateFailed, null, null)
                         }
                     }
                 }

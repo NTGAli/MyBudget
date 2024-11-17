@@ -477,3 +477,8 @@ fun convertDateTime(inputDateTime: String): String {
 
     return "$year-$month-$day ساعت $hour:$minute"
 }
+
+fun formatTimestampToTime(timestamp: Long): String {
+    val dateFormat = SimpleDateFormat("h:mm a", Locale("fa", "IR"))
+    return dateFormat.format(Date(timestamp))
+}

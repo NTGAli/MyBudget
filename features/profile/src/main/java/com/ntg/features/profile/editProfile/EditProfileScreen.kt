@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 fun EditeProfileRout(
     sharedViewModel: SharedViewModel,
     editProfileViewModel: EditProfileViewModel = hiltViewModel(),
-    onShowSnackbar: suspend (Int, String?) -> Boolean,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
 
     sharedViewModel.setExpand.postValue(true)
@@ -70,7 +70,7 @@ fun EditeProfileRout(
     LaunchedEffect(Unit) {
 
         sharedViewModel.loginEventListener = object : LoginEventListener {
-            override fun onLoginEvent() {
+            override fun onBottomButtonClick() {
                 editProfileViewModel.updateServerUserInfo()
             }
         }
@@ -84,7 +84,7 @@ fun EditeProfileRout(
                     is Result.Success -> {
                         sharedViewModel.setLoading.postValue(false)
                         scope.launch {
-                            onShowSnackbar(R.string.ImageUploaded, null)
+                            onShowSnackbar(R.string.ImageUploaded, null, null)
                         }
 
                         userInfo.value?.let { userInfo ->
@@ -100,7 +100,7 @@ fun EditeProfileRout(
 
                     is Result.Error -> {
                         sharedViewModel.setLoading.postValue(false)
-                        onShowSnackbar(R.string.ImageUploadedFailed, null)
+                        onShowSnackbar(R.string.ImageUploadedFailed, null, null)
                     }
                 }
             }
@@ -114,7 +114,7 @@ fun EditeProfileRout(
                     is Result.Success -> {
                         sharedViewModel.setLoading.postValue(false)
                         scope.launch {
-                            onShowSnackbar(R.string.UserInfoUpdated, null)
+                            onShowSnackbar(R.string.UserInfoUpdated, null, null)
                         }
 
                         userInfo.value?.let { userInfo ->
@@ -132,7 +132,7 @@ fun EditeProfileRout(
 
                     is Result.Error -> {
                         sharedViewModel.setLoading.postValue(false)
-                        onShowSnackbar(R.string.UpdateUserInfoFailed, null)
+                        onShowSnackbar(R.string.UpdateUserInfoFailed, null, null)
                     }
                 }
             }

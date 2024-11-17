@@ -172,7 +172,8 @@ private fun SetupScreen(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
                         .padding(top = 8.dp),
-                    account = account, canEdit = true, insertNewItem = {
+                    isAccountSelected = true,
+                    account = account, isCheckBox = false, insertNewItem = {
                         navigateToSource(account.accountId, null)
                     }, accountEndIconClick = {
                         editAccount(it)

@@ -47,7 +47,7 @@ import com.ntg.mybudget.core.designsystem.R
 fun AccountSection(
     modifier: Modifier = Modifier,
     account: AccountWithSources,
-    canEdit: Boolean,
+    isCheckBox: Boolean,
     isAccountSelected: Boolean = false,
     selectedSources: MutableList<Int> = mutableListOf(),
     insertNewItem: () -> Unit = {},
@@ -75,7 +75,7 @@ fun AccountSection(
             type = -1,
             title = account.accountName,
             isChecked = isAccountSelected,
-            canEdit = canEdit,
+            isCheckBox = isCheckBox,
             isHeader = true,
             onCLick = {
                 expaned = true
@@ -107,7 +107,7 @@ fun AccountSection(
             }
         }
 
-        if (expaned || canEdit) {
+        if (expaned) {
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
             account.sources.forEach { source ->
 
@@ -130,7 +130,7 @@ fun AccountSection(
                         isImage = true,
                         title = title,
                         subtitle = subTitle,
-                        canEdit = canEdit,
+                        isCheckBox = isCheckBox,
                         type = source?.type ?: 0,
                         isChecked = selectedSources.contains(source?.id ?: -1),
                         onCLick = { onSourceSelect.invoke(source?.id ?: -1) }
@@ -165,7 +165,7 @@ private fun Item(
     title: String,
     subtitle: String? = null,
     isChecked: Boolean = false,
-    canEdit: Boolean,
+    isCheckBox: Boolean,
     isHeader: Boolean = false,
     onCLick: () -> Unit,
     endItem: @Composable () -> Unit,
@@ -175,21 +175,23 @@ private fun Item(
 
     Row(
         modifier
-            .then(if (canEdit) Modifier else Modifier.clickable { onCLick.invoke() })
+            .clickable { onCLick.invoke() }
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        if (isHeader && !canEdit) {
+        if (isHeader && isCheckBox) {
             RadioCheck(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                isChecked = isChecked, isCircle = isHeader
+                isChecked = isChecked, isCircle = true
             )
-        } else {
+        } else if (isCheckBox) {
             RadioCheck(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 isChecked = isChecked, isCircle = false
             )
+        }else{
+            Spacer(Modifier.padding(8.dp))
         }
 
         if (isImage){

@@ -42,6 +42,7 @@ import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.Home_Route
+import com.ntg.features.setup.Setup_Route
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
 import com.ntg.mybudget.navigation.TopLevelDestination
