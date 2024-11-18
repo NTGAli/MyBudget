@@ -12,6 +12,8 @@ import com.ntg.features.profile.appearance.appearanceScreen
 import com.ntg.features.profile.appearance.navigateToAppearance
 import com.ntg.features.profile.editProfile.editProfileScreen
 import com.ntg.features.profile.editProfile.navigateToEditProfile
+import com.ntg.features.profile.notifications.navigateToNotifications
+import com.ntg.features.profile.notifications.notificationsScreen
 import com.ntg.features.profile.profile.navigateToProfile
 import com.ntg.features.profile.profile.profileScreen
 import com.ntg.features.profile.session.navigateToSession
@@ -87,7 +89,7 @@ fun BudgetNavHost(
                     ProfileActions.CHANGE_INFO -> navController.navigateToEditProfile()
                     ProfileActions.SESSIONS -> navController.navigateToSession()
                     ProfileActions.APP_UI -> navController.navigateToAppearance()
-                    ProfileActions.NOTIFICATIONS -> navController.navigateToHome()
+                    ProfileActions.NOTIFICATIONS -> navController.navigateToNotifications()
                     ProfileActions.BANK_MESSAGE -> navController.navigateToHome()
                     else -> {}
                 }
@@ -106,5 +108,7 @@ fun BudgetNavHost(
         appearanceScreen(
             onBack = navController::popBackStack
         )
+
+        notificationsScreen()
     }
 }

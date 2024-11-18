@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ResourceName">
+    <string name="test_text">متن نمونه</string>
     <string name="income">ورودی</string>
     <string name="outcome">خروجی</string>
     <string name="internal_transfer">جیب به جیب</string>
@@ -130,4 +131,13 @@
     <string name="LightTheme">روشن</string>
     <string name="DarkTheme">تاریک</string>
     <string name="Language">زبان</string>
+
+    // notifications
+    <string name="Reminder">یادآور</string>
+    <string name="ReminderSubmitTransactionsIn21">یادآوری ثبت تراکنش در 21:00</string>
+    <string name="ReminderSubmitTransactionsWithMessages">یادآوری ثبت تراکنش با پیامک بانکی</string>
+    <string name="Security">امنیت</string>
+    <string name="NewLogInNotification">دریافت اعلان لاگین جدید</string>
+    <string name="NewUpdateNotification">اعلان آپدیت جدید</string>
+    <string name="NewRulesRegulationsNotification">اعلان آپدیت قوانین</string>
 </resources>
