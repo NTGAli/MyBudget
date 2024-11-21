@@ -63,7 +63,9 @@ import androidx.compose.ui.platform.LocalContext
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.model.res.Currency
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orZero
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun WalletRoute(
@@ -110,7 +112,14 @@ fun WalletRoute(
         setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
     val selectedCurrency =
         setupViewModel.selectedCurrency.collectAsStateWithLifecycle(initialValue = null)
+    val accountCurrency =
+        setupViewModel.accountCurrency(accountId).collectAsStateWithLifecycle(initialValue = null).value
 
+    LaunchedEffect(accountCurrency) {
+        if (accountCurrency != null){
+            setupViewModel.selectedCurrency = flowOf(accountCurrency)
+        }
+    }
 
     WalletScreen(
         editSource, onBack = onBack,
@@ -128,7 +137,8 @@ fun WalletRoute(
         logoUrlColor = logoUrlColor,
         localBanks = localBanks.orEmpty(),
         navigateToCurrencies = navigateToCurrencies,
-        selectedCurrency = selectedCurrency.value
+        selectedCurrency = selectedCurrency.value,
+        enableSelectCurrency = accountCurrency == null
     ) { sourceValue, card, balance ->
         wallet = sourceValue
         bankCard = card
@@ -240,6 +250,7 @@ private fun WalletScreen(
     selectedSource: (Int) -> Unit,
     navigateToCurrencies: () -> Unit,
     selectedCurrency: Currency?,
+    enableSelectCurrency: Boolean,
     submitCard: (source: Wallet, card: SourceType.BankCard?, balance: String) -> Unit
 ) {
 
@@ -332,6 +343,7 @@ private fun WalletScreen(
                         logoUrlColor = logoUrlColor,
                         navigateToCurrencies = navigateToCurrencies,
                         selectedCurrency = selectedCurrency,
+                        enableSelectCurrency = enableSelectCurrency,
                         deleteCard = {
                             deleteSource()
                         }
@@ -365,6 +377,7 @@ private fun BankCardView(
     logoUrlMono: ServerConfig?,
     logoUrlColor: ServerConfig?,
     selectedCurrency: Currency?,
+    enableSelectCurrency: Boolean,
     deleteCard: () -> Unit,
     navigateToCurrencies: () -> Unit,
     bankCard: (SourceType.BankCard, String) -> Unit
@@ -473,7 +486,9 @@ private fun BankCardView(
             label = stringResource(id = R.string.concurrency),
             readOnly = true,
             onClick = {
-                navigateToCurrencies()
+                if (enableSelectCurrency){
+                    navigateToCurrencies()
+                }
             }
         )
     }

@@ -18,7 +18,7 @@ interface TransactionsDao {
 
     @Query("""
         SELECT t.*, c.name FROM transactions t
-        INNER JOIN category_table c
+        LEFT JOIN category_table c
         ON c.id = t.categoryId
         WHERE t.sourceId IN (:ids)
         ORDER BY t.createdAt DESC

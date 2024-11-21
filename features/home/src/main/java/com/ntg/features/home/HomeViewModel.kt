@@ -13,6 +13,7 @@ import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
@@ -33,6 +34,7 @@ class HomeViewModel @Inject constructor(
     ): ViewModel() {
 
     private val _walletTypes = MutableStateFlow<List<Wallet>?>(emptyList())
+    private val _currency = MutableStateFlow<Currency?>(null)
     private val _categories = MutableStateFlow<List<Category>?>(emptyList())
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
 
@@ -48,6 +50,17 @@ class HomeViewModel @Inject constructor(
         }
         return _walletTypes
     }
+
+
+    fun currencyInfo(): MutableStateFlow<Currency?> {
+        viewModelScope.launch {
+            sourceRepository.getCurrentCurrency().collect{
+                _currency.value = it
+            }
+        }
+        return _currency
+    }
+
 
     fun transactions(sourceIds: List<Int>) = transactionsRepository.getTransactionsBySourceIds(sourceIds)
 

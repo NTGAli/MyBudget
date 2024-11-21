@@ -46,6 +46,7 @@ class SetupViewModel
     val homeUiState = MutableStateFlow(SetupUiState.Success)
 
     var selectedCurrency = flowOf<Currency?>(null)
+    private val _currency = MutableStateFlow<Currency?>(null)
 
     fun accounts() = accountRepository.getAll()
 
@@ -226,6 +227,15 @@ class SetupViewModel
             accountRepository.selectDefault()
             sourceRepository.selectWalletFronDefault()
         }
+    }
+
+    fun accountCurrency(accountId: Int): MutableStateFlow<Currency?> {
+        viewModelScope.launch {
+            sourceRepository.getCurrentCurrency(accountId).collect{
+                _currency.value = it
+            }
+        }
+        return _currency
     }
 
 }

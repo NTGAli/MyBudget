@@ -3,9 +3,11 @@ package com.ntg.core.data.repository
 import com.ntg.core.database.dao.WalletsDao
 import com.ntg.core.database.model.WalletEntity
 import com.ntg.core.database.model.asWallet
+import com.ntg.core.database.model.toCurrency
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.SourceWithDetail
+import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.mybudget.common.orFalse
@@ -89,6 +91,21 @@ class WalletsRepositoryImpl @Inject constructor(
                 }
             )
         }.flowOn(ioDispatcher)
+
+    override suspend fun getCurrentCurrency(): Flow<Currency?> =
+        flow {
+            emit(
+                walletDao.currentCurrency()?.toCurrency()
+            )
+        }.flowOn(ioDispatcher)
+
+    override suspend fun getCurrentCurrency(accountId: Int): Flow<Currency?> =
+        flow {
+            emit(
+                walletDao.currentCurrency(accountId)?.toCurrency()
+            )
+        }.flowOn(ioDispatcher)
+
 
     override suspend fun syncSources() {
         walletDao.unSynced().collect {

@@ -103,6 +103,7 @@ import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
@@ -150,6 +151,9 @@ fun HomeRoute(
     val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
     val localBanks =
         homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList())
+    val currencyData = homeViewModel.currencyInfo().collectAsStateWithLifecycle(null)
+
+    logd("AWJDKLJAWKLDJKWLAD ::::: $currencyData")
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
 
@@ -166,6 +170,7 @@ fun HomeRoute(
             logoUrlColor,
             categories.value,
             localBanks,
+            currencyData,
             navigateToSource,
             navigateToAccount,
             navigateToProfile,
@@ -242,6 +247,7 @@ private fun HomeScreen(
     logoUrl: String? = null,
     categories: List<Category>? = null,
     localBanks:State<List<Bank>?>,
+    currency : State<Currency?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
@@ -329,6 +335,7 @@ private fun HomeScreen(
 
                 val init = transactions.value?.filter { it.type == Constants.BudgetType.INIT }
                     .orEmpty().sumOf { it.amount }
+                logd("AWDJWAJDLWAJKD ::::: $init")
                 val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
                     .orEmpty().sumOf { it.amount }
                 val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
@@ -339,17 +346,17 @@ private fun HomeScreen(
                     .padding(horizontal = 24.dp),
                     title = formatCurrency(amount =  init + (income - expense),
                         mask = "###,###",
-                        currency = "ت",
+                        currency = currency.value?.symbol.orEmpty(),
                         pos = 2),
                     subTitle = "موجودی همه حساب ها",
                     out = formatCurrency(amount = expense,
                         mask = "###,###",
-                        currency = "ت",
+                        currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     ),
                     inValue = formatCurrency(amount = income,
                         mask = "###,###",
-                        currency = "ت",
+                        currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     )
                 )
