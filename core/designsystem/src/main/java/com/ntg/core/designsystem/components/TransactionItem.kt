@@ -32,13 +32,14 @@ fun TransactionItem(
     type: Int,
     divider: Boolean = false,
     attached: Boolean = false,
+    onClick:() -> Unit = {}
 ){
 
     Column(
         modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable {
-
+                onClick()
             }
             .padding(horizontal = 8.dp)
     ) {

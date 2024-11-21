@@ -66,6 +66,8 @@
     <string name="err_input_source">هیچ منبع خرجی انتخاب نشده!</string>
     <string name="err_input_category">هیچ دسته بندی انتخاب نشده!</string>
     <string name="err_not_impelemnted">این کار داره</string>
+    <string name="category">دسته بندی</string>
+    <string name="amount">مبلغ</string>
 
     // login
     <string name="login_with_phone">ورود با شماره ی تلفن</string>
@@ -130,4 +132,7 @@
     <string name="LightTheme">روشن</string>
     <string name="DarkTheme">تاریک</string>
     <string name="Language">زبان</string>
+    <string name="date">تاریخ</string>
+    <string name="type">نوع</string>
+    <string name="transaction_fortmat">تراکنش %s</string>
 </resources>

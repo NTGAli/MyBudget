@@ -17,7 +17,7 @@ interface TransactionsDao {
     suspend fun delete(transactionEntity: TransactionEntity)
 
     @Query("""
-        SELECT * FROM transactions t
+        SELECT t.*, c.name FROM transactions t
         INNER JOIN category_table c
         ON c.id = t.categoryId
         WHERE t.sourceId IN (:ids)
@@ -28,5 +28,15 @@ interface TransactionsDao {
 
     @Query("DELETE FROM transactions WHERE accountId = :accountId")
     suspend fun deleteByAccount(accountId: Int)
+
+    @Query("""
+    SELECT t.*, se.data AS walletData, cr.faName, c.name
+    FROM transactions t
+    INNER JOIN category_table c ON c.id = t.categoryId
+    INNER JOIN wallets se ON se.id = t.sourceId
+    INNER JOIN currencies cr ON cr.id = se.currencyId
+    WHERE t.id =:id
+    """)
+    suspend fun transactionById(id: Int): Transaction?
 
 }

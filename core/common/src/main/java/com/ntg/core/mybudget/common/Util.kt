@@ -446,13 +446,14 @@ fun getCurrentJalaliDate(): Triple<Int, Int, Int> {
 }
 
 
-fun Long.toPersianDate(): String {
+fun Long.toPersianDate(setClock: Boolean = false): String {
     val persianDate = PersianDate(Date(this))
     val month = persianDate.monthName
     val dayOfMonth = persianDate.shDay
     val year = persianDate.shYear
 
-    return "$dayOfMonth $month $year"
+    return if (setClock) "$dayOfMonth $month $year - ${persianDate.hour}:${persianDate.minute}"
+    else "$dayOfMonth $month $year"
 }
 
 fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long {

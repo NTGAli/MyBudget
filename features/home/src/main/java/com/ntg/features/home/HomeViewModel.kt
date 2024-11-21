@@ -36,6 +36,7 @@ class HomeViewModel @Inject constructor(
     private val _categories = MutableStateFlow<List<Category>?>(emptyList())
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
 
+    private val _transaction = MutableStateFlow<Transaction?>(null)
 
     fun selectedAccount() = accountRepository.getSelectedAccount()
 
@@ -81,6 +82,15 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             transactionsRepository.insertNewTransaction(transaction)
         }
+    }
+
+    fun transactionById(id: Int): MutableStateFlow<Transaction?>{
+        viewModelScope.launch {
+            transactionsRepository.transactionById(id).collect{
+                _transaction.value = it
+            }
+        }
+        return _transaction
     }
     fun getLocalUserBanks(): MutableStateFlow<List<Bank>?> {
         viewModelScope.launch {

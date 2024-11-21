@@ -31,4 +31,10 @@ class TransactionsRepositoryImpl @Inject constructor(
             emit(transactionsDao.getBySourceIds(sourceIds))
         }
             .flowOn(ioDispatcher)
+
+    override fun transactionById(id: Int): Flow<Transaction?> =
+        flow {
+            emit(transactionsDao.transactionById(id))
+        }
+            .flowOn(ioDispatcher)
 }

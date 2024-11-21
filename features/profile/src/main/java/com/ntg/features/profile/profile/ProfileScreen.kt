@@ -109,7 +109,7 @@ fun ProfileScreen(
                     iconPainter = painterResource(id = it.icon),
                     iconTint = MaterialTheme.colorScheme.outline,
                     imagePainter = painterResource(id = BudgetIcons.directionRight),
-                    secondText = it.secondText,
+                    subText = it.secondText,
                     secondIconPainter = painterResource(id = BudgetIcons.directionLeft)
                 ) {
                     profileActions.invoke(it.action)
