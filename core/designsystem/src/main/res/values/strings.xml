@@ -134,5 +134,7 @@
     <string name="Language">زبان</string>
     <string name="date">تاریخ</string>
     <string name="type">نوع</string>
-    <string name="transaction_fortmat">تراکنش %s</string>
+
+    // Report
+    <string name="Report">گزارش مالی</string>
 </resources>

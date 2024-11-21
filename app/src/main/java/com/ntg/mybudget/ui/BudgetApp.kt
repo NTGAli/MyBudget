@@ -41,6 +41,7 @@ import com.ntg.core.designsystem.components.scrollbar.BudgetBackground
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
+import com.ntg.core.mybudget.common.logd
 import com.ntg.features.home.Home_Route
 import com.ntg.features.setup.Setup_Route
 import com.ntg.login.Login_Route
@@ -156,8 +157,11 @@ internal fun BudgetApp(
             if (appState.shouldShowBottomBar) {
                 AppBottomBar(
                     onNavigateToDestination = {
+                        if (it == TopLevelDestination.REPORT){
+//                            appState::navigateToTopLevelDestination
+                            appState.navigateToTopLevelDestination(TopLevelDestination.REPORT)
+                        }
                         sharedViewModel.bottomMainButton()
-//                        appState::navigateToTopLevelDestination
                     },
                     expandButton = isExpand,
                     title = bottomNavTitle,
@@ -255,6 +259,12 @@ private fun AppBottomBar(
     ) {
         if (it == -1){
             onNavigateToDestination(TopLevelDestination.HOME)
+        } else if (it == 1) {
+            onNavigateToDestination(TopLevelDestination.REPORT)
+        } else if (it == 2) {
+//            onNavigateToDestination(TopLevelDestination.PROFILE)
+        } else {
+            onNavigateToDestination(TopLevelDestination.TRANSACTION)
         }
 //        if (it == 1) {
 //            onNavigateToDestination(TopLevelDestination.HOME)
