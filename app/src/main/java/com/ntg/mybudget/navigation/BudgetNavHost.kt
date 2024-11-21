@@ -16,6 +16,7 @@ import com.ntg.features.profile.profile.navigateToProfile
 import com.ntg.features.profile.profile.profileScreen
 import com.ntg.features.profile.session.navigateToSession
 import com.ntg.features.profile.session.sessionScreen
+import com.ntg.features.report.reportScreen
 import com.ntg.features.setup.SetupViewModel
 import com.ntg.features.setup.navigateToCreateAccount
 import com.ntg.features.setup.navigateToCurrencies
@@ -106,5 +107,7 @@ fun BudgetNavHost(
         appearanceScreen(
             onBack = navController::popBackStack
         )
+
+        reportScreen()
     }
 }

@@ -130,4 +130,7 @@
     <string name="LightTheme">روشن</string>
     <string name="DarkTheme">تاریک</string>
     <string name="Language">زبان</string>
+
+    // Report
+    <string name="Report">گزارش مالی</string>
 </resources>

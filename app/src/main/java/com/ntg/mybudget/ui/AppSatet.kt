@@ -16,6 +16,7 @@ import androidx.tracing.trace
 import com.ntg.features.home.Home_Route
 import com.ntg.features.profile.editProfile.Edit_Profile_Route
 import com.ntg.features.profile.profile.Profile_Route
+import com.ntg.features.report.navigateToReport
 import com.ntg.features.setup.Create_Account_Route
 import com.ntg.features.setup.Setup_Route
 import com.ntg.features.setup.Source_Route
@@ -120,9 +121,11 @@ class BudgetAppState(
                 restoreState = true
             }
 
-//      when (topLevelDestination) {
-//        TopLevelDestination.HOME -> navController.navigateToForYou(topLevelNavOptions)
-//      }
+            when (topLevelDestination) {
+//                TopLevelDestination.HOME -> navController.navigateToForYou(topLevelNavOptions)
+                TopLevelDestination.REPORT -> navController.navigateToReport()
+                else -> {}
+            }
 
 
         }
