@@ -2,6 +2,7 @@ package com.ntg.mybudget.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.InsertChartOutlined
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.ntg.mybudget.R
 
@@ -14,6 +15,13 @@ enum class TopLevelDestination(
   HOME(
     selectedIcon = Icons.Rounded.Add,
     unselectedIcon = Icons.Rounded.Add,
+    iconTextId = R.string.app_name,
+    titleTextId = R.string.app_name,
+  ),
+
+  REPORT(
+    selectedIcon = Icons.Rounded.InsertChartOutlined,
+    unselectedIcon = Icons.Rounded.InsertChartOutlined,
     iconTextId = R.string.app_name,
     titleTextId = R.string.app_name,
   ),
