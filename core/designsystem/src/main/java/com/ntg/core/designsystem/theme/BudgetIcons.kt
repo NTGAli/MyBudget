@@ -48,7 +48,7 @@ object BudgetIcons {
   val desktop = R.drawable.ic_desktop
   val rules = R.drawable.ic_clear_circle
   val minus = R.drawable.minus
-  val plus = R.drawable.plus
+  val Plus = R.drawable.plus
   val sun = R.drawable.ic_sun
   val moon = R.drawable.ic_moon
   val default = R.drawable.ic_default_theme

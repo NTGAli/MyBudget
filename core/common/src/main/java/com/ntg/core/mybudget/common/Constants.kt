@@ -27,4 +27,10 @@ object Constants {
         const val INIT = 3
     }
 
+    object FilterTime {
+        const val DAY = 0
+        const val MONTH = 1
+        const val YEAR = 2
+    }
+
 }

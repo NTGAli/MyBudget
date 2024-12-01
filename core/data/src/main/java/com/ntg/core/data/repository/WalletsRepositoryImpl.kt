@@ -80,6 +80,13 @@ class WalletsRepositoryImpl @Inject constructor(
             )
         }.flowOn(ioDispatcher)
 
+    override suspend fun getSelectedWalletIds(): Flow<List<Int>> =
+        flow {
+            emit(
+                walletDao.getSelectedWalletIds()
+            )
+        }.flowOn(ioDispatcher)
+
 
     override suspend fun getSelectedSources(): Flow<List<Wallet>> =
         flow {
