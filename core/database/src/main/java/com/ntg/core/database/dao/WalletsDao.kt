@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.ntg.core.database.model.CurrencyEntity
 import com.ntg.core.database.model.WalletEntity
 import com.ntg.core.model.WalletDetails
 import com.ntg.core.model.SourceWithDetail
@@ -85,6 +86,27 @@ interface WalletsDao {
         """
     )
     suspend fun getSelectedSources(): List<WalletEntity>
+
+    @Query(
+        """
+        SELECT c.* FROM wallets w 
+        INNER JOIN currencies c
+        ON w.currencyId = c.id
+        where w.isSelected = 1 LIMIT 1
+        """
+    )
+    suspend fun currentCurrency(): CurrencyEntity?
+
+
+    @Query(
+        """
+        SELECT c.* FROM wallets w 
+        INNER JOIN currencies c
+        ON w.currencyId = c.id
+        where w.accountId = :accountId = 1 LIMIT 1
+        """
+    )
+    suspend fun currentCurrency(accountId: Int): CurrencyEntity?
 
     @Query("""
         SELECT w.*, a.sId as accountSId FROM wallets w

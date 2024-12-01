@@ -1,5 +1,6 @@
 package com.ntg.core.designsystem.theme
 
+import android.content.Context
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -123,3 +124,8 @@ val Typography = Typography(
         letterSpacing = 0.5.sp
     )
 )
+
+
+fun Context.bString(id: Int): String {
+    return this.getString(id)
+}

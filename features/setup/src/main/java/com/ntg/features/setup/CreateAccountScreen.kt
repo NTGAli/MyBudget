@@ -1,7 +1,5 @@
 package com.ntg.features.setup
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,16 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.model.Account
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.mybudget.core.designsystem.R
-import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import kotlinx.coroutines.launch
 
 @Composable

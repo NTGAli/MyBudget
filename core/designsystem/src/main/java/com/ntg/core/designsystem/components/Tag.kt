@@ -25,7 +25,7 @@ fun Tag(
     icon: Painter? = null,
     enableDismiss:Boolean = true,
     dismissClick: () -> Unit = {},
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
 ) {
 
     Row(

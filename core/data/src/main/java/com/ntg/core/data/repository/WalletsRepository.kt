@@ -2,6 +2,7 @@ package com.ntg.core.data.repository
 
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.SourceWithDetail
+import com.ntg.core.model.res.Currency
 import kotlinx.coroutines.flow.Flow
 
 interface WalletsRepository {
@@ -29,6 +30,10 @@ interface WalletsRepository {
     suspend fun getSelectedWalletIds(): Flow<List<Int>>
 
     suspend fun getSelectedSources(): Flow<List<Wallet>>
+
+    suspend fun getCurrentCurrency(): Flow<Currency?>
+
+    suspend fun getCurrentCurrency(accountId: Int): Flow<Currency?>
 
     suspend fun syncSources()
 

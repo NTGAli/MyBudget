@@ -36,10 +36,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -101,6 +103,7 @@ import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
@@ -111,6 +114,7 @@ import com.ntg.core.mybudget.common.formatTimestampToTime
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
 import com.ntg.core.mybudget.common.isOperator
 import com.ntg.core.mybudget.common.jalaliToTimestamp
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.core.mybudget.common.persianDate.PersianDate
@@ -126,6 +130,7 @@ fun HomeRoute(
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
+    navigateToDetail: (id: Int) -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
     val expandTransaction = remember { mutableStateOf(false) }
@@ -146,6 +151,9 @@ fun HomeRoute(
     val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
     val localBanks =
         homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList())
+    val currencyData = homeViewModel.currencyInfo().collectAsStateWithLifecycle(null)
+
+    logd("AWJDKLJAWKLDJKWLAD ::::: $currencyData")
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
 
@@ -162,6 +170,7 @@ fun HomeRoute(
             logoUrlColor,
             categories.value,
             localBanks,
+            currencyData,
             navigateToSource,
             navigateToAccount,
             navigateToProfile,
@@ -180,6 +189,8 @@ fun HomeRoute(
                 homeViewModel.deleteAccount(it, context = context)
             }, editAccount = {
                 navigateToAccount(it)
+            }, transactionDetails = {
+                navigateToDetail(it)
             })
     }
 
@@ -236,21 +247,36 @@ private fun HomeScreen(
     logoUrl: String? = null,
     categories: List<Category>? = null,
     localBanks:State<List<Bank>?>,
+    currency : State<Currency?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     onUpdateSelectedAccount: (id: Int, sourcesId: List<Int>) -> Unit,
     onUpdateSelectedSource: (sourcesId: List<Int>) -> Unit,
-    onTransactionChanged:(Transaction) -> Unit,
     deleteAccount: (id: Int) -> Unit,
     deleteWallet: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
+    transactionDetails:(Int) -> Unit,
+    onTransactionChanged:(Transaction) -> Unit,
 ) {
+
     val scope = rememberCoroutineScope()
-    val scaffoldState = rememberBottomSheetScaffoldState()
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            skipHiddenState = false
+        )
+    )
+
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var stickyHeaderText by remember { mutableStateOf("") }
+    val isAccountSheetOpen = remember { mutableStateOf(false) }
+
+    LaunchedEffect(scaffoldState.bottomSheetState.targetValue) {
+        if (scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded){
+            isAccountSheetOpen.value = false
+        }
+    }
 
     BottomSheetScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -260,9 +286,11 @@ private fun HomeScreen(
                     AccountSelector(
                         title = currentAccount.accountName, subTitle = stringResource(
                             id = R.string.items_format, currentAccount.sources.size
-                        )
+                        ),
+                        isOpen = isAccountSheetOpen
                     ) {
                         scope.launch { scaffoldState.bottomSheetState.expand() }
+                        isAccountSheetOpen.value = true
                     }
                 }, enableNavigation = false,
                 scrollBehavior = scrollBehavior
@@ -305,6 +333,9 @@ private fun HomeScreen(
 
             item {
 
+                val init = transactions.value?.filter { it.type == Constants.BudgetType.INIT }
+                    .orEmpty().sumOf { it.amount }
+                logd("AWDJWAJDLWAJKD ::::: $init")
                 val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
                     .orEmpty().sumOf { it.amount }
                 val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
@@ -313,19 +344,19 @@ private fun HomeScreen(
                 CardReport(modifier = Modifier
                     .padding(top = 8.dp)
                     .padding(horizontal = 24.dp),
-                    title = formatCurrency(amount = (income - expense),
+                    title = formatCurrency(amount =  init + (income - expense),
                         mask = "###,###",
-                        currency = "ت",
+                        currency = currency.value?.symbol.orEmpty(),
                         pos = 2),
                     subTitle = "موجودی همه حساب ها",
                     out = formatCurrency(amount = expense,
                         mask = "###,###",
-                        currency = "ت",
+                        currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     ),
                     inValue = formatCurrency(amount = income,
                         mask = "###,###",
-                        currency = "ت",
+                        currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     )
                 )
@@ -340,7 +371,9 @@ private fun HomeScreen(
             }
 
 
-            val groupedItems = transactions.value.orEmpty().groupBy  { it.date.toPersianDate() }
+            val groupedItems = transactions.value.orEmpty()
+                .filter { it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME }
+                .groupBy  { it.date.toPersianDate() }
 
 
             groupedItems.forEach { (date, items) ->
@@ -368,11 +401,13 @@ private fun HomeScreen(
                         divider = it != items.last(),
                         attached = false,
                         type = it.type.orZero()
-                    )
+                    ){
+                        transactionDetails(it.id)
+                    }
                 }
             }
 
-            if (transactions.value.orEmpty().isEmpty()) {
+            if (groupedItems.isEmpty()) {
                 item {
                     Lottie(
                         modifier = Modifier.padding(horizontal = 64.dp),
@@ -1390,7 +1425,8 @@ fun AccountSelectorSheet(
                         dialogTitle = context.getString(R.string.delete_source)
                         dialogDiscription = context.getString(R.string.delete_source_desc)
                         selectedWallet = it
-                    }, deleteAccount = {
+                    },
+                    deleteAccount = {
                         if (!account.isDefault) {
                             showDialog = true
                             selectedAccount = account.accountId
