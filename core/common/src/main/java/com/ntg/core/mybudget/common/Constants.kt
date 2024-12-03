@@ -25,6 +25,7 @@ object Constants {
         const val INCOME = 1
         const val TRANSFER = 2
         const val INIT = 3
+        const val NOTHING = -1
     }
 
     object FilterTime {

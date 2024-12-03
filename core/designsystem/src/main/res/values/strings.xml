@@ -138,4 +138,7 @@
 
     // Report
     <string name="Report">گزارش مالی</string>
+    <string name="DailyIncomeOutcome">روز خرج-دخل</string>
+    <string name="ThisWeek">این هفته</string>
+    <string name="PreviousWeek">هفته پیش</string>
 </resources>

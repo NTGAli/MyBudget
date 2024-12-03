@@ -50,7 +50,6 @@ fun IncomeOutcomeChart(
     walletBalance: MutableMap<Long, Long>,
     incomeList: MutableMap<Long, Long>,
     outcomeList: MutableMap<Long, Long>,
-
 ) {
     val incomeColor = MaterialTheme.colorScheme.secondary
     val outcomeColor = MaterialTheme.colorScheme.error
