@@ -141,4 +141,5 @@
     <string name="DailyIncomeOutcome">روز خرج-دخل</string>
     <string name="ThisWeek">این هفته</string>
     <string name="PreviousWeek">هفته پیش</string>
+    <string name="OutcomeWithCategory">مخارج بر اساس دسته بندی</string>
 </resources>

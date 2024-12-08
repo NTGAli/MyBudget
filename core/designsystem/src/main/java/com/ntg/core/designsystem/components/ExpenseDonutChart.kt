@@ -1,17 +1,17 @@
 package com.ntg.core.designsystem.components
 
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.graphics.Paint
-import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -28,71 +28,92 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
-import com.ntg.core.designsystem.theme.BudgetIcons
+import com.ntg.core.mybudget.common.withSuffix
 import com.ntg.mybudget.core.designsystem.R
 import kotlin.math.PI
 import kotlin.math.atan2
 
-@SuppressLint("ResourceType")
 @Preview
 @Composable
+fun ExpenseDonutChartPreview() {
+
+    val data = listOf(
+        PieChartInput(color = MaterialTheme.colorScheme.tertiary, value = 18, Title = "Java", brushPattern = R.drawable.default_pattern),
+        PieChartInput(color = MaterialTheme.colorScheme.primary, value = 12, Title = "Rust", brushPattern = R.drawable.default_pattern),
+        PieChartInput(color = MaterialTheme.colorScheme.secondary, value = 38, Title = "Kotlin", brushPattern = R.drawable.default_pattern),
+    )
+    ExpenseDonutChart(data, disableClick = false)
+}
+
+@Composable
 fun ExpenseDonutChart(
-
-){
-
-    val image2 = ContextCompat.getDrawable(LocalContext.current, R.drawable.default_pattern)?.toBitmap(1000,2500).apply { ColorFilter.tint(Color.Red) }
-    val brush2 = remember(image2) { ShaderBrush(ImageShader(image2!!.asImageBitmap(), TileMode.Mirror, TileMode.Repeated)) }
-
-    val image1 = ContextCompat.getDrawable(LocalContext.current, BudgetIcons.sun)?.toBitmap()
-    val brush1 = remember(image1) { ShaderBrush(ImageShader(image1!!.asImageBitmap(), TileMode.Mirror, TileMode.Decal)) }
-
-    val image3 = ContextCompat.getDrawable(LocalContext.current, BudgetIcons.sun)?.toBitmap()
-    val brush3 = remember(image3) { ShaderBrush(ImageShader(image3!!.asImageBitmap(), TileMode.Mirror, TileMode.Decal)) }
+    outcomeList: List<PieChartInput>,
+    disableClick: Boolean
+) {
 
     Column(
         modifier = Modifier
+            .height(215.dp)
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .padding(5.dp)
-        ,
-        verticalArrangement = Arrangement.spacedBy(30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ){
-            PieChart(
-                modifier = Modifier.size(500.dp),
-                input = listOf(
-                    PieChartInput(
-                        color = MaterialTheme.colorScheme.tertiary,
-                        value = 18,
-                        description = "Java",
-                        brush = brush1
-                    ),
-                    PieChartInput(
-                        color = MaterialTheme.colorScheme.primary,
-                        value = 12,
-                        description = "Rust",
-                        brush = brush3
-                    ),
-                    PieChartInput(
-                        color = MaterialTheme.colorScheme.secondary,
-                        value = 38,
-                        description = "Kotlin",
-                        brush = brush2
-                    ),
-                ),
-            )
+    ) {
+        Text(
+            text = stringResource(R.string.OutcomeWithCategory),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+        Row {
+            // chart
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .width(160.dp)
+            ) {
+                PieChart(
+                input = outcomeList,
+                disableClick = disableClick,
+                modifier = Modifier
+                    .padding(top = 16.dp))
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(top = 24.dp, start = 8.dp)
+                    .weight(1f)
+            ) {
+                outcomeList.forEach {
+                    Row(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(it.color)
+                                .padding(horizontal = 4.dp)
+                        )
+
+                        Text(
+                            text = it.Title,
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
+                        )
+
+                        Text(
+                            text = it.value.toLong().withSuffix(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -101,10 +122,11 @@ fun ExpenseDonutChart(
 @Composable
 fun PieChart(
     modifier: Modifier = Modifier,
-    radius:Float = 500f,
-    innerRadius:Float = 250f,
-    transparentWidth:Float = 70f,
-    input:List<PieChartInput>,
+    radius: Float = 280f,
+    innerRadius: Float = 180f,
+    transparentWidth: Float = 60f,
+    input: List<PieChartInput>,
+    disableClick: Boolean
 ) {
 
     var circleCenter by remember {
@@ -118,11 +140,12 @@ fun PieChart(
         mutableStateOf(false)
     }
 
+    val mContext = LocalContext.current
     val backgroundColor = MaterialTheme.colorScheme.background
     Box(
-        modifier = modifier.size(120.dp),
+        modifier = modifier,
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -143,52 +166,53 @@ fun PieChart(
                                 offset.x < circleCenter.x + innerRadius && offset.y > circleCenter.y - innerRadius
                             }
 
-                            if (centerClicked) {
-                                inputList = inputList.map {
-                                    it.copy(isTapped = !isCenterTapped)
-                                }
-                                isCenterTapped = !isCenterTapped
-                            } else {
-                                val anglePerValue = 360f / input.sumOf {
-                                    it.value
-                                }
-                                var currAngle = 0f
-                                inputList.forEach { pieChartInput ->
+                            if (!disableClick) {
+                                if (centerClicked) {
+                                    inputList = inputList.map {
+                                        it.copy(isTapped = !isCenterTapped)
+                                    }
+                                    isCenterTapped = !isCenterTapped
+                                } else {
+                                    val anglePerValue = 360f / input.sumOf {
+                                        it.value
+                                    }
+                                    var currAngle = 0f
+                                    inputList.forEach { pieChartInput ->
 
-                                    currAngle += pieChartInput.value * anglePerValue
-                                    if (tapAngleInDegrees < currAngle) {
-                                        val description = pieChartInput.description
-                                        inputList = inputList.map {
-                                            if (description == it.description) {
-                                                it.copy(isTapped = !it.isTapped)
-                                            } else {
-                                                it.copy(isTapped = false)
+                                        currAngle += pieChartInput.value * anglePerValue
+                                        if (tapAngleInDegrees < currAngle) {
+                                            val description = pieChartInput.Title
+                                            inputList = inputList.map {
+                                                if (description == it.Title) {
+                                                    it.copy(isTapped = !it.isTapped)
+                                                } else {
+                                                    it.copy(isTapped = false)
+                                                }
                                             }
+                                            return@detectTapGestures
                                         }
-                                        return@detectTapGestures
                                     }
                                 }
                             }
                         }
                     )
                 }
-        ){
+        ) {
             val width = size.width
             val height = size.height
-            circleCenter = Offset(x= width/2f,y= height/2f)
+            circleCenter = Offset(x = width / 2f, y = height / 2f)
 
             val totalValue = input.sumOf {
                 it.value
             }
-            val anglePerValue = 360f/totalValue
+            val anglePerValue = 360f / totalValue
             var currentStartAngle = 0f
 
             inputList.forEach { pieChartInput ->
-                val scale = if(pieChartInput.isTapped) 1.1f else 1.0f
+                val scale = if (pieChartInput.isTapped && !disableClick) 1.1f else 1.0f
                 val angleToDraw = pieChartInput.value * anglePerValue
                 scale(scale){
                     drawArc(
-//                        brush = brush,
                         color = pieChartInput.color,
                         startAngle = currentStartAngle,
                         sweepAngle = angleToDraw,
@@ -204,78 +228,55 @@ fun PieChart(
                     )
                     currentStartAngle += angleToDraw
                 }
-            }
-
-            inputList.forEach { pieChartInput ->
-                val scale = if(pieChartInput.isTapped) 1.1f else 1.0f
-                val angleToDraw = pieChartInput.value * anglePerValue
-                scale(scale){
-                    drawArc(
-                        brush = pieChartInput.brush!!,
-//                        color = pieChartInput.color,
-                        startAngle = currentStartAngle,
-                        sweepAngle = angleToDraw,
-                        useCenter = true,
-                        size = Size(
-                            width = radius*2f,
-                            height = radius*2f
-                        ),
-                        topLeft = Offset(
-                            (width-radius*2f)/2f,
-                            (height - radius*2f)/2f
-                        )
-                    )
-                    currentStartAngle += angleToDraw
-                }
-                var rotateAngle = currentStartAngle-angleToDraw/2f-90f
+                var rotateAngle = currentStartAngle - angleToDraw / 2f - 90f
                 var factor = 1f
-                if(rotateAngle>90f){
-                    rotateAngle = (rotateAngle+180).mod(360f)
+                if (rotateAngle > 90f) {
+                    rotateAngle = (rotateAngle + 180).mod(360f)
                     factor = -0.92f
                 }
 
                 // text middle of part
-//                val percentage = (pieChartInput.value/totalValue.toFloat()*100).toInt()
-//                drawContext.canvas.nativeCanvas.apply {
-//                    if(percentage>3){
-//                        rotate(rotateAngle){
-//                            drawText(
-//                                "$percentage %",
-//                                circleCenter.x,
-//                                circleCenter.y+(radius-(radius-innerRadius)/2f)*factor,
-//                                Paint().apply {
-//                                    textSize = 13.sp.toPx()
-//                                    textAlign = Paint.Align.CENTER
-//                                    color = Color.White.toArgb()
-//                                }
-//                            )
-//                        }
-//                    }
-//                }
-                if(pieChartInput.isTapped){
+                val percentage = (pieChartInput.value/totalValue.toFloat()*100).toInt()
+                drawContext.canvas.nativeCanvas.apply {
+                    if(percentage>3){
+                        rotate(rotateAngle){
+                            drawText(
+                                "$percentage %",
+                                circleCenter.x,
+                                circleCenter.y+(radius-(radius-innerRadius)/2f)*factor,
+                                Paint().apply {
+                                    textSize = 13.sp.toPx()
+                                    textAlign = Paint.Align.CENTER
+                                    color = Color.White.toArgb()
+                                }
+                            )
+                        }
+                    }
+                }
+                if(pieChartInput.isTapped && !disableClick){
                     val tabRotation = currentStartAngle - angleToDraw - 90f
-                    rotate(tabRotation){
+                    rotate(tabRotation) {
                         drawRoundRect(
                             topLeft = circleCenter,
-                            size = Size(12f,radius*1.2f),
+                            size = Size(12f, radius * 1.2f),
                             color = Color.Gray,
-                            cornerRadius = CornerRadius(15f,15f)
+                            cornerRadius = CornerRadius(15f, 15f)
                         )
                     }
-                    rotate(tabRotation+angleToDraw){
+                    rotate(tabRotation + angleToDraw) {
                         drawRoundRect(
                             topLeft = circleCenter,
-                            size = Size(12f,radius*1.2f),
+                            size = Size(12f, radius * 1.2f),
                             color = Color.Gray,
-                            cornerRadius = CornerRadius(15f,15f)
+                            cornerRadius = CornerRadius(15f, 15f)
                         )
                     }
-                    rotate(rotateAngle){
+                    rotate(rotateAngle) {
                         drawContext.canvas.nativeCanvas.apply {
                             drawText(
-                                "${pieChartInput.description}: ${pieChartInput.value}",
+                                "${pieChartInput.Title}: ${pieChartInput.value}",
                                 circleCenter.x,
-                                circleCenter.y + radius*1.3f*factor,
+                                circleCenter.y + radius * 1.3f * factor,
                                 Paint().apply {
                                     textSize = 22.sp.toPx()
                                     textAlign = Paint.Align.CENTER
@@ -288,13 +289,39 @@ fun PieChart(
                 }
             }
 
-            if(inputList.first().isTapped){
-                rotate(-90f){
+            inputList.forEach { pieChartInput ->
+                val scale = if (pieChartInput.isTapped && !disableClick) 1.1f else 1.0f
+                val angleToDraw = pieChartInput.value * anglePerValue
+                val brushPattern = ContextCompat.getDrawable(mContext, pieChartInput.brushPattern)?.toBitmap(700, 2000)
+                val brush = ShaderBrush(ImageShader(brushPattern!!.asImageBitmap()))
+                scale(scale) {
+                    drawArc(
+                        brush = brush,
+                        startAngle = currentStartAngle,
+                        sweepAngle = angleToDraw,
+                        useCenter = true,
+                        size = Size(
+                            width = radius*2f,
+                            height = radius*2f
+                        ),
+                        topLeft = Offset(
+                            (width-radius*2f)/2f,
+                            (height - radius*2f)/2f
+                        ),
+                        colorFilter = ColorFilter.tint(color = Color.White),
+                        alpha = 0.5f
+                    )
+                    currentStartAngle += angleToDraw
+                }
+            }
+
+            if (inputList.first().isTapped && !disableClick) {
+                rotate(-90f) {
                     drawRoundRect(
                         topLeft = circleCenter,
-                        size = Size(12f,radius*1.2f),
+                        size = Size(12f, radius * 1.2f),
                         color = Color.Gray,
-                        cornerRadius = CornerRadius(15f,15f)
+                        cornerRadius = CornerRadius(15f, 15f)
                     )
                 }
             }
@@ -311,18 +338,17 @@ fun PieChart(
             }
 
             drawCircle(
-                color = Color.White.copy(0.2f),
-                radius = innerRadius+transparentWidth/2f
+                color = backgroundColor.copy(0.2f),
+                radius = innerRadius + transparentWidth / 2f
             )
-
         }
     }
 }
 
 data class PieChartInput(
-    val color:Color,
-    val brush: Brush? = null,
-    val value:Int,
-    val description:String,
-    val isTapped:Boolean = false
+    val color: Color,
+    val brushPattern: Int,
+    val value: Long,
+    val Title: String,
+    val isTapped: Boolean = false
 )

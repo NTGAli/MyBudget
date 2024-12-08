@@ -509,3 +509,20 @@ fun convertToFirstDay(timestamp: Long, granularity: Int, zoneId: ZoneId = ZoneId
 
     return adjustedDateTime.atZone(zoneId).toInstant().toEpochMilli()
 }
+
+fun Long.withSuffix(): String {
+    if (this < 1_000) return "" + this
+    if (this < 1_000_000){
+        val format = DecimalFormat("0.#")
+        val value: String = format.format(this / 1000.0)
+        return "$value هزار"
+    }
+    if (this < 1_000_000_000){
+        val format = DecimalFormat("0.##")
+        val value: String = format.format(this / 1000000.0)
+        return "$value میلیون"
+    }
+    val format = DecimalFormat("0.###")
+    val value: String = format.format(this / 1000000000.0)
+    return "$value میلیارد"
+}

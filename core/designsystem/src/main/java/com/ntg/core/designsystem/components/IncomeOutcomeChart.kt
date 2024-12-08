@@ -24,9 +24,7 @@ import com.ntg.core.mybudget.common.toPersianMonthlyDate
 import com.ntg.mybudget.core.designsystem.R
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLineComponent
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisTickComponent
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberTop
 import com.patrykandpatrick.vico.compose.cartesian.cartesianLayerPadding
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
@@ -144,12 +142,18 @@ private fun ChartLineAndColumns(
                     }
                 )
             ),
-            bottomAxis = HorizontalAxis.rememberBottom(
+//            bottomAxis = HorizontalAxis.rememberBottom(
+//                valueFormatter = bottomAxisValueFormatter(),
+//                guideline = null,
+//                line = rememberAxisLineComponent(color = MaterialTheme.colorScheme.outlineVariant),
+//                label = rememberAxisLabelComponent(color = MaterialTheme.colorScheme.outlineVariant),
+//                tick = rememberAxisTickComponent(color = MaterialTheme.colorScheme.outlineVariant),
+//                itemPlacer = remember { HorizontalAxis.ItemPlacer.segmented() }
+//            ),
+            topAxis = HorizontalAxis.rememberTop(
                 valueFormatter = bottomAxisValueFormatter(),
-                guideline = null,
-                line = rememberAxisLineComponent(color = MaterialTheme.colorScheme.outlineVariant),
+                guideline = null, line = null, tick = null,
                 label = rememberAxisLabelComponent(color = MaterialTheme.colorScheme.outlineVariant),
-                tick = rememberAxisTickComponent(color = MaterialTheme.colorScheme.outlineVariant),
                 itemPlacer = remember { HorizontalAxis.ItemPlacer.segmented() }
             ),
             marker = rememberMarker(),
