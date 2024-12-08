@@ -29,39 +29,33 @@ import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.Constants.BudgetType
 import com.ntg.core.mybudget.common.convertToFirstDay
 import com.ntg.mybudget.core.designsystem.R
-import kotlin.random.Random
 
 @Composable
-fun ReportRoute() {
-
-    ReportScreen()
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReportScreen(
+fun ReportRoute(
     reportViewModel: ReportViewModel = hiltViewModel()
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val walletIds = reportViewModel.selectedWalletsIds().collectAsStateWithLifecycle(initialValue = null)
     val transactions = reportViewModel.transactions(walletIds.value.orEmpty()).collectAsStateWithLifecycle(initialValue = null)
-
 
     val incomeTransactions = transactions
         .value?.filter { it.type == BudgetType.INCOME }.orEmpty()
         .groupBy { convertToFirstDay(it.date, Constants.FilterTime.DAY) }
         .mapValues { (_, group) -> group.sumOf { it.amount } }
 
+
     val expenseTransactions = transactions
         .value?.filter { it.type == BudgetType.EXPENSE }.orEmpty()
         .groupBy { convertToFirstDay(it.date, Constants.FilterTime.DAY) }
         .mapValues { (_, group) -> group.sumOf { it.amount } }
 
+
     val avgTransaction = transactions.value?.groupBy { convertToFirstDay(it.date, Constants.FilterTime.DAY) }
         .orEmpty().mapValues { (_, group) -> group.map { it.amount }.average().toLong() }
 
-    val categoryExpenseTransactions = transactions
+
+    val categories by reportViewModel.getCategories().collectAsStateWithLifecycle(initialValue = emptyList())
+    val expenseTransactionsWithCategory = transactions
         .value?.filter { it.type == BudgetType.EXPENSE }.orEmpty()
         .groupBy { transaction ->
             transaction.categoryId ?: 0
@@ -70,8 +64,43 @@ fun ReportScreen(
             group.sumOf { it.amount }
         }
 
-    val categories by reportViewModel.getCategories().collectAsStateWithLifecycle(initialValue = emptyList())
 
+    val donutChartData = expenseTransactionsWithCategory.map { (categoryId, amount) ->
+        PieChartInput(
+            color = MaterialTheme.colorScheme.primary,// Temporary placeholder color
+            brushPattern = R.drawable.default_pattern,
+            value = amount,
+            Title = categories?.find { it.id  == categoryId }?.name.orEmpty()
+        )
+    }.sortedByDescending { it.value }
+        .take(4)
+        .mapIndexed { index, pieChartInput ->
+            val color = when (index) {
+                0 -> MaterialTheme.colorScheme.primary
+                1 -> MaterialTheme.colorScheme.secondary
+                2 -> MaterialTheme.colorScheme.tertiary
+                else -> MaterialTheme.colorScheme.error
+            }
+            pieChartInput.copy(color = color)
+        }
+
+    ReportScreen(
+        incomeTransactions,
+        expenseTransactions,
+        avgTransaction,
+        donutChartData
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReportScreen(
+    incomeTransactions: Map<Long, Long>,
+    expenseTransactions: Map<Long, Long>,
+    avgTransaction: Map<Long, Long>,
+    donutChartData: List<PieChartInput>
+) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -90,56 +119,29 @@ fun ReportScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(padding)
         ) {
+
             // Income Outcome Chart
             if (incomeTransactions.isNotEmpty() && expenseTransactions.isNotEmpty() && avgTransaction.isNotEmpty()) {
                 IncomeOutcomeChart(
-                    incomeList = remember(incomeTransactions) { incomeTransactions.toMap() }.toMutableMap(),
-                    outcomeList = remember(expenseTransactions) { expenseTransactions.toMap() }.toMutableMap(),
-                    walletBalance = remember(avgTransaction) { avgTransaction.toMap() }.toMutableMap(),
+                    incomeList = incomeTransactions.toMutableMap(),
+                    outcomeList = expenseTransactions.toMutableMap(),
+                    walletBalance = avgTransaction.toMutableMap(),
                 )
             }
-            Spacer(modifier = Modifier.height(40.dp))
+
+            // Expense transaction with category
+            if (donutChartData.isNotEmpty())
+                ExpenseDonutChart(donutChartData, disableClick = true, modifier = Modifier.padding(top = 40.dp))
 
 
-
-            val data = categoryExpenseTransactions.map { (categoryId, amount) ->
-                PieChartInput(
-                    color = MaterialTheme.colorScheme.primary,// Temporary placeholder color
-                    brushPattern = R.drawable.default_pattern,
-                    value = amount,
-                    Title = categories?.find { it.id  == categoryId }?.name.orEmpty()
-                )
-            }.sortedByDescending { it.value }
-            .take(4)
-            .mapIndexed { index, pieChartInput ->
-                val color = when (index) {
-                    0 -> MaterialTheme.colorScheme.primary
-                    1 -> MaterialTheme.colorScheme.secondary
-                    2 -> MaterialTheme.colorScheme.tertiary
-                    else -> MaterialTheme.colorScheme.error
-                }
-                pieChartInput.copy(color = color)
-            }
-
-            if ( data.isNotEmpty())  ExpenseDonutChart(data, disableClick = true)
-
-
-            Spacer(modifier = Modifier.height(16.dp))
             val thisWeekState = remember { listOf(BudgetType.INCOME, BudgetType.EXPENSE, BudgetType.EXPENSE, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING) }
             val previousWeek = remember { listOf(BudgetType.INCOME, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.EXPENSE, BudgetType.EXPENSE, BudgetType.EXPENSE,) }
 
             TwoWeekOverviewChart(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 thisWeekState = thisWeekState,
                 previousWeek = previousWeek
             )
         }
     }
-}
-
-fun generateRandomColor(): Int {
-    val red = Random.nextInt(256) // Generate a random value for red (0-255)
-    val green = Random.nextInt(256) // Generate a random value for green (0-255)
-    val blue = Random.nextInt(256) // Generate a random value for blue (0-255)
-    return android.graphics.Color.rgb(red, green, blue) // Combine into a color
 }

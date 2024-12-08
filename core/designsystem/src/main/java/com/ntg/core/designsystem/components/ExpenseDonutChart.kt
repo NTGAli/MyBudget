@@ -54,11 +54,12 @@ fun ExpenseDonutChartPreview() {
 @Composable
 fun ExpenseDonutChart(
     outcomeList: List<PieChartInput>,
-    disableClick: Boolean
+    disableClick: Boolean,
+    modifier: Modifier = Modifier
 ) {
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .height(215.dp)
             .fillMaxWidth()
     ) {
