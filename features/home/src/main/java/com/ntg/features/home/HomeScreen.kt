@@ -335,7 +335,6 @@ private fun HomeScreen(
 
                 val init = transactions.value?.filter { it.type == Constants.BudgetType.INIT }
                     .orEmpty().sumOf { it.amount }
-                logd("AWDJWAJDLWAJKD ::::: $init")
                 val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
                     .orEmpty().sumOf { it.amount }
                 val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }

@@ -35,8 +35,8 @@ private fun TwoWeekOverviewChartPreview(modifier: Modifier = Modifier) {
     MyBudgetTheme(darkTheme = false) {
         Surface {
 
-            val thisWeekState = remember { listOf(BudgetType.INCOME, BudgetType.EXPENSE, BudgetType.EXPENSE, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING) }
-            val previousWeek = remember { listOf(BudgetType.INCOME, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.EXPENSE, BudgetType.EXPENSE, BudgetType.EXPENSE,) }
+            val thisWeekState = remember { mutableListOf(BudgetType.INCOME, BudgetType.EXPENSE, BudgetType.EXPENSE, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING) }
+            val previousWeek = remember { mutableListOf(BudgetType.INCOME, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.NOTHING, BudgetType.EXPENSE, BudgetType.EXPENSE, BudgetType.EXPENSE,) }
 
             TwoWeekOverviewChart(
                 thisWeekState,
@@ -49,8 +49,8 @@ private fun TwoWeekOverviewChartPreview(modifier: Modifier = Modifier) {
 
 @Composable
 fun TwoWeekOverviewChart(
-    thisWeekState: List<Int>,
-    previousWeek: List<Int>,
+    thisWeekState: MutableList<Int>,
+    previousWeek: MutableList<Int>,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -62,7 +62,7 @@ fun TwoWeekOverviewChart(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         WeeklyOverview(stringResource(R.string.ThisWeek), thisWeekState)
         WeeklyOverview(stringResource(R.string.PreviousWeek), previousWeek)
@@ -70,7 +70,7 @@ fun TwoWeekOverviewChart(
 }
 
 @Composable
-private fun WeeklyOverview(title: String, data: List<Int>) {
+private fun WeeklyOverview(title: String, data: MutableList<Int>) {
 
     val green = MaterialTheme.colorScheme.secondary
     val red = MaterialTheme.colorScheme.error
