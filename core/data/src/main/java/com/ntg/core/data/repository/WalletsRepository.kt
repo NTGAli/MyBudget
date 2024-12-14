@@ -27,6 +27,7 @@ interface WalletsRepository {
 
     fun getSourceDetails(id: Int): Flow<Wallet?>
 
+    suspend fun getSelectedWalletIds(): Flow<List<Int>>
 
     suspend fun getSelectedSources(): Flow<List<Wallet>>
 

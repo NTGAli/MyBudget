@@ -14,8 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
 import com.ntg.features.home.Home_Route
+import com.ntg.features.home.Insert_Route
 import com.ntg.features.profile.editProfile.Edit_Profile_Route
-import com.ntg.features.profile.profile.Profile_Route
 import com.ntg.features.report.navigateToReport
 import com.ntg.features.setup.Create_Account_Route
 import com.ntg.features.setup.Setup_Route
@@ -79,12 +79,14 @@ class BudgetAppState(
             Setup_Route,
             Source_Route,
             Edit_Profile_Route,
-            Home_Route-> {
+            Home_Route,
+            Insert_Route
+            -> {
                 true
             }
             else -> {
                 val route = currentDestination?.route.orEmpty()
-                route.startsWith(Source_Route) || route.startsWith(Create_Account_Route)
+                route.startsWith(Source_Route) || route.startsWith(Create_Account_Route) || route.startsWith(Insert_Route)
             }
         }
 

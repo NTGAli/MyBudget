@@ -51,13 +51,14 @@ import kotlin.math.roundToInt
 fun SwitchText(
     modifier: Modifier = Modifier,
     items: List<SwitchItem>,
+    defaultSelected: Int = 0,
     selected: (Int) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
 
     var width by remember { mutableIntStateOf(0) }
 
-    var itemSelected by rememberSaveable { mutableIntStateOf(0) }
+    var itemSelected by rememberSaveable(defaultSelected) { mutableIntStateOf(defaultSelected) }
 
     val offsetSelected = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
 

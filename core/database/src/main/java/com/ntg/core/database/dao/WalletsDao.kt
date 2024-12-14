@@ -53,6 +53,13 @@ interface WalletsDao {
     """)
     suspend fun getSourcesByAccount(): List<WalletDetails>
 
+    @Query("""
+        SELECT id
+        FROM wallets 
+        where isSelected = 1
+    """)
+    suspend fun getSelectedWalletIds(): List<Int>
+
     @Transaction
     suspend fun getSourcesWithDetails(accountId: Int): List<SourceWithDetail> {
         return emptyList()
@@ -75,7 +82,8 @@ interface WalletsDao {
     @Transaction
     @Query(
         """
-        SELECT * FROM wallets WHERE isSelected = 1
+        SELECT * FROM wallets
+        WHERE isSelected = 1
         """
     )
     suspend fun getSelectedSources(): List<WalletEntity>

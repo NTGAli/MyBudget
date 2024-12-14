@@ -51,8 +51,7 @@ fun DateDivider(
                 Icon(
                     modifier = Modifier
                         .padding(start = 4.dp)
-                        .size(16.dp)
-                        .background(color = if (amount > 0) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(4.dp)),
+                        .size(16.dp),
                     painter = painterResource(id = if (amount > 0) BudgetIcons.plus else BudgetIcons.minus),
                     contentDescription = "", tint = if (amount > 0) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error
                 )

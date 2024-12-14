@@ -27,12 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +40,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
-import com.ntg.core.model.Contact
 import com.ntg.designsystem.util.CompressImage
 import com.ntg.mybudget.core.designsystem.R
 import java.io.File
@@ -54,12 +49,20 @@ import java.io.FileOutputStream
 fun ImagePicker(
     modifier: Modifier = Modifier,
     padding: PaddingValues = PaddingValues(),
+    images: List<String>? = null,
     imagePaths: (List<String>) -> Unit = {}
 ) {
 
     val context = LocalContext.current
 
-    val imagePath = remember {
+    val imagePath = remember(images) {
+        mutableStateListOf<String>().apply {
+            addAll(images.orEmpty())
+            distinct()
+        }
+    }
+
+    val paths = remember {
         mutableStateListOf<String>()
     }
 
@@ -68,17 +71,19 @@ fun ImagePicker(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri == null || uri.toString().isEmpty()) return@rememberLauncherForActivityResult
-            val compressImage = CompressImage(context)
-            val bitmap = compressImage.compressImage(uri.toString())
-            imagePath.add(
-                saveImageInFolder(
-                    bitmap,
-                    context,
-                    System.currentTimeMillis().toString(),
-                ).path
-            )
-            imagePaths(imagePath)
-//            imagePath = uri.path
+            if (uri.path !in paths){
+                paths.add(uri.path.orEmpty())
+                val compressImage = CompressImage(context)
+                val bitmap = compressImage.compressImage(uri.toString())
+                imagePath.add(
+                    saveImageInFolder(
+                        bitmap,
+                        context,
+                        System.currentTimeMillis().toString(),
+                    ).path
+                )
+                imagePaths(imagePath)
+            }
         },
     )
 
@@ -117,7 +122,8 @@ fun ImagePicker(
         ImagesPreview(
             modifier,
             imagePath,
-            padding
+            padding,
+            removeAble = true
         ) {
             InsertImage(mediaPicker)
         }
@@ -193,6 +199,7 @@ fun ImagesPreview(
     imagePath: SnapshotStateList<String> = remember { mutableStateListOf() },
     padding: PaddingValues,
     removeAble: Boolean = false,
+    onClick:(String) -> Unit = {},
     customItem: @Composable () -> Unit = {}
 ) {
     LazyRow(
@@ -205,7 +212,10 @@ fun ImagesPreview(
                     modifier = Modifier
                         .padding(end = 12.dp)
                         .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            onClick(path)
+                        },
                     bitmap = loadImageFromFile(filePath = path)!!.asImageBitmap(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
@@ -234,7 +244,7 @@ fun ImagesPreview(
         }
 
         item {
-//            customItem()
+            customItem()
         }
     }
 }

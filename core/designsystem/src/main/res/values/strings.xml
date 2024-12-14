@@ -47,6 +47,7 @@
     <string name="to">به</string>
     <string name="fee">کارمزد</string>
     <string name="MySession">شما</string>
+    <string name="close">بستن</string>
 
     // home
     <string name="items_format">%s مورد</string>
@@ -138,4 +139,7 @@
 
     // Report
     <string name="Report">گزارش مالی</string>
+    <string name="delete_transaction_title">حذف تراکنش</string>
+    <string name="delete_transaction_desc">آیا مطمئن هستید که این تراکنش را می خواهید حذف کنید؟</string>
+    <string name="yes">بله</string>
 </resources>

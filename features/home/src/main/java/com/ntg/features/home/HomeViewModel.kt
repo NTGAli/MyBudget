@@ -3,12 +3,15 @@ package com.ntg.features.home
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.CategoryRepository
 import com.ntg.core.data.repository.ConfigRepository
 import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepository
+import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
@@ -16,6 +19,7 @@ import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.mybudget.common.Constants
+import com.ntg.core.mybudget.common.logd
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -97,13 +101,36 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+
+    fun updateTransaction(transaction: Transaction){
+        viewModelScope.launch {
+            transactionsRepository.updateTransaction(transaction)
+        }
+    }
+
     fun transactionById(id: Int): MutableStateFlow<Transaction?>{
         viewModelScope.launch {
             transactionsRepository.transactionById(id).collect{
+                it?.apply {
+                    contacts = parseContactsJson(contactsJson)
+                }
                 _transaction.value = it
             }
         }
         return _transaction
+    }
+
+    private fun parseContactsJson(contactsJson: String?): List<Contact> {
+        return if (!contactsJson.isNullOrEmpty()) {
+            try {
+                val type = object : TypeToken<List<Contact>>() {}.type
+                Gson().fromJson(contactsJson, type)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
     }
     fun getLocalUserBanks(): MutableStateFlow<List<Bank>?> {
         viewModelScope.launch {
@@ -129,6 +156,12 @@ class HomeViewModel @Inject constructor(
         }
         if (context != null) {
             Sync.initialize(context = context)
+        }
+    }
+
+    fun deleteTransaction(id: Int){
+        viewModelScope.launch {
+            transactionsRepository.deleteTransaction(id)
         }
     }
 

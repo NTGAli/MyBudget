@@ -8,6 +8,8 @@ import com.ntg.core.model.ProfileActions
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.features.home.homeScreen
 import com.ntg.features.home.navigateToHome
+import com.ntg.features.home.navigateToImageFull
+import com.ntg.features.home.navigateToInsert
 import com.ntg.features.profile.appearance.appearanceScreen
 import com.ntg.features.profile.appearance.navigateToAppearance
 import com.ntg.features.profile.editProfile.editProfileScreen
@@ -80,8 +82,10 @@ fun BudgetNavHost(
             navigateToAccount = navController::navigateToCreateAccount,
             navigateToProfile = navController::navigateToProfile,
             navigateToDetail = navController::navigateToTransaction,
+            navToImageFull = navController::navigateToImageFull,
             onShowSnackbar = onShowSnackbar,
-            onBack = navController::popBackStack
+            onBack = navController::popBackStack,
+            navigateToEdit = navController::navigateToInsert
         )
 
         profileScreen(

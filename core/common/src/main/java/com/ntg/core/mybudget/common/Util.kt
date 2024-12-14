@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ntg.core.model.DataBank
+import com.ntg.core.model.Transaction
 import com.ntg.core.mybudget.common.persianDate.PersianDate
 import java.io.BufferedReader
 import java.io.IOException
@@ -17,6 +18,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import java.text.NumberFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Stack
 import java.util.TimeZone
@@ -482,4 +486,17 @@ fun convertDateTime(inputDateTime: String): String {
 fun formatTimestampToTime(timestamp: Long): String {
     val dateFormat = SimpleDateFormat("h:mm a", Locale("fa", "IR"))
     return dateFormat.format(Date(timestamp))
+}
+
+fun convertToFirstDay(timestamp: Long, granularity: Int, zoneId: ZoneId = ZoneId.systemDefault()): Long {
+    val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId)
+
+    val adjustedDateTime = when (granularity) {
+        Constants.FilterTime.DAY -> dateTime.toLocalDate().atStartOfDay() // First hour of the day
+        Constants.FilterTime.MONTH -> dateTime.withDayOfMonth(1).toLocalDate().atStartOfDay() // First day of the month
+        Constants.FilterTime.YEAR -> dateTime.withDayOfYear(1).toLocalDate().atStartOfDay() // First day of the year
+        else -> throw IllegalArgumentException("Unsupported granularity: $granularity. Use 'day', 'month', or 'year'.")
+    }
+
+    return adjustedDateTime.atZone(zoneId).toInstant().toEpochMilli()
 }

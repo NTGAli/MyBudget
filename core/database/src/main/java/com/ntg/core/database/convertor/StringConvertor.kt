@@ -66,4 +66,28 @@ class Converters {
             null
         }
     }
+
+
+    @TypeConverter
+    fun toContacts(json: String?): List<Contact> {
+        if (json.isNullOrEmpty()) return emptyList()
+        return try {
+            val type = object : TypeToken<List<Contact>>() {}.type
+            Gson().fromJson(json, type)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    @TypeConverter
+    fun toJsonContacts(contacts: List<Contact>?): String {
+        if (contacts.isNullOrEmpty()) return "[]"
+        return try {
+            Gson().toJson(contacts)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "[]"
+        }
+    }
 }
