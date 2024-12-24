@@ -142,4 +142,8 @@
     <string name="delete_transaction_title">حذف تراکنش</string>
     <string name="delete_transaction_desc">آیا مطمئن هستید که این تراکنش را می خواهید حذف کنید؟</string>
     <string name="yes">بله</string>
+    <string name="searchInPeople">جست و جو درمیان افراد</string>
+    <string name="no_contact">مخاطبی وحود نداره!</string>
+    <string name="import_new">اضافه کردن مخاطب جدید</string>
+    <string name="confirm">تایید</string>
 </resources>

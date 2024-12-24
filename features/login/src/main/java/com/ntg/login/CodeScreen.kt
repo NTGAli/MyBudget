@@ -127,86 +127,12 @@ fun CodeRoute(
         if (isSucceeded.value) {
             loginViewModel.serverAccounts()
 //            delay(800)
-            loginViewModel.serverAccounts.collect {
-                when (it) {
-                    is Result.Error -> {
-                        loginViewModel.loginUiState.value = LoginUiState.Error
-                        scope.launch {
-                            onShowSnackbar(R.string.err_fetch_data, null, null)
-                        }
-                        loginViewModel.logout()
-                        onBack()
-                    }
-
-                    is Result.Loading -> {
-//                        loginViewModel.loginUiState.value = LoginUiState.Loading
-                    }
-
-                    is Result.Success -> {
-                        loginViewModel.loginUiState.value = LoginUiState.Success
-                        it.data?.forEach { account ->
-                            val localAccountId =
-                                if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
-                            loginViewModel.insertNewAccount(
-                                Account(
-                                    id = localAccountId,
-                                    sId = account.id,
-                                    name = account.name.orEmpty(),
-                                    isDefault = account.isDefault.orFalse(),
-                                    isSelected = (account.isDefault.orFalse() && (it.data.orEmpty()
-                                        .first().wallets.orEmpty()
-                                        .isNotEmpty() || it.data.orEmpty().size > 1)),
-                                    isSynced = true,
-                                    dateCreated = account.createdAt.orEmpty()
-                                )
-                            )
-                            account.wallets.orEmpty().forEach { wallet ->
-
-                                var data: SourceType? = null
-
-                                if (wallet.walletType == 1) {
-                                    data = SourceType.BankCard(
-                                        number = wallet.details.cardNumber.orEmpty(),
-                                        cvv = wallet.details.cvv2.orEmpty(),
-                                        sheba = wallet.details.sheba,
-                                        name = wallet.details.cardOwner.orEmpty(),
-                                        bankId = try {
-                                            wallet.details.bankId!!.toInt()
-                                        } catch (e: Exception) {
-                                            -1
-                                        }
-                                    )
-                                }
-
-                                loginViewModel.insertNewSource(
-                                    Wallet(
-                                        id = 0,
-                                        sId = wallet.id.orEmpty(),
-                                        type = wallet.walletType,
-                                        accountId = localAccountId,
-                                        icon = null,
-                                        currencyId = wallet.currencyId,
-                                        isSelected = false,
-                                        isSynced = true,
-                                        dateCreated = wallet.createdAt.orEmpty(),
-                                        data = data
-                                    )
-                                )
-
-
-                            }
-
-                        }
-                        Sync.updateConfigs(context = context)
-                        finishLogin(
-                            if (it.data.orEmpty().size == 1 && it.data.orEmpty()
-                                    .first().wallets.orEmpty().isEmpty()
-                            ) "SetupRoute" else "home_route"
-                        )
-                    }
+            loginViewModel.serverDataAccounts(context,onBack = {
+                scope.launch {
+                    onShowSnackbar(R.string.err_fetch_data, null, null)
                 }
-
-            }
+                onBack()
+            }, finishLogin)
         } else loginViewModel.loginUiState.value = LoginUiState.Success
     }
 }

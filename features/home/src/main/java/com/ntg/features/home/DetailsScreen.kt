@@ -205,7 +205,7 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
 
 
 
-            if (transaction.value?.contacts.orEmpty().isNotEmpty()) {
+            if (transaction.value?.contactIds.orEmpty().isNotEmpty()) {
                 // contacts
                 TextDivider(
                     modifier = Modifier

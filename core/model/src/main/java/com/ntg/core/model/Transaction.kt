@@ -14,6 +14,7 @@ data class Transaction(
     val note: String? = null,
     val images: List<String>? = null,
     val tags: List<String>? = null,
+    var contactIds: List<String>? = null,
     var contacts: List<Contact>? = null,
     val contactsJson: String? = null,
     val walletData: SourceType? = null

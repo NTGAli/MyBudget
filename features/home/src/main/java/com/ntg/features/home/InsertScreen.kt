@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,17 +59,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
+import com.ntg.core.designsystem.components.ButtonSize
+import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.ImagePicker
+import com.ntg.core.designsystem.components.Popup
 import com.ntg.core.designsystem.components.SampleItem
+import com.ntg.core.designsystem.components.SearchTextField
 import com.ntg.core.designsystem.components.SwitchText
 import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TextDivider
+import com.ntg.core.designsystem.model.PopupItem
+import com.ntg.core.designsystem.model.PopupType
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Contact
+import com.ntg.core.model.Person
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
@@ -79,10 +89,13 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.isOperator
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
+import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 @Composable
 fun InsertRoute(
@@ -106,6 +119,8 @@ fun InsertRoute(
     val localBanks =
         homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
 
+    val contacts = homeViewModel.getContacts().collectAsStateWithLifecycle().value
+
     val transaction = remember { mutableStateOf<Transaction?>(null) }
     val updatedTransaction = remember { mutableStateOf<Transaction?>(null) }
 
@@ -121,11 +136,15 @@ fun InsertRoute(
         expandTransaction = isPresent,
         currentResource = currentResource.value,
         logoUrl = logoUrlColor,
+        contacts = contacts,
         localBanks = localBanks,
         categories = categories.value,
         onShowSnackbar = onShowSnackbar,
         transaction = transaction.value,
-        closeable = true
+        closeable = true,
+        newContact = {
+            homeViewModel.insertContact(it)
+        }
     ) {
         updatedTransaction.value = it
     }
@@ -172,13 +191,15 @@ fun InsertRoute(
 fun InsertScreen(
     expandTransaction: MutableState<Boolean>,
     currentResource: List<Wallet>?,
+    contacts: List<Contact>?,
     logoUrl: String?,
     localBanks: SnapshotStateList<Bank>?,
     categories: List<Category>?,
     transaction: Transaction? = null,
     closeable: Boolean = false,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
-    onTransactionChange: (Transaction) -> Unit
+    newContact: (Contact) -> Unit,
+    onTransactionChange: (Transaction) -> Unit,
 ) {
 
     val context = LocalContext.current
@@ -201,7 +222,7 @@ fun InsertScreen(
     }
 
     val tags = remember { mutableStateListOf<String>() }
-    val contacts = remember { mutableStateListOf<Contact>() }
+    val people = remember { mutableStateListOf<Person>() }
     val images = remember { mutableStateListOf<String>() }
 
 
@@ -215,9 +236,9 @@ fun InsertScreen(
 
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
-    var opendKeyboard by remember {
+    var openedKeyboard by remember {
         mutableStateOf(false)
     }
     val layoutDirection = LocalLayoutDirection.current
@@ -225,6 +246,8 @@ fun InsertScreen(
     var budgetType by remember {
         mutableIntStateOf(Constants.BudgetType.EXPENSE)
     }
+
+    val searchContactQuery = remember { mutableStateOf("") }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -250,12 +273,13 @@ fun InsertScreen(
                             it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
                         val phoneNumber =
                             it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                        val contact = Contact(
-                            fullName = name,
-                            phoneNumber = phoneNumber,
+                        newContact(
+                            Contact(
+                                fullName = name,
+                                phoneNumber = phoneNumber,
+                            )
                         )
-
-                        contacts.add(contact)
+                        people.add(Person(0, phoneNumber, 0))
                     }
                 }
             }
@@ -272,8 +296,8 @@ fun InsertScreen(
             images.addAll(transaction.images.orEmpty())
             tags.clear()
             tags.addAll(transaction.tags.orEmpty())
-            contacts.clear()
-            contacts.addAll(transaction.contacts.orEmpty())
+            people.clear()
+//            contacts.addAll(transaction.contacts.orEmpty())
             note.value = transaction.note.orEmpty()
             selectedSource = currentResource.orEmpty().find { it.id == transaction.sourceId }
             selectedCategory = categories.orEmpty().find { it.id == transaction.categoryId }
@@ -294,7 +318,7 @@ fun InsertScreen(
                 note = note.value,
                 images = images,
                 tags = tags,
-                contacts = contacts
+                contactIds = people.map { it.contactId }
             )
         )
     }
@@ -307,7 +331,7 @@ fun InsertScreen(
             note.value = ""
             budgetType = Constants.BudgetType.EXPENSE
             tags.clear()
-            contacts.clear()
+            people.clear()
             images.clear()
         }
     }
@@ -405,7 +429,7 @@ fun InsertScreen(
                 readOnly = true,
                 onClick = {
                     sheetType = 0
-                    opendKeyboard = true
+                    openedKeyboard = true
                     input = amount.value.replace(",", "")
                     lastInput = ""
                 }
@@ -438,7 +462,7 @@ fun InsertScreen(
                     onClick = {
                         sheetType = 1
                         selectSourceType = 1
-                        opendKeyboard = true
+                        openedKeyboard = true
                     }
                 )
             }
@@ -470,7 +494,7 @@ fun InsertScreen(
                         onClick = {
                             sheetType = 1
                             selectSourceType = 1
-                            opendKeyboard = true
+                            openedKeyboard = true
                         }
                     )
 
@@ -498,7 +522,7 @@ fun InsertScreen(
                         onClick = {
                             sheetType = 1
                             selectSourceType = 2
-                            opendKeyboard = true
+                            openedKeyboard = true
                         }
                     )
 
@@ -514,7 +538,7 @@ fun InsertScreen(
                         readOnly = true,
                         onClick = {
                             sheetType = 0
-                            opendKeyboard = true
+                            openedKeyboard = true
                             input = amount.value
                             lastInput = amount.value
                         }
@@ -535,7 +559,7 @@ fun InsertScreen(
                     readOnly = true,
                     onClick = {
                         sheetType = 2
-                        opendKeyboard = true
+                        openedKeyboard = true
                     }
                 )
             }
@@ -605,21 +629,23 @@ fun InsertScreen(
                     modifier = Modifier.padding(end = 8.dp),
                     icon = painterResource(id = BudgetIcons.Add)
                 ) {
-                    val intent = Intent(Intent.ACTION_PICK).apply {
-                        type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
-                    }
-                    launcher.launch(intent)
+                    sheetType = 3
+                    openedKeyboard = true
                 }
 
-                contacts.forEach {
+                people.forEach {person ->
                     Tag(
                         modifier = Modifier.padding(end = 8.dp),
-                        text = it.fullName,
+                        text = try {
+                            contacts.orEmpty().first { it.phoneNumber == person.contactId }.fullName
+                        }catch (e: Exception) {
+                            ""
+                        },
                         dismissClick = {
-                            contacts.remove(it)
+                            people.remove(person)
                         }
                     ) {
-                        contacts.remove(it)
+                        people.remove(person)
                     }
                 }
 
@@ -664,15 +690,17 @@ fun InsertScreen(
     }
 
     LaunchedEffect(key1 = sheetState.currentValue) {
-        opendKeyboard = sheetState.isVisible
+        openedKeyboard = sheetState.isVisible
     }
 
-    if (opendKeyboard) {
+    if (openedKeyboard) {
 
         ModalBottomSheet(
+            modifier = Modifier.then(if (sheetType == 3) Modifier.fillMaxHeight() else Modifier),
             sheetState = sheetState,
             onDismissRequest = {
-                opendKeyboard = false
+                searchContactQuery.value = ""
+                openedKeyboard = false
             }) {
 
             when (sheetType) {
@@ -807,13 +835,13 @@ fun InsertScreen(
 
                 2 -> {
                     LazyColumn {
-                        items(categories.orEmpty().filter { it.type == budgetType }) {
+                        items(categories.orEmpty().filter { it.type == budgetType }) {cat ->
                             SampleItem(
                                 modifier = Modifier.padding(horizontal = 8.dp),
-                                title = it.name, setRadio = true,
-                                isRadioCheck = selectedCategory == it
+                                title = cat.name, setRadio = true,
+                                isRadioCheck = selectedCategory == cat
                             ) {
-                                selectedCategory = it
+                                selectedCategory = cat
                                 scope.launch {
                                     sheetState.hide()
                                 }
@@ -821,6 +849,74 @@ fun InsertScreen(
                         }
 
                     }
+                }
+
+                //contacts
+                3 -> {
+
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SearchTextField(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 16.dp).padding(vertical = 8.dp),
+                                query = searchContactQuery
+                            )
+
+                            IconButton(onClick = {
+                                val intent = Intent(Intent.ACTION_PICK).apply {
+                                    type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
+                                }
+                                launcher.launch(intent)
+                            }) {
+                                Icon(painter = painterResource(BudgetIcons.userCircleAdd), contentDescription = "")
+                            }
+
+
+                        }
+                    }
+
+                    LazyColumn {
+
+                        if (contacts.orEmpty().isEmpty()){
+                            item {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                                    text = stringResource(R.string.no_contact),
+                                    style = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center))
+                                BudgetButton(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 8.dp),
+                                    text = stringResource(R.string.import_new), style = ButtonStyle.TextOnly, size = ButtonSize.MD){
+                                    val intent = Intent(Intent.ACTION_PICK).apply {
+                                        type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
+                                    }
+                                    launcher.launch(intent)
+                                }
+                            }
+                        }
+
+                        items(contacts.orEmpty().filter { it.phoneNumber?.contains(searchContactQuery.value).orFalse() || it.fullName?.contains(searchContactQuery.value).orFalse() }){ct ->
+                            SampleItem(
+                                modifier = Modifier.padding(horizontal = 24.dp),
+                                title = ct.fullName.orEmpty(), setCheckbox = true, hasDivider = true, isRadioCheck = people.any { it.contactId == ct.phoneNumber },
+                                secondIconPainter = painterResource(BudgetIcons.more)
+                            ) {
+                                if (it == 1){
+                                    if (people.any { it.contactId == ct.phoneNumber }){
+                                        people.remove(Person(0, ct.phoneNumber.orEmpty(), 0))
+                                    }else{
+                                        people.add(Person(0, ct.phoneNumber.orEmpty(), 0))
+                                    }
+                                }else{
+
+                                }
+                            }
+                        }
+
+                    }
+
                 }
 
             }

@@ -102,17 +102,17 @@ fun ProfileScreen(
                 )
             }
 
-            itemsIndexed(items) { index, it ->
+            itemsIndexed(items) { index, item ->
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 5.dp),
-                    title = it.text,
-                    iconPainter = painterResource(id = it.icon),
+                    title = item.text,
+                    iconPainter = painterResource(id = item.icon),
                     iconTint = MaterialTheme.colorScheme.outline,
                     imagePainter = painterResource(id = BudgetIcons.directionRight),
-                    subText = it.secondText,
+                    subText = item.secondText,
                     secondIconPainter = painterResource(id = BudgetIcons.directionLeft)
                 ) {
-                    profileActions.invoke(it.action)
+                    profileActions.invoke(item.action)
                 }
 
                 if (index != items.size - 1) {

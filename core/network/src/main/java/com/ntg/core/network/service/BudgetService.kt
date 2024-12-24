@@ -1,12 +1,15 @@
 package com.ntg.core.network.service
 
+import com.ntg.core.model.Contact
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.CategoryRes
 import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.ServerContacts
 import com.ntg.core.model.res.SessionsResItem
+import com.ntg.core.model.res.SyncContactsRes
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.UploadAvatarRes
@@ -91,6 +94,18 @@ interface BudgetService {
     ): Response<SyncedAccount?>
 
     @FormUrlEncoded
+    @POST(value = "/api/person/create")
+    suspend fun syncContacts(
+        @Field("full_name") fullName: String? = null,
+        @Field("mobile_number") mobileNumber: String? = null,
+        @Field("bank_accounts") bankAccount: String? = null,
+        @Field("phone_number") phoneNumber: String? = null,
+        @Field("email") email: String? = null,
+        @Field("address") address: String? = null,
+        @Field("note") note: String? = null,
+    ): Response<SyncContactsRes?>
+
+    @FormUrlEncoded
     @POST(value = "/api/wallet/destroy")
     suspend fun deleteWallet(
         @Field("wallet_id") id: String,
@@ -133,4 +148,21 @@ interface BudgetService {
     suspend fun terminateSession(
         @Field("session_id") sessionId: String,
     ): Response<ResponseBody<String?>>
+
+    @GET("/api/person/list?page=1&per_page=100")
+    suspend fun serverContacts(): Response<ServerContacts?>
+
+//    @FormUrlEncoded
+//    @POST("/api/transaction/create")
+//    suspend fun syncTransaction(
+//        @Field("amount") amount: String,
+//        @Field("wallet_id") wallet_id: String,
+//        @Field("category_id") sessionId: String,
+//        @Field("currency_id") sessionId: String,
+//        @Field("type") sessionId: String,
+//        @Field("transaction_date") sessionId: String,
+//        @Field("session_id") sessionId: String,
+//        @Field("session_id") sessionId: String,
+//        @Field("session_id") sessionId: String,
+//    ): Response<ResponseBody<String?>>
 }

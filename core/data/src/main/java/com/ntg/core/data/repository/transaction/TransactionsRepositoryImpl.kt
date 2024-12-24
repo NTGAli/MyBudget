@@ -23,17 +23,17 @@ class TransactionsRepositoryImpl @Inject constructor(
 
     override suspend fun insertNewTransaction(transaction: Transaction) {
         val transactionId = transactionsDao.insert(transaction.toEntity())
-        contactDao.insertAll(transaction.contacts.orEmpty().map { it.toContactEntity(transactionId.toInt()) })
+//        contactDao.insertAll(transaction.contacts.orEmpty().map { it.toContactEntity(transactionId.toInt()) })
     }
 
     override suspend fun updateTransaction(transaction: Transaction) {
         val transactionId = transactionsDao.update(transaction.toEntity())
-        contactDao.upsertAll(transaction.contacts.orEmpty().map { it.toContactEntity(transactionId.toInt()) })
+//        contactDao.upsertAll(transaction.contacts.orEmpty().map { it.toContactEntity(transactionId.toInt()) })
     }
 
     override suspend fun deleteTransaction(id: Int) {
         transactionsDao.delete(id)
-        contactDao.deleteContactByTransaction(id)
+//        contactDao.deleteContactByTransaction(id)
     }
 
     override fun getTransactionsBySourceIds(sourceIds: List<Int>): Flow<List<Transaction>> =

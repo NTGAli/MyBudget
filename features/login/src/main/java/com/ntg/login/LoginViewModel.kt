@@ -10,6 +10,7 @@ import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
 import com.ntg.core.model.Account
+import com.ntg.core.model.SourceType
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.req.VerifyOtp
 import com.ntg.core.model.res.CodeVerification
@@ -17,8 +18,11 @@ import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.Dispatcher
+import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
+import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
+import com.ntg.mybudget.core.designsystem.R
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -59,6 +63,87 @@ class LoginViewModel
             userDataRepository.setUserLogged(token, expire)
         }
     }
+
+    suspend fun serverDataAccounts(context: Context,onBack:() -> Unit, finishLogin: (String) -> Unit){
+        serverAccounts.collect {
+            when (it) {
+                is Result.Error -> {
+                    loginUiState.value = LoginUiState.Error
+                    logout()
+                    onBack()
+                }
+
+                is Result.Loading -> {
+//                        loginViewModel.loginUiState.value = LoginUiState.Loading
+                }
+
+                is Result.Success -> {
+                    loginUiState.value = LoginUiState.Success
+                    it.data?.forEach { account ->
+                        val localAccountId =
+                            if (account.isDefault.orFalse()) 1 else generateUniqueFiveDigitId()
+                        insertNewAccount(
+                            Account(
+                                id = localAccountId,
+                                sId = account.id,
+                                name = account.name.orEmpty(),
+                                isDefault = account.isDefault.orFalse(),
+                                isSelected = (account.isDefault.orFalse() && (it.data.orEmpty()
+                                    .first().wallets.orEmpty()
+                                    .isNotEmpty() || it.data.orEmpty().size > 1)),
+                                isSynced = true,
+                                dateCreated = account.createdAt.orEmpty()
+                            )
+                        )
+                        account.wallets.orEmpty().forEach { wallet ->
+
+                            var data: SourceType? = null
+
+                            if (wallet.walletType == 1) {
+                                data = SourceType.BankCard(
+                                    number = wallet.details.cardNumber.orEmpty(),
+                                    cvv = wallet.details.cvv2.orEmpty(),
+                                    sheba = wallet.details.sheba,
+                                    name = wallet.details.cardOwner.orEmpty(),
+                                    bankId = try {
+                                        wallet.details.bankId!!.toInt()
+                                    } catch (e: Exception) {
+                                        -1
+                                    }
+                                )
+                            }
+
+                            insertNewSource(
+                                Wallet(
+                                    id = 0,
+                                    sId = wallet.id.orEmpty(),
+                                    type = wallet.walletType,
+                                    accountId = localAccountId,
+                                    icon = null,
+                                    currencyId = wallet.currencyId,
+                                    isSelected = false,
+                                    isSynced = true,
+                                    dateCreated = wallet.createdAt.orEmpty(),
+                                    data = data
+                                )
+                            )
+
+
+                        }
+
+                    }
+                    Sync.updateConfigs(context = context)
+                    finishLogin(
+                        if (it.data.orEmpty().size == 1 && it.data.orEmpty()
+                                .first().wallets.orEmpty().isEmpty()
+                        ) "SetupRoute" else "home_route"
+                    )
+                }
+            }
+
+        }
+    }
+
 
     fun logout(){
         viewModelScope.launch {

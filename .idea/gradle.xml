@@ -37,6 +37,7 @@
             <option value="$PROJECT_DIR$/features/home" />
             <option value="$PROJECT_DIR$/features/login" />
             <option value="$PROJECT_DIR$/features/profile" />
+            <option value="$PROJECT_DIR$/features/report" />
             <option value="$PROJECT_DIR$/features/setup" />
             <option value="$PROJECT_DIR$/sync" />
             <option value="$PROJECT_DIR$/sync/work" />

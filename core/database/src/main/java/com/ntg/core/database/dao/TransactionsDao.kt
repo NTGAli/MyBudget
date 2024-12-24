@@ -36,22 +36,37 @@ interface TransactionsDao {
     @Query("DELETE FROM transactions WHERE accountId = :accountId")
     suspend fun deleteByAccount(accountId: Int)
 
+//    @Query("""
+//    SELECT
+//    t.*,
+//    se.data AS walletData,
+//    cr.faName,
+//    c.name,
+//    '[' || GROUP_CONCAT(
+//        '{"id":' || ct.id ||
+//        ',"fullName":"' || REPLACE(ct.fullName, '"', '\"') ||
+//        '","phoneNumber":"' || REPLACE(ct.phoneNumber, '"', '\"') || '"}'
+//    , ',') || ']' AS contactsJson
+//    FROM transactions t
+//    LEFT JOIN category_table c ON c.id = t.categoryId
+//    LEFT JOIN wallets se ON se.id = t.sourceId
+//    LEFT JOIN currencies cr ON cr.id = se.currencyId
+//    LEFT JOIN contacts ct ON ct.transactionId = t.id
+//    WHERE t.id = :id
+//    GROUP BY t.id
+//    """)
+//    suspend fun transactionById(id: Int): Transaction?
+
     @Query("""
     SELECT 
     t.*, 
     se.data AS walletData, 
     cr.faName, 
-    c.name, 
-    '[' || GROUP_CONCAT(
-        '{"id":' || ct.id || 
-        ',"fullName":"' || REPLACE(ct.fullName, '"', '\"') || 
-        '","phoneNumber":"' || REPLACE(ct.phoneNumber, '"', '\"') || '"}'
-    , ',') || ']' AS contactsJson
+    c.name
     FROM transactions t
     LEFT JOIN category_table c ON c.id = t.categoryId
     LEFT JOIN wallets se ON se.id = t.sourceId
     LEFT JOIN currencies cr ON cr.id = se.currencyId
-    LEFT JOIN contacts ct ON ct.transactionId = t.id
     WHERE t.id = :id
     GROUP BY t.id
     """)

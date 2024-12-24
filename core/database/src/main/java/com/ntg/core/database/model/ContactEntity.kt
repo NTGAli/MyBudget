@@ -6,11 +6,13 @@ import com.ntg.core.model.Contact
 
 @Entity(tableName = "contacts")
 data class ContactEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val fullName: String,
+    @PrimaryKey(autoGenerate = false)
     val phoneNumber: String,
-    val transactionId: Int,
+    val fullName: String,
+    val email: String? = null,
+    val note: String? = null,
+    val address: String?= null,
+    var sId: String? = null,
     val isSynced: Boolean = false,
 )
 
@@ -21,9 +23,8 @@ fun ContactEntity.toContact() = Contact(
 )
 
 
-fun Contact.toContactEntity(transactionId: Int) = ContactEntity(
+fun Contact.toContactEntity() = ContactEntity(
     fullName = fullName.orEmpty(),
     phoneNumber = phoneNumber.orEmpty(),
-    transactionId = transactionId,
 
 )

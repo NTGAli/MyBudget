@@ -48,6 +48,7 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.designsystem.theme.MyBudgetTheme
+import com.ntg.core.mybudget.common.logd
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 
@@ -123,7 +124,22 @@ fun SampleItemPreview() {
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 5.dp),
                     title = stringResource(id = R.string.user_account),
-                    secondText = stringResource(id = R.string.user_account)
+                    secondText = stringResource(id = R.string.user_account),
+                    hasDivider = true
+                ) {}
+
+                // 9.
+                SampleItem(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 5.dp),
+                    title = stringResource(id = R.string.user_account),
+                    setRadio = true
+                ) {}
+
+                // 9.
+                SampleItem(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 5.dp),
+                    title = stringResource(id = R.string.user_account),
+                    setCheckbox = true
                 ) {}
             }
         }
@@ -142,13 +158,14 @@ fun SampleItem(
     secondIconPainter: Painter? = null,
     imageUrl: String? = null,
     setRadio: Boolean = false,
+    setCheckbox: Boolean = false,
     isRadioCheck: Boolean = false,
     iconTint: Color = LocalContentColor.current,
     type: ButtonType = ButtonType.Neutral,
     hasDivider: Boolean = false,
     setSwitch: Boolean = false,
     isSwitchCheck: Boolean = false,
-    onClick: () -> Unit,
+    onClick: (Int) -> Unit,
 ) {
     Column {
         Row(
@@ -160,15 +177,15 @@ fun SampleItem(
                         color = if (type == ButtonType.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surfaceDim
                     ),
                     onClick = {
-                        onClick()
+                        onClick(1)
                     }),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            if (setRadio){
+            if (setRadio || setCheckbox){
                 RadioCheck(
                     modifier = Modifier.padding(start = 4.dp),
-                    isChecked = isRadioCheck, isCircle = true)
+                    isChecked = isRadioCheck, isCircle = setRadio)
             }
 
             if (iconPainter != null) {
@@ -219,10 +236,12 @@ fun SampleItem(
 
             if (secondIconPainter != null) {
                 IconButton(
-                    onClick = { onClick() }
+                    modifier = Modifier.padding(start = 8.dp),
+                    onClick = {
+                        onClick(2)
+                    }
                 ) {
                     Icon(
-                        modifier = Modifier.padding(start = 8.dp),
                         painter = secondIconPainter,
                         tint = if (type == ButtonType.Error) MaterialTheme.colorScheme.error else iconTint,
                         contentDescription = null
@@ -233,7 +252,7 @@ fun SampleItem(
             if (setSwitch) {
                 Switch(
                     checked = isSwitchCheck,
-                    onCheckedChange = { onClick.invoke() },
+                    onCheckedChange = { onClick.invoke(1) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.background,
                         checkedTrackColor = MaterialTheme.colorScheme.primary,

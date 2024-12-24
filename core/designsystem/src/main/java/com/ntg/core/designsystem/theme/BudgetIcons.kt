@@ -53,4 +53,5 @@ object BudgetIcons {
   val moon = R.drawable.ic_moon
   val default = R.drawable.ic_default_theme
   val check = R.drawable.ic_tick
+  val userCircleAdd = R.drawable.user_circle_add
 }

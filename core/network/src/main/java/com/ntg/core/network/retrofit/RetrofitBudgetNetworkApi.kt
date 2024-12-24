@@ -1,10 +1,9 @@
 package com.ntg.core.network.retrofit
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Base64
-import android.webkit.MimeTypeMap
 import com.google.gson.Gson
+import com.ntg.core.model.Contact
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.SourceWithDetail
 import com.ntg.core.model.req.SourceDetailReq
@@ -15,7 +14,9 @@ import com.ntg.core.model.res.CodeVerification
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerAccount
 import com.ntg.core.model.res.ServerConfig
+import com.ntg.core.model.res.ServerContacts
 import com.ntg.core.model.res.SessionsResItem
+import com.ntg.core.model.res.SyncContactsRes
 import com.ntg.core.model.res.SyncedAccount
 import com.ntg.core.model.res.SyncedWallet
 import com.ntg.core.model.res.UploadAvatarRes
@@ -120,6 +121,21 @@ class RetrofitBudgetNetwork @Inject constructor(
                 accountId = source.accountSId.toString(),
                 details = details
             )
+        }
+    }
+
+    override suspend fun syncContact(contact: Contact): Flow<Result<SyncContactsRes?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.syncContacts(
+                fullName = contact.fullName,
+                phoneNumber = contact.phoneNumber
+            )
+        }
+    }
+
+    override suspend fun serverContacts(): Flow<Result<ServerContacts?>> {
+        return networkBoundResources.downloadData(ioDispatcher){
+            apiService.serverContacts()
         }
     }
 

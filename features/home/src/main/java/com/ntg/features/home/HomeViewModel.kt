@@ -9,6 +9,7 @@ import com.ntg.core.data.repository.AccountRepository
 import com.ntg.core.data.repository.BankCardRepository
 import com.ntg.core.data.repository.CategoryRepository
 import com.ntg.core.data.repository.ConfigRepository
+import com.ntg.core.data.repository.ContactRepository
 import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepository
 import com.ntg.core.model.Contact
@@ -35,12 +36,14 @@ class HomeViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val configRepository: ConfigRepository,
     private val bankCardRepository: BankCardRepository,
+    private val contactRepository: ContactRepository
     ): ViewModel() {
 
     private val _walletTypes = MutableStateFlow<List<Wallet>?>(emptyList())
     private val _currency = MutableStateFlow<Currency?>(null)
     private val _categories = MutableStateFlow<List<Category>?>(emptyList())
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
+    private val _contacts = MutableStateFlow<List<Contact>?>(emptyList())
 
     private val _transaction = MutableStateFlow<Transaction?>(null)
 
@@ -55,7 +58,6 @@ class HomeViewModel @Inject constructor(
         return _walletTypes
     }
 
-
     fun currencyInfo(): MutableStateFlow<Currency?> {
         viewModelScope.launch {
             sourceRepository.getCurrentCurrency().collect{
@@ -65,6 +67,14 @@ class HomeViewModel @Inject constructor(
         return _currency
     }
 
+    fun getContacts(): MutableStateFlow<List<Contact>?> {
+        viewModelScope.launch {
+            contactRepository.getAll().collect{
+                _contacts.value = it
+            }
+        }
+        return _contacts
+    }
 
     fun transactions(sourceIds: List<Int>) = transactionsRepository.getTransactionsBySourceIds(sourceIds)
 
@@ -110,11 +120,14 @@ class HomeViewModel @Inject constructor(
 
     fun transactionById(id: Int): MutableStateFlow<Transaction?>{
         viewModelScope.launch {
-            transactionsRepository.transactionById(id).collect{
-                it?.apply {
-                    contacts = parseContactsJson(contactsJson)
+            transactionsRepository.transactionById(id).collect{transaction ->
+                contactRepository.get(transaction?.contactIds).collect{contactsData ->
+                    transaction?.apply {
+                        contacts = contactsData.orEmpty()
+                        _transaction.value = transaction
+
+                    }
                 }
-                _transaction.value = it
             }
         }
         return _transaction
@@ -165,4 +178,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun insertContact(contact: Contact){
+        viewModelScope.launch {
+            contactRepository.upsertContact(contact)
+        }
+    }
 }

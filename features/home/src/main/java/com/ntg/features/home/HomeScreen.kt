@@ -75,6 +75,7 @@ import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
@@ -124,6 +125,7 @@ fun HomeRoute(
     val localBanks =
         homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
     val currencyData = homeViewModel.currencyInfo().collectAsStateWithLifecycle(null)
+    val contacts = homeViewModel.getContacts().collectAsStateWithLifecycle()
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
 
@@ -140,6 +142,7 @@ fun HomeRoute(
             logoUrlColor,
             categories.value,
             localBanks,
+            contacts,
             currencyData,
             navigateToSource,
             navigateToAccount,
@@ -161,6 +164,8 @@ fun HomeRoute(
                 navigateToAccount(it)
             }, transactionDetails = {
                 navigateToDetail(it)
+            }, newContact = {
+                homeViewModel.insertContact(it)
             })
     }
 
@@ -217,6 +222,7 @@ private fun HomeScreen(
     logoUrl: String? = null,
     categories: List<Category>? = null,
     localBanks:SnapshotStateList<Bank>?,
+    contacts: State<List<Contact>?>,
     currency : State<Currency?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
@@ -228,6 +234,7 @@ private fun HomeScreen(
     deleteWallet: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
     transactionDetails:(Int) -> Unit,
+    newContact: (Contact) -> Unit,
     onTransactionChanged:(Transaction) -> Unit,
 ) {
 
@@ -402,7 +409,7 @@ private fun HomeScreen(
 
     }
 
-    InsertScreen(expandTransaction, currentResource, logoUrl, localBanks, categories,null, onShowSnackbar =  onShowSnackbar) {
+    InsertScreen(expandTransaction, currentResource,contacts.value, logoUrl, localBanks, categories,null, newContact = newContact, onShowSnackbar =  onShowSnackbar) {
         onTransactionChanged(it)
     }
 

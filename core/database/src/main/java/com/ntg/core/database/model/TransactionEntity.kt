@@ -20,6 +20,7 @@ data class TransactionEntity(
     val date: Long,
     val tags: List<String>? = null,
     val images: List<String>? = null,
+    val contactIds: List<String>? = null,
     val createdAt: Long,
     val updatedAt: Long,
 )
@@ -54,6 +55,7 @@ fun Transaction.toEntity() =
         isDeleted = false,
         images = images,
         tags = tags,
+        contactIds = contactIds,
         createdAt = System.currentTimeMillis(),
         updatedAt = System.currentTimeMillis()
     )

@@ -7,6 +7,7 @@ import com.ntg.core.database.dao.CategoryDao
 import com.ntg.core.database.dao.ConfigDao
 import com.ntg.core.database.dao.ContactDao
 import com.ntg.core.database.dao.CurrencyDao
+import com.ntg.core.database.dao.PersonDao
 import com.ntg.core.database.dao.WalletsDao
 import com.ntg.core.database.dao.TransactionsDao
 import com.ntg.core.database.dao.WalletDao
@@ -65,5 +66,10 @@ internal object DaosModule {
     fun provideContact(
         database: AppDatabase
     ): ContactDao = database.contactDao()
+
+    @Provides
+    fun providePeople(
+        database: AppDatabase
+    ): PersonDao = database.personDao()
 
 }
