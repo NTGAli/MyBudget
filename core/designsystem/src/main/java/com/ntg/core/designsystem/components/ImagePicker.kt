@@ -82,7 +82,7 @@ fun ImagePicker(
                         System.currentTimeMillis().toString(),
                     ).path
                 )
-                imagePaths(imagePath)
+                imagePaths(imagePath.distinctBy { it })
             }
         },
     )

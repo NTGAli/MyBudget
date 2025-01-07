@@ -33,4 +33,9 @@ object Constants {
         const val YEAR = 2
     }
 
+    object AttachTyp{
+        const val ATTACHED_IMAGE = 0
+        const val ATTACHED_DOCUMENT = 1
+    }
+
 }

@@ -75,6 +75,7 @@ import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
+import com.ntg.core.model.AttachData
 import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
@@ -375,7 +376,11 @@ private fun HomeScreen(
                         amount = formatCurrency(it.amount, "###,###", "ت", 2),
                         date = formatTimestampToTime(it.date),
                         divider = it != items.last(),
-                        attached = false,
+                        attached = listOf(
+                            if (it.images.orEmpty().isNotEmpty()){
+                                AttachData(Constants.AttachTyp.ATTACHED_IMAGE, it.images.orEmpty().size)
+                            }else null
+                        ),
                         type = it.type.orZero()
                     ){
                         transactionDetails(it.id)

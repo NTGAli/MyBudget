@@ -667,6 +667,7 @@ fun InsertScreen(
                 images = transaction?.images.orEmpty()
             ) {
                 if (it.isNotEmpty()) {
+                    images.clear()
                     images.addAll(it)
                 }
             }

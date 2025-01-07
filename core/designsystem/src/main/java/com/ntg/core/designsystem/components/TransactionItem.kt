@@ -19,8 +19,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
+import com.ntg.core.model.AttachData
 import com.ntg.core.mybudget.common.Constants
 
 @Composable
@@ -31,9 +33,10 @@ fun TransactionItem(
     date: String,
     type: Int,
     divider: Boolean = false,
-    attached: Boolean = false,
+    attached: List<AttachData?>,
     onClick:() -> Unit = {}
 ){
+
 
     Column(
         modifier
@@ -113,13 +116,25 @@ fun TransactionItem(
 
         }
 
-        if (attached){
-            Row(modifier = Modifier.padding(top = 8.dp, start = 8.dp)) {
-                Icon(
-                    painter = painterResource(id = BudgetIcons.Pdf), contentDescription = "Category icon")
-                Icon(
-                    modifier = Modifier.padding(start = 4.dp),
-                    painter = painterResource(id = BudgetIcons.Image), contentDescription = "Category icon")
+        if (attached.isNotEmpty()){
+
+            Row(modifier = Modifier.padding(top = 8.dp, start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                attached.forEach {
+                    if (it != null && it.type == Constants.AttachTyp.ATTACHED_IMAGE){
+                        Text(
+                            modifier = Modifier.padding(end = 2.dp),
+                            text = "×${it.count}", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+
+                        Icon(
+                            modifier = Modifier.padding(start = 4.dp),
+                            painter = painterResource(id = BudgetIcons.Image), contentDescription = "Category icon")
+
+
+                    }
+                }
+//                Icon(
+//                    painter = painterResource(id = BudgetIcons.Pdf), contentDescription = "Category icon")
+
             }
         }
 
