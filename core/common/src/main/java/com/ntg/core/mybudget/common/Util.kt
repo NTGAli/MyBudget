@@ -1,5 +1,6 @@
 package com.ntg.core.mybudget.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
@@ -19,12 +20,12 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import java.text.NumberFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Calendar
 import java.util.Stack
 import java.util.TimeZone
-import java.util.zip.ZipInputStream
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
@@ -460,6 +461,15 @@ fun Long.toPersianDate(setClock: Boolean = false): String {
     else "$dayOfMonth $month $year"
 }
 
+fun Long.toPersianMonthlyDate(): String {
+    val persianDate = PersianDate(Date(this))
+    val month = persianDate.monthName
+    val dayOfMonth = persianDate.shDay
+    val year = persianDate.shYear
+
+    return "$dayOfMonth $month"
+}
+
 fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long {
     val persianDate = PersianDate()
     persianDate.initJalaliDate(year, month, day, hour, minute,0)
@@ -499,4 +509,87 @@ fun convertToFirstDay(timestamp: Long, granularity: Int, zoneId: ZoneId = ZoneId
     }
 
     return adjustedDateTime.atZone(zoneId).toInstant().toEpochMilli()
+}
+
+fun getDayOfWeek(timeInMillis: Long): Int {
+    val persianDate = PersianDate(timeInMillis)
+    return persianDate.dayOfWeek()
+}
+
+fun Long.withSuffix(): String {
+    if (this < 1_000) return "" + this
+    if (this < 1_000_000){
+        val format = DecimalFormat("0.#")
+        val value: String = format.format(this / 1000.0)
+        return "$value هزار"
+    }
+    if (this < 1_000_000_000){
+        val format = DecimalFormat("0.##")
+        val value: String = format.format(this / 1000000.0)
+        return "$value میلیون"
+    }
+    val format = DecimalFormat("0.###")
+    val value: String = format.format(this / 1000000000.0)
+    return "$value میلیارد"
+}
+
+fun getTimesOfThisWeek(timestamps: List<Long>): List<Long> {
+    // Get the current date
+    val currentDate = LocalDate.now()
+
+    // Get the start of the week (Saturday at 00:00)
+    val startOfWeek = currentDate.with(java.time.DayOfWeek.SATURDAY).atStartOfDay()
+    val startOfWeekInstant = startOfWeek.atZone(ZoneId.systemDefault()).toInstant()
+
+    // Get the end of the week (Friday at 23:59:59)
+    val endOfWeek = currentDate.with(java.time.DayOfWeek.FRIDAY).atStartOfDay().plusDays(1).minusSeconds(1)
+    val endOfWeekInstant = endOfWeek.atZone(ZoneId.systemDefault()).toInstant()
+
+    // Filter the timestamps to get those within this week's range
+    return timestamps.filter { timestamp ->
+        val instant = Instant.ofEpochMilli(timestamp)
+        instant.isAfter(startOfWeekInstant) && instant.isBefore(endOfWeekInstant)
+    }
+}
+
+fun getThisWeekTransactions(transactions: List<Transaction>): List<Transaction> {
+    val timeZone = TimeZone.getTimeZone(ZoneId.systemDefault())
+
+    val startOfWeek = Calendar.getInstance(timeZone).apply {
+        firstDayOfWeek = Calendar.SATURDAY
+        set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY)
+    }.time
+
+    val endOfWeek = Calendar.getInstance(timeZone).apply {
+        firstDayOfWeek = Calendar.SATURDAY
+        set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY)
+    }.time
+
+
+    return transactions.filter { transaction ->
+        transaction.date >= startOfWeek.time && transaction.date <= endOfWeek.time
+    }
+}
+
+
+fun getLastWeekTransactions(transactions: List<Transaction>): List<Transaction> {
+    val today = Calendar.getInstance()
+    val timeZone = TimeZone.getTimeZone(ZoneId.systemDefault())
+
+    val startOfLastWeek = Calendar.getInstance(timeZone).apply {
+        firstDayOfWeek = Calendar.SATURDAY
+        set(Calendar.WEEK_OF_YEAR, today.get(Calendar.WEEK_OF_YEAR) - 1)
+        set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY)
+    }.time
+
+    val endOfLastWeek = Calendar.getInstance(timeZone).apply {
+        firstDayOfWeek = Calendar.SATURDAY
+        set(Calendar.WEEK_OF_YEAR, today.get(Calendar.WEEK_OF_YEAR) - 1)
+        set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY)
+    }.time
+
+
+    return transactions.filter { transaction ->
+        transaction.date >= startOfLastWeek.time && transaction.date <= endOfLastWeek.time
+    }
 }
