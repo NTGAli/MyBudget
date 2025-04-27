@@ -117,6 +117,7 @@ internal fun BudgetApp(
 
     LaunchedEffect(key1 = Unit) {
         startDestination = if (isUserLogged) Home_Route else Login_Route
+//        startDestination = Home_Route
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -158,10 +159,12 @@ internal fun BudgetApp(
                 AppBottomBar(
                     onNavigateToDestination = {
                         if (it == TopLevelDestination.REPORT){
-//                            appState::navigateToTopLevelDestination
                             appState.navigateToTopLevelDestination(TopLevelDestination.REPORT)
+                        }else if (it == TopLevelDestination.HOME){
+                            appState.navigateToTopLevelDestination(TopLevelDestination.HOME)
+                        }else{
+                            sharedViewModel.bottomMainButton()
                         }
-                        sharedViewModel.bottomMainButton()
                     },
                     expandButton = isExpand,
                     title = bottomNavTitle,
@@ -255,23 +258,17 @@ private fun AppBottomBar(
         items = navs,
         expandButton = expandButton,
         txtButton = title,
-        isLoading = isLoading
+        isLoading = isLoading,
+        initialSelectedItem=2
     ) {
         if (it == -1){
-            onNavigateToDestination(TopLevelDestination.HOME)
+            onNavigateToDestination(TopLevelDestination.TRANSACTION)
         } else if (it == 1) {
             onNavigateToDestination(TopLevelDestination.REPORT)
         } else if (it == 2) {
-//            onNavigateToDestination(TopLevelDestination.PROFILE)
+            onNavigateToDestination(TopLevelDestination.HOME)
         } else {
             onNavigateToDestination(TopLevelDestination.TRANSACTION)
         }
-//        if (it == 1) {
-//            onNavigateToDestination(TopLevelDestination.HOME)
-//        } else if (it == 2) {
-//            onNavigateToDestination(TopLevelDestination.PROFILE)
-//        } else {
-//            onNavigateToDestination(TopLevelDestination.TRANSACTION)
-//        }
     }
 }

@@ -22,14 +22,17 @@ import com.ntg.core.designsystem.components.ExpenseDonutChart
 import com.ntg.core.designsystem.components.IncomeOutcomeChart
 import com.ntg.core.designsystem.components.PieChartInput
 import com.ntg.core.designsystem.components.TwoWeekOverviewChart
+import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.mybudget.core.designsystem.R
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ReportRoute(
+    sharedViewModel: SharedViewModel,
     reportViewModel: ReportViewModel = hiltViewModel()
 ) {
-
+    sharedViewModel.bottomNavTitle.postValue(null)
+    sharedViewModel.setExpand.postValue(false)
     val categories = reportViewModel.categories
     val donutChartColors = listOf(
         MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary,

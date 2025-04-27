@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -83,6 +84,7 @@ import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
+import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
@@ -110,27 +112,37 @@ fun InsertRoute(
 
     val scope = rememberCoroutineScope()
     val isPresent = remember { mutableStateOf(true) }
-    val currentResource =
-        homeViewModel.selectedSources().collectAsStateWithLifecycle(initialValue = emptyList())
-    val logoUrlColor =
-        homeViewModel.getBankLogoColor()
-            .collectAsStateWithLifecycle(initialValue = null).value?.value
-    val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
-    val localBanks =
-        homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
 
-    val contacts = homeViewModel.getContacts().collectAsStateWithLifecycle().value
+    val currentResource = homeViewModel.selectedSources
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+    val logoUrlColor = homeViewModel.bankLogoColor
+        .collectAsStateWithLifecycle(initialValue = null).value?.value
+    val categories = homeViewModel.categories
+        .collectAsStateWithLifecycle(initialValue = null)
+    val localBanks = homeViewModel.localUserBanks
+        .collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
+    val contacts = homeViewModel.contacts
+        .collectAsStateWithLifecycle(initialValue = emptyList()).value
+    val currencyData = homeViewModel.currency
+        .collectAsStateWithLifecycle(initialValue = null)
 
     val transaction = remember { mutableStateOf<Transaction?>(null) }
     val updatedTransaction = remember { mutableStateOf<Transaction?>(null) }
 
-    if (transactionId != null) {
-        transaction.value =
-            homeViewModel.transactionById(transactionId)
-                .collectAsStateWithLifecycle(initialValue = null).value
-
+    LaunchedEffect(transactionId) {
+        if (transactionId != null) {
+            homeViewModel.loadTransactionById(transactionId)
+        }
     }
 
+    val loadedTransaction = homeViewModel.transaction
+        .collectAsStateWithLifecycle(initialValue = null)
+
+    LaunchedEffect(loadedTransaction.value) {
+        if (loadedTransaction.value != null) {
+            transaction.value = loadedTransaction.value
+        }
+    }
 
     InsertScreen(
         expandTransaction = isPresent,
@@ -142,6 +154,7 @@ fun InsertRoute(
         onShowSnackbar = onShowSnackbar,
         transaction = transaction.value,
         closeable = true,
+        currency=currencyData,
         newContact = {
             homeViewModel.insertContact(it)
         }
@@ -158,28 +171,36 @@ fun InsertRoute(
     LaunchedEffect(key1 = updatedTransaction) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onBottomButtonClick() {
-                if (updatedTransaction.value == null) {
-                    scope.launch {
-                        onShowSnackbar(R.string.err_non_transacton, null, null)
+                when {
+                    updatedTransaction.value == null -> {
+                        scope.launch {
+                            onShowSnackbar(R.string.err_non_transacton, null, null)
+                        }
                     }
-                } else if (updatedTransaction.value?.type == Constants.BudgetType.TRANSFER) {
-                    scope.launch {
+                    updatedTransaction.value?.type == Constants.BudgetType.TRANSFER -> {
+                        scope.launch {
+                            // Handle transfer type
+                        }
                     }
-                } else if (updatedTransaction.value?.amount.orDefault() <= 0L) {
-                    scope.launch {
-                        onShowSnackbar(R.string.err_amount, null, null)
+                    updatedTransaction.value?.amount.orDefault() <= 0L -> {
+                        scope.launch {
+                            onShowSnackbar(R.string.err_amount, null, null)
+                        }
                     }
-                } else if (updatedTransaction.value?.sourceId == 0 || updatedTransaction.value?.sourceId == null) {
-                    scope.launch {
-                        onShowSnackbar(R.string.err_input_source, null, null)
+                    updatedTransaction.value?.sourceId == 0 || updatedTransaction.value?.sourceId == null -> {
+                        scope.launch {
+                            onShowSnackbar(R.string.err_input_source, null, null)
+                        }
                     }
-                } else if (updatedTransaction.value?.categoryId == null || updatedTransaction.value?.categoryId == 0) {
-                    scope.launch {
-                        onShowSnackbar(R.string.err_input_category, null, null)
+                    updatedTransaction.value?.categoryId == null || updatedTransaction.value?.categoryId == 0 -> {
+                        scope.launch {
+                            onShowSnackbar(R.string.err_input_category, null, null)
+                        }
                     }
-                } else {
-                    homeViewModel.updateTransaction(updatedTransaction.value!!)
-                    onBack()
+                    else -> {
+                        homeViewModel.updateTransaction(updatedTransaction.value!!)
+                        onBack()
+                    }
                 }
             }
         }
@@ -197,6 +218,7 @@ fun InsertScreen(
     categories: List<Category>?,
     transaction: Transaction? = null,
     closeable: Boolean = false,
+    currency : State<Currency?>,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     newContact: (Contact) -> Unit,
     onTransactionChange: (Transaction) -> Unit,
@@ -230,8 +252,8 @@ fun InsertScreen(
     var selectSourceType by remember { mutableIntStateOf(0) }
     var selectedTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
-    val concurrency = remember {
-        mutableStateOf("تومن")
+    val concurrency = remember(currency) {
+        mutableStateOf(currency.value?.nativeName)
     }
 
     val scope = rememberCoroutineScope()
@@ -834,6 +856,7 @@ fun InsertScreen(
 
                 }
 
+                // Categories
                 2 -> {
                     LazyColumn {
                         items(categories.orEmpty().filter { it.type == budgetType }) {cat ->

@@ -5,13 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.ntg.core.data.repository.AccountRepository
-import com.ntg.core.data.repository.BankCardRepository
-import com.ntg.core.data.repository.CategoryRepository
-import com.ntg.core.data.repository.ConfigRepository
-import com.ntg.core.data.repository.ContactRepository
-import com.ntg.core.data.repository.WalletsRepository
+import com.ntg.core.data.repository.*
 import com.ntg.core.data.repository.transaction.TransactionsRepository
+import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
 import com.ntg.core.model.Wallet
@@ -20,11 +16,9 @@ import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.mybudget.common.Constants
-import com.ntg.core.mybudget.common.logd
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,48 +31,78 @@ class HomeViewModel @Inject constructor(
     private val configRepository: ConfigRepository,
     private val bankCardRepository: BankCardRepository,
     private val contactRepository: ContactRepository
-    ): ViewModel() {
+) : ViewModel() {
 
-    private val _walletTypes = MutableStateFlow<List<Wallet>?>(emptyList())
+    // Private MutableStateFlows
+    private val _selectedAccount = MutableStateFlow<List<AccountWithSources>?>(null)
+    private val _selectedSources = MutableStateFlow<List<Wallet>?>(emptyList())
     private val _currency = MutableStateFlow<Currency?>(null)
-    private val _categories = MutableStateFlow<List<Category>?>(emptyList())
+    private val _categories = MutableStateFlow<List<Category>?>(null)
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
     private val _contacts = MutableStateFlow<List<Contact>?>(emptyList())
-
     private val _transaction = MutableStateFlow<Transaction?>(null)
+    private val _bankLogoColor = MutableStateFlow<ServerConfig?>(null)
 
-    fun selectedAccount() = accountRepository.getSelectedAccount()
+    // Public exposed StateFlows
+    val selectedAccount: StateFlow<List<AccountWithSources>?> = _selectedAccount
+    val selectedSources: StateFlow<List<Wallet>?> = _selectedSources
+    val currency: StateFlow<Currency?> = _currency
+    val categories: StateFlow<List<Category>?> = _categories
+    val localUserBanks: StateFlow<List<Bank>?> = _localUserBanks
+    val contacts: StateFlow<List<Contact>?> = _contacts
+    val transaction: StateFlow<Transaction?> = _transaction
+    val bankLogoColor: StateFlow<ServerConfig?> = _bankLogoColor
 
-    fun selectedSources(): MutableStateFlow<List<Wallet>?> {
+    init {
+        // Initialize all data collections in the init block to avoid multiple collections
         viewModelScope.launch {
-            sourceRepository.getSelectedSources().collect{
-                _walletTypes.value = it
+            bankCardRepository.getUserLocalBanks().collect {
+                _localUserBanks.value = it
             }
         }
-        return _walletTypes
-    }
 
-    fun currencyInfo(): MutableStateFlow<Currency?> {
         viewModelScope.launch {
-            sourceRepository.getCurrentCurrency().collect{
+            categoryRepository.getCategories().collect {
+                _categories.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            accountRepository.getSelectedAccount().collect {
+                _selectedAccount.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            sourceRepository.getSelectedSources().collect {
+                _selectedSources.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            sourceRepository.getCurrentCurrency().collect {
                 _currency.value = it
             }
         }
-        return _currency
-    }
 
-    fun getContacts(): MutableStateFlow<List<Contact>?> {
         viewModelScope.launch {
-            contactRepository.getAll().collect{
+            contactRepository.getAll().collect {
                 _contacts.value = it
             }
         }
-        return _contacts
+
+        viewModelScope.launch {
+            configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL).collect {
+                _bankLogoColor.value = it
+            }
+        }
     }
 
-    fun transactions(sourceIds: List<Int>) = transactionsRepository.getTransactionsBySourceIds(sourceIds)
-
+    // Return the Flow directly without wrapping in StateFlow
     fun accountWithSources() = accountRepository.getAccountsWithSources()
+
+    // Return the Flow directly for transaction queries
+    fun transactions(sourceIds: List<Int>) = transactionsRepository.getTransactionsBySourceIds(sourceIds)
 
     fun updatedSelectedAccount(accountId: Int) {
         viewModelScope.launch {
@@ -92,45 +116,33 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getBankLogoColor(): Flow<ServerConfig?> {
-        return configRepository.get(Constants.Configs.BANK_LOGO_COLOR_URL)
-    }
-
-    fun getCategories(): MutableStateFlow<List<Category>?> {
-        viewModelScope.launch {
-            categoryRepository.getCategories().collect{
-                _categories.value = it
-            }
-        }
-        return _categories
-    }
-
-    fun insertTransaction(transaction: Transaction){
+    fun insertTransaction(transaction: Transaction) {
         viewModelScope.launch {
             transactionsRepository.insertNewTransaction(transaction)
         }
     }
 
-
-    fun updateTransaction(transaction: Transaction){
+    fun updateTransaction(transaction: Transaction) {
         viewModelScope.launch {
             transactionsRepository.updateTransaction(transaction)
         }
     }
 
-    fun transactionById(id: Int): MutableStateFlow<Transaction?>{
+    fun loadTransactionById(id: Int) {
         viewModelScope.launch {
-            transactionsRepository.transactionById(id).collect{transaction ->
-                contactRepository.get(transaction?.contactIds).collect{contactsData ->
-                    transaction?.apply {
-                        contacts = contactsData.orEmpty()
-                        _transaction.value = transaction
-
+            transactionsRepository.transactionById(id).collect { transaction ->
+                if (transaction != null) {
+                    contactRepository.get(transaction.contactIds).collect { contactsData ->
+                        transaction.apply {
+                            contacts = contactsData.orEmpty()
+                            _transaction.value = this
+                        }
                     }
+                } else {
+                    _transaction.value = null
                 }
             }
         }
-        return _transaction
     }
 
     private fun parseContactsJson(contactsJson: String?): List<Contact> {
@@ -145,14 +157,6 @@ class HomeViewModel @Inject constructor(
             emptyList()
         }
     }
-    fun getLocalUserBanks(): MutableStateFlow<List<Bank>?> {
-        viewModelScope.launch {
-            bankCardRepository.getUserLocalBanks().collect{
-                _localUserBanks.value = it
-            }
-        }
-        return _localUserBanks
-    }
 
     fun tempRemoveWallet(sourceId: Int, context: Context?) {
         viewModelScope.launch {
@@ -163,7 +167,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun deleteAccount(accountId: Int, context: Context? = null){
+    fun deleteAccount(accountId: Int, context: Context? = null) {
         viewModelScope.launch {
             accountRepository.delete(accountId)
         }
@@ -172,13 +176,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun deleteTransaction(id: Int){
+    fun deleteTransaction(id: Int) {
         viewModelScope.launch {
             transactionsRepository.deleteTransaction(id)
         }
     }
 
-    fun insertContact(contact: Contact){
+    fun insertContact(contact: Contact) {
         viewModelScope.launch {
             contactRepository.upsertContact(contact)
         }

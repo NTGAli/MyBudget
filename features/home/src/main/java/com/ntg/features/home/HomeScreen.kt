@@ -113,29 +113,32 @@ fun HomeRoute(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val accounts =
-        homeViewModel.accountWithSources().collectAsStateWithLifecycle(initialValue = emptyList())
-    val currentAccount =
-        homeViewModel.selectedAccount().collectAsStateWithLifecycle(initialValue = null)
-    val currentResource =
-        homeViewModel.selectedSources().collectAsStateWithLifecycle(initialValue = emptyList())
-    val logoUrlColor =
-        homeViewModel.getBankLogoColor()
-            .collectAsStateWithLifecycle(initialValue = null).value?.value
-    val categories = homeViewModel.getCategories().collectAsStateWithLifecycle(initialValue = null)
-    val localBanks =
-        homeViewModel.getLocalUserBanks().collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
-    val currencyData = homeViewModel.currencyInfo().collectAsStateWithLifecycle(null)
-    val contacts = homeViewModel.getContacts().collectAsStateWithLifecycle()
+    val accounts = homeViewModel.accountWithSources()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+    val currentAccount = homeViewModel.selectedAccount
+        .collectAsStateWithLifecycle(initialValue = null)
+    val currentResource = homeViewModel.selectedSources
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+    val logoUrlColor = homeViewModel.bankLogoColor
+        .collectAsStateWithLifecycle(initialValue = null).value?.value
+    val categories = homeViewModel.categories
+        .collectAsStateWithLifecycle(initialValue = null)
+    val localBanks = homeViewModel.localUserBanks
+        .collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
+    val currencyData = homeViewModel.currency
+        .collectAsStateWithLifecycle(initialValue = null)
+    val contacts = homeViewModel.contacts
+        .collectAsStateWithLifecycle(initialValue = emptyList())
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
+        val transactions = homeViewModel.transactions(sourceIds)
+            .collectAsStateWithLifecycle(initialValue = null)
 
-        val transactions =
-            homeViewModel.transactions(sourceIds).collectAsStateWithLifecycle(initialValue = null)
-        HomeScreen(accounts,
+        HomeScreen(
+            accounts,
             currentAccount.value.orEmpty().first(),
             currentResource.value,
             transactions,
@@ -155,61 +158,69 @@ fun HomeRoute(
             },
             onUpdateSelectedSource = { sourcesId ->
                 homeViewModel.updatedSelectedSources(sourcesId)
-            }, onTransactionChanged = {
+            },
+            onTransactionChanged = {
                 transaction = it
-            }, deleteWallet = {
+            },
+            deleteWallet = {
                 homeViewModel.tempRemoveWallet(it, context)
-            }, deleteAccount = {
+            },
+            deleteAccount = {
                 homeViewModel.deleteAccount(it, context = context)
-            }, editAccount = {
+            },
+            editAccount = {
                 navigateToAccount(it)
-            }, transactionDetails = {
+            },
+            transactionDetails = {
                 navigateToDetail(it)
-            }, newContact = {
+            },
+            newContact = {
                 homeViewModel.insertContact(it)
-            })
+            }
+        )
     }
 
     LaunchedEffect(key1 = transaction) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onBottomButtonClick() {
-
-                if (expandTransaction.value){
-                    if (transaction == null){
-                        scope.launch {
-                            onShowSnackbar(R.string.err_non_transacton, null, null)
+                if (expandTransaction.value) {
+                    when {
+                        transaction == null -> {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_non_transacton, null, null)
+                            }
+                        }
+                        transaction?.type == Constants.BudgetType.TRANSFER -> {
+                            scope.launch {
+                                // Commented code for not implemented transfer
+                            }
+                        }
+                        transaction?.amount.orDefault() <= 0L -> {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_amount, null, null)
+                            }
+                        }
+                        transaction?.sourceId == 0 || transaction?.sourceId == null -> {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_input_source, null, null)
+                            }
+                        }
+                        transaction?.categoryId == null -> {
+                            scope.launch {
+                                onShowSnackbar(R.string.err_input_category, null, null)
+                            }
+                        }
+                        else -> {
+                            homeViewModel.insertTransaction(transaction!!)
+                            expandTransaction.value = false
                         }
                     }
-                    else if (transaction?.type == Constants.BudgetType.TRANSFER){
-                        scope.launch {
-//                            onShowSnackbar(R.string.err_not_impelemnted, null, com.ntg.mybudget.core.designsystem.R.raw.shy2)
-                        }
-                    }
-                    else if (transaction?.amount.orDefault() <= 0L){
-                        scope.launch {
-                            onShowSnackbar(R.string.err_amount, null, null)
-                        }
-                    }else if (transaction?.sourceId == 0 || transaction?.sourceId == null){
-                        scope.launch {
-                            onShowSnackbar(R.string.err_input_source, null, null)
-                        }
-                    }else if (transaction?.categoryId == null){
-                        scope.launch {
-                            onShowSnackbar(R.string.err_input_category, null, null)
-                        }
-                    }else{
-                        homeViewModel.insertTransaction(transaction!!)
-                        expandTransaction.value = false
-                    }
-                }else{
+                } else {
                     expandTransaction.value = true
                 }
-
-
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -414,7 +425,7 @@ private fun HomeScreen(
 
     }
 
-    InsertScreen(expandTransaction, currentResource,contacts.value, logoUrl, localBanks, categories,null, newContact = newContact, onShowSnackbar =  onShowSnackbar) {
+    InsertScreen(expandTransaction, currentResource,contacts.value, logoUrl, localBanks, categories,null, newContact = newContact, onShowSnackbar =  onShowSnackbar, currency = currency) {
         onTransactionChanged(it)
     }
 

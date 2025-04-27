@@ -133,9 +133,14 @@ class LoginViewModel
 
                     }
                     Sync.updateConfigs(context = context)
+//                    finishLogin(
+//                        if (it.data.orEmpty().size == 1 && it.data.orEmpty()
+//                                .first().wallets.orEmpty().isEmpty()
+//                        ) "SetupRoute" else "home_route"
+//                    )
+
                     finishLogin(
-                        if (it.data.orEmpty().size == 1 && it.data.orEmpty()
-                                .first().wallets.orEmpty().isEmpty()
+                        if (it.data.orEmpty().isEmpty()
                         ) "SetupRoute" else "home_route"
                     )
                 }

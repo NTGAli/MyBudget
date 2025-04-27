@@ -115,6 +115,8 @@ fun BudgetNavHost(
             onBack = navController::popBackStack
         )
 
-        reportScreen()
+        reportScreen(
+            sharedViewModel = sharedViewModel
+        )
     }
 }
