@@ -24,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -233,9 +234,9 @@ private fun HomeScreen(
     expandTransaction: MutableState<Boolean>,
     logoUrl: String? = null,
     categories: List<Category>? = null,
-    localBanks:SnapshotStateList<Bank>?,
+    localBanks: SnapshotStateList<Bank>?,
     contacts: State<List<Contact>?>,
-    currency : State<Currency?>,
+    currency: State<Currency?>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
@@ -245,83 +246,44 @@ private fun HomeScreen(
     deleteAccount: (id: Int) -> Unit,
     deleteWallet: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
-    transactionDetails:(Int) -> Unit,
+    transactionDetails: (Int) -> Unit,
     newContact: (Contact) -> Unit,
-    onTransactionChanged:(Transaction) -> Unit,
+    onTransactionChanged: (Transaction) -> Unit,
 ) {
-
-    val scope = rememberCoroutineScope()
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            skipHiddenState = false
-        )
-    )
-
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var stickyHeaderText by remember { mutableStateOf("") }
-    val isAccountSheetOpen = remember { mutableStateOf(false) }
 
-    LaunchedEffect(scaffoldState.bottomSheetState.targetValue) {
-        if (scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded){
-            isAccountSheetOpen.value = false
-        }
-    }
+    val showAccountSheet = remember { mutableStateOf(false) }
 
-    BottomSheetScaffold(
+    val modalBottomSheetState = rememberModalBottomSheetState()
+
+    Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppBar(
                 titleState = {
                     AccountSelector(
-                        title = currentAccount.accountName, subTitle = stringResource(
+                        title = currentAccount.accountName,
+                        subTitle = stringResource(
                             id = R.string.items_format, currentAccount.sources.size
                         ),
-                        isOpen = isAccountSheetOpen
+                        isOpen = remember { mutableStateOf(false) }
                     ) {
-                        scope.launch { scaffoldState.bottomSheetState.expand() }
-                        isAccountSheetOpen.value = true
+                        showAccountSheet.value = true
                     }
-                }, enableNavigation = false,
+                },
+                enableNavigation = false,
                 scrollBehavior = scrollBehavior
             )
-        },
-        sheetTonalElevation = 0.dp,
-        sheetContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 0.dp,
-        sheetContent = {
-            AccountSelectorSheet(
-                accounts,
-                currentAccount,
-                currentResource,
-                navigateToSource,
-                navigateToAccount,
-                navigateToProfile,
-                onShowSnackbar,
-                onUpdateSelectedAccount,
-                onUpdateSelectedSource,
-                deleteWallet = {
-                    deleteWallet(it)
-                },
-                deleteAccount = {
-                    deleteAccount(it)
-                },
-                editAccount = {
-                    editAccount(it)
-                }
-            )
-        }) { padding ->
-
+        }
+    ) { padding ->
         LazyColumn(
             Modifier
                 .padding(padding)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-
             item {
-
                 val init = transactions.value?.filter { it.type == Constants.BudgetType.INIT }
                     .orEmpty().sumOf { it.amount }
                 val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
@@ -329,20 +291,25 @@ private fun HomeScreen(
                 val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
                     .orEmpty().sumOf { it.amount }
 
-                CardReport(modifier = Modifier
-                    .padding(top = 8.dp)
-                    .padding(horizontal = 24.dp),
-                    title = formatCurrency(amount =  init + (income - expense),
-                        mask = "###,###",
-                        currency = currency.value?.symbol.orEmpty(),
-                        pos = 2),
-                    subTitle = "موجودی همه حساب ها",
-                    out = formatCurrency(amount = expense,
+                CardReport(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .padding(horizontal = 24.dp),
+                    title = formatCurrency(
+                        amount = init + (income - expense),
                         mask = "###,###",
                         currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     ),
-                    inValue = formatCurrency(amount = income,
+                    subTitle = "موجودی همه حساب ها",
+                    out = formatCurrency(
+                        amount = expense,
+                        mask = "###,###",
+                        currency = currency.value?.symbol.orEmpty(),
+                        pos = 2
+                    ),
+                    inValue = formatCurrency(
+                        amount = income,
                         mask = "###,###",
                         currency = currency.value?.symbol.orEmpty(),
                         pos = 2
@@ -358,11 +325,9 @@ private fun HomeScreen(
                 )
             }
 
-
             val groupedItems = transactions.value.orEmpty()
                 .filter { it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME }
-                .groupBy  { it.date.toPersianDate() }
-
+                .groupBy { it.date.toPersianDate() }
 
             groupedItems.forEach { (date, items) ->
                 stickyHeader {
@@ -374,13 +339,15 @@ private fun HomeScreen(
                                 else ""
                             }
                             .padding(horizontal = 24.dp).padding(top = 12.dp, bottom = 8.dp),
-                        date = date, amount = (items.filter { it.type == Constants.BudgetType.INCOME }.sumOf { it.amount.orDefault() }
-                                - items.filter { it.type == Constants.BudgetType.EXPENSE }.sumOf { it.amount.orDefault() }), type = "",
+                        date = date,
+                        amount = (items.filter { it.type == Constants.BudgetType.INCOME }.sumOf { it.amount.orDefault() }
+                                - items.filter { it.type == Constants.BudgetType.EXPENSE }.sumOf { it.amount.orDefault() }),
+                        type = "",
                         isCollapse = stickyHeaderText == date
                     )
                 }
 
-                items(items){
+                items(items) {
                     TransactionItem(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         title = it.name.toString(),
@@ -388,12 +355,12 @@ private fun HomeScreen(
                         date = formatTimestampToTime(it.date),
                         divider = it != items.last(),
                         attached = listOf(
-                            if (it.images.orEmpty().isNotEmpty()){
+                            if (it.images.orEmpty().isNotEmpty()) {
                                 AttachData(Constants.AttachTyp.ATTACHED_IMAGE, it.images.orEmpty().size)
-                            }else null
+                            } else null
                         ),
                         type = it.type.orZero()
-                    ){
+                    ) {
                         transactionDetails(it.id)
                     }
                 }
@@ -405,7 +372,6 @@ private fun HomeScreen(
                         modifier = Modifier.padding(horizontal = 64.dp),
                         res = R.raw.happy
                     )
-
 
                     BudgetButton(
                         modifier = Modifier
@@ -419,16 +385,48 @@ private fun HomeScreen(
                     }
                 }
             }
-
         }
-
-
     }
 
-    InsertScreen(expandTransaction, currentResource,contacts.value, logoUrl, localBanks, categories,null, newContact = newContact, onShowSnackbar =  onShowSnackbar, currency = currency) {
+    InsertScreen(
+        expandTransaction,
+        currentResource,
+        contacts.value,
+        logoUrl,
+        localBanks,
+        categories,
+        null,
+        newContact = newContact,
+        onShowSnackbar = onShowSnackbar,
+        currency = currency
+    ) {
         onTransactionChanged(it)
     }
 
+    if (showAccountSheet.value) {
+        ModalBottomSheet(
+            onDismissRequest = { showAccountSheet.value = false },
+            sheetState = modalBottomSheetState,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ) {
+            AccountSelectorSheet(
+                accounts = accounts,
+                currentAccount = currentAccount,
+                currentResource = currentResource,
+                navigateToSource = navigateToSource,
+                navigateToAccount = navigateToAccount,
+                navigateToProfile = navigateToProfile,
+                onShowSnackbar = onShowSnackbar,
+                onUpdateSelectedAccount = onUpdateSelectedAccount,
+                onUpdateSelectedSource = onUpdateSelectedSource,
+                deleteWallet = deleteWallet,
+                deleteAccount = deleteAccount,
+                editAccount = editAccount
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
 }
 
 
