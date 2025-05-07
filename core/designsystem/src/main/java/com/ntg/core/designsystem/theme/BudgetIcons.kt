@@ -54,4 +54,5 @@ object BudgetIcons {
   val default = R.drawable.ic_default_theme
   val check = R.drawable.ic_tick
   val userCircleAdd = R.drawable.user_circle_add
+  val filter = R.drawable.filter_02
 }

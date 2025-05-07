@@ -48,6 +48,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -55,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -74,6 +76,7 @@ import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.components.WheelList
+import com.ntg.core.designsystem.model.AppbarItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.AttachData
@@ -132,6 +135,9 @@ fun HomeRoute(
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
+
+    val showFilterSheet = remember { mutableStateOf(false) }
+    val transactionFilter by homeViewModel.transactionFilter.collectAsStateWithLifecycle()
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
         val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
@@ -257,6 +263,21 @@ private fun HomeScreen(
 
     val modalBottomSheetState = rememberModalBottomSheetState()
 
+
+    if (showFilterSheet.value) {
+        TransactionFilterBottomSheet(
+            showSheet = showFilterSheet,
+            categories = categories,
+            initialFilter = transactionFilter,
+            onApplyFilter = { filter ->
+                viewModel.applyTransactionFilter(filter)
+            }
+        )
+    }
+
+
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -272,8 +293,18 @@ private fun HomeScreen(
                         showAccountSheet.value = true
                     }
                 },
+                actions = listOf(
+                    AppbarItem(
+                        id=0,
+                        imageVector = ImageVector.vectorResource(BudgetIcons.filter),
+                        iconColor = MaterialTheme.colorScheme.outline
+                    )
+                ),
                 enableNavigation = false,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                actionOnClick = {
+                    // OnClick for open filter bottom sheet
+                }
             )
         }
     ) { padding ->

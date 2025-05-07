@@ -62,7 +62,7 @@ fun TwoWeekOverviewChart(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         WeeklyOverview(stringResource(R.string.ThisWeek), thisWeekState)
         WeeklyOverview(stringResource(R.string.PreviousWeek), previousWeek)

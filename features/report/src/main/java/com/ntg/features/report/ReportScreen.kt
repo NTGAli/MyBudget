@@ -98,12 +98,13 @@ fun ReportScreen(
 
             // Expense transaction with category
             if (donutChartData.isNotEmpty())
-                ExpenseDonutChart(donutChartData, disableClick = true, modifier = Modifier.padding(top = 40.dp))
+                ExpenseDonutChart(
+                    donutChartData, disableClick = true, modifier = Modifier.padding(top = 40.dp).padding(horizontal = 16.dp))
 
             // Week State Chart
             if (thisWeekState.isNotEmpty()  && lastWeekState.isNotEmpty()) {
                 TwoWeekOverviewChart(
-                    modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    modifier = Modifier.padding(top = 32.dp, start = 16.dp, end = 16.dp),
                     thisWeekState = thisWeekState,
                     previousWeek = lastWeekState
                 )

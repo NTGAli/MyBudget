@@ -73,6 +73,7 @@ fun ExpenseDonutChart(
             // chart
             Box(
                 modifier = Modifier
+                    .padding(top = 8.dp)
                     .padding(horizontal = 16.dp)
                     .width(160.dp)
             ) {
@@ -85,7 +86,7 @@ fun ExpenseDonutChart(
 
             Column(
                 modifier = Modifier
-                    .padding(top = 24.dp, start = 8.dp)
+                    .padding(top = 24.dp, start = 24.dp)
                     .weight(1f)
             ) {
                 outcomeList.forEach {

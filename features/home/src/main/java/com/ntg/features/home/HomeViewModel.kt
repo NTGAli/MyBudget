@@ -10,12 +10,14 @@ import com.ntg.core.data.repository.transaction.TransactionsRepository
 import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.TransactionFilter
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.mybudget.common.Constants
+import com.ntg.core.mybudget.common.orDefault
 import com.ntg.mybudget.sync.work.workers.initializers.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -42,6 +44,8 @@ class HomeViewModel @Inject constructor(
     private val _contacts = MutableStateFlow<List<Contact>?>(emptyList())
     private val _transaction = MutableStateFlow<Transaction?>(null)
     private val _bankLogoColor = MutableStateFlow<ServerConfig?>(null)
+    private val _transactionFilter = MutableStateFlow(TransactionFilter())
+    val transactionFilter: StateFlow<TransactionFilter> = _transactionFilter
 
     // Public exposed StateFlows
     val selectedAccount: StateFlow<List<AccountWithSources>?> = _selectedAccount
@@ -52,9 +56,12 @@ class HomeViewModel @Inject constructor(
     val contacts: StateFlow<List<Contact>?> = _contacts
     val transaction: StateFlow<Transaction?> = _transaction
     val bankLogoColor: StateFlow<ServerConfig?> = _bankLogoColor
+    private val _filteredTransactions = MutableStateFlow<List<Transaction>>(emptyList())
+    val filteredTransactions: StateFlow<List<Transaction>> = _filteredTransactions
+    private val _isFiltered = MutableStateFlow(false)
+    val isFiltered: StateFlow<Boolean> = _isFiltered
 
     init {
-        // Initialize all data collections in the init block to avoid multiple collections
         viewModelScope.launch {
             bankCardRepository.getUserLocalBanks().collect {
                 _localUserBanks.value = it
@@ -96,6 +103,13 @@ class HomeViewModel @Inject constructor(
                 _bankLogoColor.value = it
             }
         }
+
+
+        viewModelScope.launch {
+            _selectedSources.collect {
+                refreshFilteredTransactions()
+            }
+        }
     }
 
     // Return the Flow directly without wrapping in StateFlow
@@ -110,11 +124,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun updatedSelectedSources(sourceIds: List<Int>) {
-        viewModelScope.launch {
-            sourceRepository.updateSelectedSources(sourceIds)
-        }
-    }
 
     fun insertTransaction(transaction: Transaction) {
         viewModelScope.launch {
@@ -185,6 +194,92 @@ class HomeViewModel @Inject constructor(
     fun insertContact(contact: Contact) {
         viewModelScope.launch {
             contactRepository.upsertContact(contact)
+        }
+    }
+
+    fun applyTransactionFilter(filter: TransactionFilter) {
+        _transactionFilter.value = filter
+        _isFiltered.value = isFilterActive(filter)
+
+        // Re-fetch transactions with the new filter
+        refreshFilteredTransactions()
+    }
+
+    private fun isFilterActive(filter: TransactionFilter): Boolean {
+        return filter.type != null ||
+                filter.dateFrom != null ||
+                filter.dateTo != null ||
+                filter.categoryId != null ||
+                filter.tags.isNotEmpty() ||
+                filter.hasImage
+    }
+
+    private fun refreshFilteredTransactions() {
+        viewModelScope.launch {
+            val sourceIds = _selectedSources.value?.map { it.id } ?: emptyList()
+            if (sourceIds.isEmpty()) {
+                _filteredTransactions.value = emptyList()
+                return@launch
+            }
+
+            transactionsRepository.getTransactionsBySourceIds(sourceIds).collect { allTransactions ->
+                val filteredList = filterTransactions(allTransactions, _transactionFilter.value)
+                _filteredTransactions.value = filteredList
+            }
+        }
+    }
+
+    // New method to filter transactions based on current filter
+    private fun filterTransactions(transactions: List<Transaction>, filter: TransactionFilter): List<Transaction> {
+        return transactions.filter { transaction ->
+            var matches = true
+
+            // Filter by type
+            if (filter.type != null) {
+                matches = matches && transaction.type == filter.type
+            }
+
+            // Filter by date range
+            if (filter.dateFrom != null) {
+                matches = matches && transaction.date >= filter.dateFrom.orDefault()
+            }
+
+            if (filter.dateTo != null) {
+                matches = matches && transaction.date <= filter.dateTo.orDefault()
+            }
+
+            // Filter by category
+            if (filter.categoryId != null) {
+                matches = matches && transaction.categoryId == filter.categoryId
+            }
+
+            // Filter by tags - match any of the filter tags
+            if (filter.tags.isNotEmpty()) {
+                matches = matches && transaction.tags.orEmpty().any { it in filter.tags }
+            }
+
+            // Filter by has image
+            if (filter.hasImage) {
+                matches = matches && !transaction.images.isNullOrEmpty()
+            }
+
+            matches
+        }
+    }
+
+    // Method to clear all filters
+    fun clearTransactionFilters() {
+        _transactionFilter.value = TransactionFilter()
+        _isFiltered.value = false
+        refreshFilteredTransactions()
+    }
+
+    // When sources change, we need to refresh filtered transactions too
+    fun updatedSelectedSources(sourceIds: List<Int>) {
+        viewModelScope.launch {
+            sourceRepository.updateSelectedSources(sourceIds)
+            // After updating sources, refresh filtered transactions
+            refreshFilteredTransactions()
         }
     }
 }
