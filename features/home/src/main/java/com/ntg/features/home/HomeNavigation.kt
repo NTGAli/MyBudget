@@ -46,6 +46,7 @@ fun NavGraphBuilder.homeScreen(
     navToImageFull: (path: String) -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
     navigateToProfile: () -> Unit,
+    startFromSetup: () -> Unit,
     onBack: () -> Unit,
 ){
 
@@ -58,6 +59,7 @@ fun NavGraphBuilder.homeScreen(
             navigateToAccount = navigateToAccount,
             navigateToDetail = navigateToDetail,
             navigateToProfile = navigateToProfile,
+            startFromSetup = startFromSetup,
             onShowSnackbar = onShowSnackbar
         )
     }

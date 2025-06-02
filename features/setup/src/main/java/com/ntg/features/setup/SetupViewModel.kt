@@ -224,8 +224,8 @@ class SetupViewModel
 
     fun selectDefault(){
         viewModelScope.launch {
-            accountRepository.selectDefault()
-            sourceRepository.selectWalletFronDefault()
+            accountRepository.selectFirstAccount()
+            sourceRepository.selectFirstWallet()
         }
     }
 

@@ -21,6 +21,7 @@ import com.ntg.features.profile.session.sessionScreen
 import com.ntg.features.home.navigateToTransaction
 import com.ntg.features.report.reportScreen
 import com.ntg.features.setup.SetupViewModel
+import com.ntg.features.setup.Setup_Route
 import com.ntg.features.setup.navigateToCreateAccount
 import com.ntg.features.setup.navigateToCurrencies
 import com.ntg.features.setup.navigateToSetup
@@ -83,6 +84,9 @@ fun BudgetNavHost(
             navigateToProfile = navController::navigateToProfile,
             navigateToDetail = navController::navigateToTransaction,
             navToImageFull = navController::navigateToImageFull,
+            startFromSetup = {
+                finishLogin(Setup_Route)
+            },
             onShowSnackbar = onShowSnackbar,
             onBack = navController::popBackStack,
             navigateToEdit = navController::navigateToInsert

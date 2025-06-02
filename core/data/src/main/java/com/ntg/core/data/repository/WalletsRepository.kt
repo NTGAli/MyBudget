@@ -19,6 +19,8 @@ interface WalletsRepository {
 
     suspend fun selectWalletFronDefault()
 
+    suspend fun selectFirstWallet()
+
     fun getAll(): Flow<List<Wallet>>
 
     fun getSourcesByAccount(accountId: Int): Flow<List<SourceWithDetail>>

@@ -169,7 +169,11 @@ class AccountRepositoryImpl @Inject constructor(
     }
 
     override suspend fun selectDefault() {
-        accountDao.selectDeafult()
+        accountDao.selectDefault()
+    }
+
+    override suspend fun selectFirstAccount() {
+        accountDao.selectFirstAccount()
     }
 
     override suspend fun updateSelectedAccountAndSources(accountId: Int) {

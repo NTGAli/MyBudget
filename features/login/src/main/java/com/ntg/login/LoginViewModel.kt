@@ -19,6 +19,7 @@ import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.network.model.ResponseBody
 import com.ntg.core.network.model.Result
@@ -133,12 +134,8 @@ class LoginViewModel
 
                     }
                     Sync.updateConfigs(context = context)
-//                    finishLogin(
-//                        if (it.data.orEmpty().size == 1 && it.data.orEmpty()
-//                                .first().wallets.orEmpty().isEmpty()
-//                        ) "SetupRoute" else "home_route"
-//                    )
 
+                    logd("account data ::::: ${it.data}")
                     finishLogin(
                         if (it.data.orEmpty().isEmpty()
                         ) "SetupRoute" else "home_route"

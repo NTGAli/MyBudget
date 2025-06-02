@@ -109,6 +109,7 @@ fun HomeRoute(
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
     navigateToDetail: (id: Int) -> Unit,
+    startFromSetup: () -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
     val expandTransaction = remember { mutableStateOf(false) }
@@ -185,6 +186,10 @@ fun HomeRoute(
                 homeViewModel.insertContact(it)
             }
         )
+    } else if (currentAccount.value != null && currentAccount.value.orEmpty().isEmpty()){
+        LaunchedEffect(currentAccount.value) {
+            startFromSetup()
+        }
     }
 
     LaunchedEffect(key1 = transaction) {
@@ -264,16 +269,16 @@ private fun HomeScreen(
     val modalBottomSheetState = rememberModalBottomSheetState()
 
 
-    if (showFilterSheet.value) {
-        TransactionFilterBottomSheet(
-            showSheet = showFilterSheet,
-            categories = categories,
-            initialFilter = transactionFilter,
-            onApplyFilter = { filter ->
-                viewModel.applyTransactionFilter(filter)
-            }
-        )
-    }
+//    if (showFilterSheet.value) {
+//        TransactionFilterBottomSheet(
+//            showSheet = showFilterSheet,
+//            categories = categories,
+//            initialFilter = transactionFilter,
+//            onApplyFilter = { filter ->
+//                viewModel.applyTransactionFilter(filter)
+//            }
+//        )
+//    }
 
 
 

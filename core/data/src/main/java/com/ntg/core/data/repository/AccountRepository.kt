@@ -36,6 +36,8 @@ interface AccountRepository {
 
     suspend fun selectDefault()
 
+    suspend fun selectFirstAccount()
+
     suspend fun updateSelectedAccountAndSources(accountId: Int)
 
     //server

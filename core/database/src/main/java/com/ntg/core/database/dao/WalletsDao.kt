@@ -124,5 +124,8 @@ interface WalletsDao {
     suspend fun unSync(id: Int)
 
     @Query("UPDATE wallets SET isSelected = 1 WHERE accountId = 1")
-    suspend fun slectDeafultWallet()
+    suspend fun selectDefaultWallet()
+
+    @Query("UPDATE wallets SET isSelected = CASE WHEN accountId = (SELECT MIN(id) FROM accounts WHERE isRemoved = 0) THEN 1 ELSE 0 END")
+    suspend fun selectFirstWallet()
 }

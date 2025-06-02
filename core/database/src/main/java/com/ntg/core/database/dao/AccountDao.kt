@@ -1,19 +1,14 @@
 package com.ntg.core.database.dao
 
-import android.util.Log
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import com.ntg.core.database.model.AccountEntity
-import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.RawAccountWithSource
-import com.ntg.core.model.SourceType
-import com.ntg.core.model.SourceWithDetail
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -88,5 +83,8 @@ interface AccountDao {
     suspend fun updateSelectedAccount(id: Int)
 
     @Query("UPDATE accounts SET isSelected = 1 WHERE isDefault = 1")
-    suspend fun selectDeafult()
+    suspend fun selectDefault()
+
+    @Query("UPDATE accounts SET isSelected = CASE WHEN id = (SELECT MIN(id) FROM accounts WHERE isRemoved = 0) THEN 1 ELSE 0 END")
+    suspend fun selectFirstAccount()
 }
