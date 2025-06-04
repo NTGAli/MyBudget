@@ -97,6 +97,7 @@ import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.core.mybudget.common.persianDate.PersianDate
 import com.ntg.core.mybudget.common.toPersianDate
+import com.ntg.core.mybudget.common.withSuffix
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -330,7 +331,9 @@ private fun HomeScreen(
                 CardReport(
                     modifier = Modifier
                         .padding(top = 8.dp)
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 16.dp)
+
+                    ,
                     title = formatCurrency(
                         amount = init + (income - expense),
                         mask = "###,###",
@@ -338,18 +341,8 @@ private fun HomeScreen(
                         pos = 2
                     ),
                     subTitle = "موجودی همه حساب ها",
-                    out = formatCurrency(
-                        amount = expense,
-                        mask = "###,###",
-                        currency = currency.value?.symbol.orEmpty(),
-                        pos = 2
-                    ),
-                    inValue = formatCurrency(
-                        amount = income,
-                        mask = "###,###",
-                        currency = currency.value?.symbol.orEmpty(),
-                        pos = 2
-                    )
+                    out = expense.withSuffix(),
+                    inValue = income.withSuffix()
                 )
 
                 Text(

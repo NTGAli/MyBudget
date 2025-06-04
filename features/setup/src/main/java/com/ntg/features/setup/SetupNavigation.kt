@@ -16,9 +16,13 @@ const val AccountId_Arg = "accountId"
 const val SourceId_Arg = "accountId"
 
 fun NavController.navigateToSetup() {
-    navigate(Setup_Route)
+    navigate(Setup_Route) {
+        popUpTo(0) {
+            inclusive = true
+        }
+        launchSingleTop = true
+    }
 }
-
 fun NavController.navigateToSource(id: Int, sourceId: Int?) {
     val finalRoute = if (sourceId == null) "$Source_Route/$id"
     else "$Source_Route/$id/${sourceId}"

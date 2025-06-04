@@ -1,5 +1,8 @@
 package com.ntg.mybudget.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +55,31 @@ fun BudgetNavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
+        // Add these default animations
+//        enterTransition = {
+//            slideInHorizontally(
+//                initialOffsetX = { it },
+//                animationSpec = tween(300)
+//            )
+//        },
+//        exitTransition = {
+//            slideOutHorizontally(
+//                targetOffsetX = { -it },
+//                animationSpec = tween(300)
+//            )
+//        },
+//        popEnterTransition = {
+//            slideInHorizontally(
+//                initialOffsetX = { -it },
+//                animationSpec = tween(300)
+//            )
+//        },
+//        popExitTransition = {
+//            slideOutHorizontally(
+//                targetOffsetX = { it },
+//                animationSpec = tween(300)
+//            )
+//        }
     ) {
 
         loginScreen(

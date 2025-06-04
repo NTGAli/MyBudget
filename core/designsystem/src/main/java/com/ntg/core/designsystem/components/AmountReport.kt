@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.mybudget.core.designsystem.R
@@ -79,7 +80,7 @@ private fun RowScope.Item(
             Text(text = title, style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.outline))
             Text(
                 modifier = Modifier.padding(top = 4.dp),
-                text = value, style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outlineVariant))
+                text = value, style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.outlineVariant), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
     }

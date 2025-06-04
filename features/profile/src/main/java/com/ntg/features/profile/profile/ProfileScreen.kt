@@ -130,7 +130,7 @@ fun ProfileScreen(
 
             item {
                 Text(
-                    text = stringResource(id = R.string.AppVertion, versionName),
+                    text = stringResource(id = R.string.AppVertion, versionName.orDefault()),
                     style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.outline)
                 )
             }

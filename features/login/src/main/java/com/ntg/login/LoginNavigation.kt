@@ -16,7 +16,10 @@ const val PHONE = "phone"
 fun NavController.navigateToLogin(removeBackStack: Boolean = false) {
     if (removeBackStack) {
         navigate(Login_Route) {
-            popUpTo(0)
+            popUpTo(0) {
+                inclusive = true
+            }
+            launchSingleTop = true
         }
     } else {
         navigate(Login_Route)

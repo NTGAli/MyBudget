@@ -27,10 +27,10 @@ fun CardReport(
     ) {
         Text(
             modifier = Modifier.padding(top = 16.dp, start = 16.dp),
-            text = title, style= MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outlineVariant))
+            text = title, style= MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outlineVariant), maxLines = 1)
         Text(
             modifier = Modifier.padding(start = 16.dp),
-            text = subTitle, style= MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.outline))
+            text = subTitle, style= MaterialTheme.typography.labelMedium.copy(MaterialTheme.colorScheme.outline), maxLines = 1)
 
         AmountReport(
             modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 16.dp),

@@ -18,10 +18,14 @@ const val Insert_Arg = "insert_arg"
 const val Image_Arg = "image_arg"
 
 fun NavController.navigateToHome(){
-    navigate(Home_Route){
-        popUpTo(0)
+    navigate(Home_Route) {
+        popUpTo(0) {
+            inclusive = true
+        }
+        launchSingleTop = true
     }
 }
+
 
 
 fun NavController.navigateToTransaction(id: Int){
