@@ -112,10 +112,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // Return the Flow directly without wrapping in StateFlow
+    private val _scrollState = MutableStateFlow(0)
+    val scrollState: StateFlow<Int> = _scrollState
+
+    fun updateScrollPosition(firstVisibleItemIndex: Int) {
+        _scrollState.value = firstVisibleItemIndex
+    }
+
     fun accountWithSources() = accountRepository.getAccountsWithSources()
 
-    // Return the Flow directly for transaction queries
     fun transactions(sourceIds: List<Int>) = transactionsRepository.getTransactionsBySourceIds(sourceIds)
 
     fun updatedSelectedAccount(accountId: Int) {
@@ -229,7 +234,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // New method to filter transactions based on current filter
     private fun filterTransactions(transactions: List<Transaction>, filter: TransactionFilter): List<Transaction> {
         return transactions.filter { transaction ->
             var matches = true
@@ -267,14 +271,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // Method to clear all filters
     fun clearTransactionFilters() {
         _transactionFilter.value = TransactionFilter()
         _isFiltered.value = false
         refreshFilteredTransactions()
     }
 
-    // When sources change, we need to refresh filtered transactions too
     fun updatedSelectedSources(sourceIds: List<Int>) {
         viewModelScope.launch {
             sourceRepository.updateSelectedSources(sourceIds)

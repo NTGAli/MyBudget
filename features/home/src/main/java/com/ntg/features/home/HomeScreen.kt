@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +43,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
@@ -266,23 +268,25 @@ private fun HomeScreen(
     var stickyHeaderText by remember { mutableStateOf("") }
 
     val showAccountSheet = remember { mutableStateOf(false) }
-
     val modalBottomSheetState = rememberModalBottomSheetState()
 
+    // Create a stable key for the scroll state based on the account
+    val scrollStateKey = remember(currentAccount.accountId) { "scroll_${currentAccount.accountId}" }
 
-//    if (showFilterSheet.value) {
-//        TransactionFilterBottomSheet(
-//            showSheet = showFilterSheet,
-//            categories = categories,
-//            initialFilter = transactionFilter,
-//            onApplyFilter = { filter ->
-//                viewModel.applyTransactionFilter(filter)
-//            }
-//        )
-//    }
+    // Use rememberSaveable with a custom key
+    val lazyListState = rememberSaveable(
+        key = scrollStateKey,
+        saver = LazyListState.Saver
+    ) {
+        LazyListState()
+    }
 
-
-
+    // Keep track of transaction data to prevent scroll reset on data changes
+    val stableTransactionData = remember(transactions.value) {
+        transactions.value?.filter {
+            it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME
+        }?.groupBy { it.date.toPersianDate() } ?: emptyMap()
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -315,12 +319,13 @@ private fun HomeScreen(
         }
     ) { padding ->
         LazyColumn(
-            Modifier
+            modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),
+            state = lazyListState,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
+            item(key = "header") {
                 val init = transactions.value?.filter { it.type == Constants.BudgetType.INIT }
                     .orEmpty().sumOf { it.amount }
                 val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
@@ -331,9 +336,7 @@ private fun HomeScreen(
                 CardReport(
                     modifier = Modifier
                         .padding(top = 8.dp)
-                        .padding(horizontal = 16.dp)
-
-                    ,
+                        .padding(horizontal = 16.dp),
                     title = formatCurrency(
                         amount = init + (income - expense),
                         mask = "###,###",
@@ -354,20 +357,16 @@ private fun HomeScreen(
                 )
             }
 
-            val groupedItems = transactions.value.orEmpty()
-                .filter { it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME }
-                .groupBy { it.date.toPersianDate() }
-
-            groupedItems.forEach { (date, items) ->
-                stickyHeader {
+            stableTransactionData.forEach { (date, items) ->
+                stickyHeader(key = "header_$date") {
                     DateDivider(
                         modifier = Modifier
                             .onGloballyPositioned { coordinates ->
                                 val position = coordinates.positionInParent()
-                                stickyHeaderText = if (position.y <= 0) date
-                                else ""
+                                stickyHeaderText = if (position.y <= 0) date else ""
                             }
-                            .padding(horizontal = 24.dp).padding(top = 12.dp, bottom = 8.dp),
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 12.dp, bottom = 8.dp),
                         date = date,
                         amount = (items.filter { it.type == Constants.BudgetType.INCOME }.sumOf { it.amount.orDefault() }
                                 - items.filter { it.type == Constants.BudgetType.EXPENSE }.sumOf { it.amount.orDefault() }),
@@ -376,27 +375,30 @@ private fun HomeScreen(
                     )
                 }
 
-                items(items) {
+                items(
+                    items = items,
+                    key = { transaction -> "transaction_${transaction.id}" }
+                ) { transaction ->
                     TransactionItem(
                         modifier = Modifier.padding(horizontal = 8.dp),
-                        title = it.name.toString(),
-                        amount = formatCurrency(it.amount, "###,###", "ت", 2),
-                        date = formatTimestampToTime(it.date),
-                        divider = it != items.last(),
+                        title = transaction.name.toString(),
+                        amount = formatCurrency(transaction.amount, "###,###", "ت", 2),
+                        date = formatTimestampToTime(transaction.date),
+                        divider = transaction != items.last(),
                         attached = listOf(
-                            if (it.images.orEmpty().isNotEmpty()) {
-                                AttachData(Constants.AttachTyp.ATTACHED_IMAGE, it.images.orEmpty().size)
+                            if (transaction.images.orEmpty().isNotEmpty()) {
+                                AttachData(Constants.AttachTyp.ATTACHED_IMAGE, transaction.images.orEmpty().size)
                             } else null
                         ),
-                        type = it.type.orZero()
+                        type = transaction.type.orZero()
                     ) {
-                        transactionDetails(it.id)
+                        transactionDetails(transaction.id)
                     }
                 }
             }
 
-            if (groupedItems.isEmpty()) {
-                item {
+            if (stableTransactionData.isEmpty()) {
+                item(key = "empty_state") {
                     Lottie(
                         modifier = Modifier.padding(horizontal = 64.dp),
                         res = R.raw.happy

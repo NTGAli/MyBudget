@@ -6,10 +6,8 @@ import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -54,27 +50,22 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
-import com.ntg.core.designsystem.components.CustomKeyboard
 import com.ntg.core.designsystem.components.FullScreenBottomSheet
 import com.ntg.core.designsystem.components.ImagePicker
-import com.ntg.core.designsystem.components.Popup
 import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SearchTextField
 import com.ntg.core.designsystem.components.SwitchText
+import com.ntg.core.designsystem.components.CalculatorBottomSheet
 import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TextDivider
-import com.ntg.core.designsystem.model.PopupItem
-import com.ntg.core.designsystem.model.PopupType
 import com.ntg.core.designsystem.model.SwitchItem
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Contact
@@ -88,16 +79,12 @@ import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
-import com.ntg.core.mybudget.common.calculateExpression
 import com.ntg.core.mybudget.common.formatInput
-import com.ntg.core.mybudget.common.isOperator
-import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
-import kotlin.math.log
 
 @Composable
 fun InsertRoute(
@@ -258,7 +245,7 @@ fun InsertScreen(
 
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var openedKeyboard by remember {
         mutableStateOf(false)
@@ -729,99 +716,21 @@ fun InsertScreen(
             when (sheetType) {
                 //calculator
                 0 -> {
-                    val isExpressionComplete = remember(input) {
-                        input.isNotEmpty() && (if (input.last()
-                                .isDigit()
-                        ) input else input.dropLast(1)) != lastInput.replace(",", "")
-                                && input.contains("+")
-                                && calculateExpression(input) != null
-                    }
-
-                    // Font size based on the condition
-                    val topTextFontSize by animateIntAsState(
-                        targetValue = if (isExpressionComplete) MaterialTheme.typography.bodyLarge.fontSize.value.toInt() else MaterialTheme.typography.titleLarge.fontSize.value.toInt(),
-                        label = ""
+                    CalculatorBottomSheet(
+                        initialValue = amount.value.replace(",", ""),
+                        onResult = { result ->
+                            amount.value = formatInput(result)
+                            scope.launch {
+                                sheetState.hide()
+                            }
+                        },
+                        onShowSnackbar = onShowSnackbar
                     )
-
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-
-                        Text(
-                            text = formatInput(input),
-                            modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .padding(horizontal = 4.dp)
-                                .fillMaxWidth(),
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontSize = topTextFontSize.sp, textDirection = TextDirection.Ltr
-                            )
-                        )
-
-                        if (isExpressionComplete) {
-                            lastInput = calculateExpression(input).toString()
-                            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                                Row(
-                                    modifier = Modifier.padding(bottom = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-
-                                    Icon(
-                                        painter = painterResource(id = BudgetIcons.equal),
-                                        contentDescription = "equal"
-                                    )
-
-                                    Text(
-                                        text = formatInput(
-                                            lastInput
-                                        ),
-                                        style = MaterialTheme.typography.titleLarge.copy(
-                                            textDirection = TextDirection.Rtl,
-                                            textAlign = TextAlign.End
-                                        ),
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                    )
-                                }
-                            }
-                        }
-
-                        CustomKeyboard(onKeyPressed = { key ->
-                            if (input.isNotEmpty()) {
-                                if (isOperator(input.last()) && isOperator(key.last())) {
-                                    input = input.dropLast(1)
-                                    input += key
-                                    return@CustomKeyboard
-                                }
-                            } else {
-                                if (isOperator(key.last())) return@CustomKeyboard
-                            }
-                            input += key
-                        }, onBackspace = {
-                            if (input.isNotEmpty()) {
-                                input = input.dropLast(1)
-                            }
-                        }, onConfirm = {
-                            val userInput = lastInput.ifEmpty { input }
-                            if (userInput.toLong() > 0L) {
-                                amount.value = formatInput(userInput)
-                                scope.launch {
-                                    sheetState.hide()
-                                }
-                            } else {
-                                scope.launch {
-                                    onShowSnackbar(R.string.err_negetive_number, null, null)
-                                }
-                            }
-                        })
-                    }
                 }
 
                 1 -> {
                     LazyColumn {
-                        items(currentResource.orEmpty()) {wallet ->
+                        items(currentResource.orEmpty()) { wallet ->
                             var logoName = ""
                             val data = if (wallet.data is SourceType.BankCard) {
                                 logoName = localBanks?.find { it.id == (wallet.data as SourceType.BankCard).bankId }?.logoName.orEmpty()
@@ -859,7 +768,7 @@ fun InsertScreen(
                 // Categories
                 2 -> {
                     LazyColumn {
-                        items(categories.orEmpty().filter { it.type == budgetType }) {cat ->
+                        items(categories.orEmpty().filter { it.type == budgetType }) { cat ->
                             SampleItem(
                                 modifier = Modifier.padding(horizontal = 8.dp),
                                 title = cat.name, setRadio = true,
@@ -904,15 +813,17 @@ fun InsertScreen(
 
                     LazyColumn {
 
-                        if (contacts.orEmpty().isEmpty()){
+                        if (contacts.orEmpty().isEmpty()) {
                             item {
                                 Text(
                                     modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
                                     text = stringResource(R.string.no_contact),
-                                    style = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center))
+                                    style = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center)
+                                )
                                 BudgetButton(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 8.dp),
-                                    text = stringResource(R.string.import_new), style = ButtonStyle.TextOnly, size = ButtonSize.MD){
+                                    text = stringResource(R.string.import_new), style = ButtonStyle.TextOnly, size = ButtonSize.MD
+                                ) {
                                     val intent = Intent(Intent.ACTION_PICK).apply {
                                         type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
                                     }
@@ -921,19 +832,19 @@ fun InsertScreen(
                             }
                         }
 
-                        items(contacts.orEmpty().filter { it.phoneNumber?.contains(searchContactQuery.value).orFalse() || it.fullName?.contains(searchContactQuery.value).orFalse() }){ct ->
+                        items(contacts.orEmpty().filter { it.phoneNumber?.contains(searchContactQuery.value).orFalse() || it.fullName?.contains(searchContactQuery.value).orFalse() }) { ct ->
                             SampleItem(
                                 modifier = Modifier.padding(horizontal = 24.dp),
                                 title = ct.fullName.orEmpty(), setCheckbox = true, hasDivider = true, isRadioCheck = people.any { it.contactId == ct.phoneNumber },
                                 secondIconPainter = painterResource(BudgetIcons.more)
                             ) {
-                                if (it == 1){
-                                    if (people.any { it.contactId == ct.phoneNumber }){
+                                if (it == 1) {
+                                    if (people.any { it.contactId == ct.phoneNumber }) {
                                         people.remove(Person(0, ct.phoneNumber.orEmpty(), 0))
-                                    }else{
+                                    } else {
                                         people.add(Person(0, ct.phoneNumber.orEmpty(), 0))
                                     }
-                                }else{
+                                } else {
 
                                 }
                             }
