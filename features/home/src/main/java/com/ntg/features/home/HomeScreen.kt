@@ -437,8 +437,7 @@ private fun HomeScreen(
     if (showAccountSheet.value) {
         ModalBottomSheet(
             onDismissRequest = { showAccountSheet.value = false },
-            sheetState = modalBottomSheetState,
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            sheetState = modalBottomSheetState
         ) {
             AccountSelectorSheet(
                 accounts = accounts,
@@ -760,6 +759,7 @@ fun AccountSelectorSheet(
                     account = account,
                     isCheckBox = true,
                     isAccountSelected = account.accountId == selectedAccountId,
+                    backgroundColor = MaterialTheme.colorScheme.background,
                     selectedSources = selectedResources,
                     insertNewItem = {
                         navigateToSource(account.accountId, null)

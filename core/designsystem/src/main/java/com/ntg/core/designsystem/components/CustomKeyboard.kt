@@ -369,7 +369,8 @@ fun EnhancedCustomKeyboard(
                         label = "=",
                         backgroundColor = MaterialTheme.colorScheme.primary,
                         labelColor = MaterialTheme.colorScheme.onPrimary
-                    ) { onEqualsPressed() }
+                    ) { onEqualsPressed()
+                        onConfirm()}
                 }
             }
         }

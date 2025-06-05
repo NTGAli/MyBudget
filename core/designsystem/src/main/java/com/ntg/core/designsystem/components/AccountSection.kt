@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +50,7 @@ fun AccountSection(
     account: AccountWithSources,
     isCheckBox: Boolean,
     isAccountSelected: Boolean = false,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     selectedSources: MutableList<Int> = mutableListOf(),
     insertNewItem: () -> Unit = {},
     onSourceEdit: (Int) -> Unit = {},
@@ -64,7 +66,7 @@ fun AccountSection(
     Column(
         modifier = modifier
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = backgroundColor,
                 shape = RoundedCornerShape(16.dp)
             )
             .clip(RoundedCornerShape(16.dp))
