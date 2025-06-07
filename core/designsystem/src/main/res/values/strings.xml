@@ -3,6 +3,8 @@
     <string name="income">ورودی</string>
     <string name="outcome">خروجی</string>
     <string name="internal_transfer">جیب به جیب</string>
+    <string name="internal_transfer_withdraw">جیب به جیب - برداشت</string>
+    <string name="internal_transfer_deposit">جیب به جیب - واریز</string>
     <string name="add_image">اضافه کردن تصویر</string>
     <string name="phone_number">شماره تلفن</string>
     <string name="source_expenditure">منبع خرج</string>
@@ -152,5 +154,10 @@
     <string name="OutcomeWithCategory">مخارج بر اساس دسته بندی</string>
     <string name="calculation_error">خطا در محاسبه</string>
     <string name="err_negative_number">مقدار باید مثبت باشد!</string>
+
+    <string name="err_same_wallet">انتقال به همان کیف پول امکان‌پذیر نیست!</string>
+    <string name="withdraw">برداشت</string>
+    <string name="deposit">واریز</string>
+    <string name="untitled">بدون عنوان</string>
 
 </resources>

@@ -165,7 +165,7 @@ fun SampleItem(
     hasDivider: Boolean = false,
     setSwitch: Boolean = false,
     isSwitchCheck: Boolean = false,
-    onClick: (Int) -> Unit,
+    onClick: (Int) -> Unit = {},
 ) {
     Column {
         Row(

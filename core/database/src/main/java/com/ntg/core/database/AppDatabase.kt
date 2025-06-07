@@ -38,7 +38,7 @@ import com.ntg.core.database.model.WalletTypeEntity
         ContactEntity::class,
         PersonEntity::class
     ],
-    version = 1, exportSchema = true
+    version = 2, exportSchema = true
 )
 @TypeConverters(Converters::class)
 internal abstract class AppDatabase : RoomDatabase() {

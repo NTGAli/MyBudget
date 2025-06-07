@@ -2,10 +2,12 @@ package com.ntg.core.data.repository.transaction
 
 import com.ntg.core.database.dao.ContactDao
 import com.ntg.core.database.dao.TransactionsDao
+import com.ntg.core.database.model.asWallet
 import com.ntg.core.database.model.toContactEntity
 import com.ntg.core.database.model.toEntity
 import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.Wallet
 import com.ntg.core.mybudget.common.BudgetDispatchers
 import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.mybudget.common.logd
@@ -13,6 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class TransactionsRepositoryImpl @Inject constructor(
@@ -40,6 +43,13 @@ class TransactionsRepositoryImpl @Inject constructor(
         flow {
             emit(transactionsDao.getBySourceIds(sourceIds))
         }
+            .flowOn(ioDispatcher)
+
+    override fun getSelectedWalletTransactions(): Flow<List<Transaction>> =
+        transactionsDao.getSelectedWalletTransactions()
+            .map { entities ->
+                entities.map { it }
+            }
             .flowOn(ioDispatcher)
 
     override fun transactionById(id: Int): Flow<Transaction?> =

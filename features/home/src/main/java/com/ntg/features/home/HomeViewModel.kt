@@ -38,6 +38,8 @@ class HomeViewModel @Inject constructor(
     // Private MutableStateFlows
     private val _selectedAccount = MutableStateFlow<List<AccountWithSources>?>(null)
     private val _selectedSources = MutableStateFlow<List<Wallet>?>(emptyList())
+    private val _allSources = MutableStateFlow<List<Wallet>?>(emptyList())
+    private val _transactions = MutableStateFlow<List<Transaction>?>(emptyList())
     private val _currency = MutableStateFlow<Currency?>(null)
     private val _categories = MutableStateFlow<List<Category>?>(null)
     private val _localUserBanks = MutableStateFlow<List<Bank>?>(emptyList())
@@ -50,6 +52,8 @@ class HomeViewModel @Inject constructor(
     // Public exposed StateFlows
     val selectedAccount: StateFlow<List<AccountWithSources>?> = _selectedAccount
     val selectedSources: StateFlow<List<Wallet>?> = _selectedSources
+    val allSources: StateFlow<List<Wallet>?> = _allSources
+    val transactions: StateFlow<List<Transaction>?> = _transactions
     val currency: StateFlow<Currency?> = _currency
     val categories: StateFlow<List<Category>?> = _categories
     val localUserBanks: StateFlow<List<Bank>?> = _localUserBanks
@@ -87,6 +91,18 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            sourceRepository.getAllSources().collect {
+                _allSources.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            transactionsRepository.getSelectedWalletTransactions().collect {
+                _transactions.value = it
+            }
+        }
+
+        viewModelScope.launch {
             sourceRepository.getCurrentCurrency().collect {
                 _currency.value = it
             }
@@ -115,20 +131,14 @@ class HomeViewModel @Inject constructor(
     private val _scrollState = MutableStateFlow(0)
     val scrollState: StateFlow<Int> = _scrollState
 
-    fun updateScrollPosition(firstVisibleItemIndex: Int) {
-        _scrollState.value = firstVisibleItemIndex
-    }
-
     fun accountWithSources() = accountRepository.getAccountsWithSources()
 
-    fun transactions(sourceIds: List<Int>) = transactionsRepository.getTransactionsBySourceIds(sourceIds)
 
     fun updatedSelectedAccount(accountId: Int) {
         viewModelScope.launch {
             accountRepository.updateSelectedAccountAndSources(accountId)
         }
     }
-
 
     fun insertTransaction(transaction: Transaction) {
         viewModelScope.launch {

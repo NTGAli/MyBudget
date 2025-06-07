@@ -95,7 +95,9 @@ import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatTimestampToTime
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
 import com.ntg.core.mybudget.common.jalaliToTimestamp
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
+import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.core.mybudget.common.persianDate.PersianDate
 import com.ntg.core.mybudget.common.toPersianDate
@@ -127,6 +129,8 @@ fun HomeRoute(
         .collectAsStateWithLifecycle(initialValue = null)
     val currentResource = homeViewModel.selectedSources
         .collectAsStateWithLifecycle(initialValue = emptyList())
+    val allResource = homeViewModel.allSources
+        .collectAsStateWithLifecycle(initialValue = emptyList())
     val logoUrlColor = homeViewModel.bankLogoColor
         .collectAsStateWithLifecycle(initialValue = null).value?.value
     val categories = homeViewModel.categories
@@ -144,14 +148,15 @@ fun HomeRoute(
     val transactionFilter by homeViewModel.transactionFilter.collectAsStateWithLifecycle()
 
     if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
-        val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
-        val transactions = homeViewModel.transactions(sourceIds)
+//        val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
+        val transactions = homeViewModel.transactions
             .collectAsStateWithLifecycle(initialValue = null)
 
         HomeScreen(
             accounts,
             currentAccount.value.orEmpty().first(),
             currentResource.value,
+            allResource.value,
             transactions,
             expandTransaction,
             logoUrlColor,
@@ -207,9 +212,38 @@ fun HomeRoute(
                         }
                         transaction?.type == Constants.BudgetType.TRANSFER -> {
                             scope.launch {
-                                // Commented code for not implemented transfer
+                                if (transaction?.toSourceId == null) {
+                                    onShowSnackbar(R.string.err_input_source, null, null)
+                                    return@launch
+                                }
+                                if (transaction?.sourceId == transaction?.toSourceId) {
+                                    onShowSnackbar(R.string.err_same_wallet, null, null)
+                                    return@launch
+                                }
+                                val exposeTransaction=transaction?.copy(
+                                    type = Constants.BudgetType.EXPENSE,
+                                    categoryId = -1
+                                )
+                                logd("JJJJJJJJJJJJ :::: ${exposeTransaction}")
+                                homeViewModel.insertTransaction(
+                                    exposeTransaction!!
+                                )
+                                val incomeTransaction=transaction?.copy(
+                                    type = Constants.BudgetType.INCOME,
+                                    categoryId = -1,
+                                    sourceId = transaction?.toSourceId!!,
+                                    toSourceId = transaction?.sourceId!!,
+                                )
+                                logd("JJJJJJJJJJJJ :::: ${incomeTransaction}")
+
+                                homeViewModel.insertTransaction(
+                                    incomeTransaction!!
+                                )
+                                expandTransaction.value = false
                             }
+
                         }
+
                         transaction?.amount.orDefault() <= 0L -> {
                             scope.launch {
                                 onShowSnackbar(R.string.err_amount, null, null)
@@ -244,6 +278,7 @@ private fun HomeScreen(
     accounts: State<List<AccountWithSources>?>,
     currentAccount: AccountWithSources,
     currentResource: List<Wallet>?,
+    allResource: List<Wallet>?,
     transactions: State<List<Transaction>?>,
     expandTransaction: MutableState<Boolean>,
     logoUrl: String? = null,
@@ -284,7 +319,7 @@ private fun HomeScreen(
     // Keep track of transaction data to prevent scroll reset on data changes
     val stableTransactionData = remember(transactions.value) {
         transactions.value?.filter {
-            it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME
+            it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME || it.type == Constants.BudgetType.TRANSFER
         }?.groupBy { it.date.toPersianDate() } ?: emptyMap()
     }
 
@@ -296,7 +331,7 @@ private fun HomeScreen(
                     AccountSelector(
                         title = currentAccount.accountName,
                         subTitle = stringResource(
-                            id = R.string.items_format, currentAccount.sources.size
+                            id = R.string.items_format, currentAccount.sources.filter { it?.isSelected.orFalse() }.size
                         ),
                         isOpen = remember { mutableStateOf(false) }
                     ) {
@@ -381,11 +416,15 @@ private fun HomeScreen(
                 ) { transaction ->
                     TransactionItem(
                         modifier = Modifier.padding(horizontal = 8.dp),
-                        title = transaction.name.toString(),
+                        title = if (transaction.name != null) transaction.name.orDefault() else if (transaction.categoryId == -1) {
+                            if (transaction.type == Constants.BudgetType.INCOME) stringResource(R.string.internal_transfer_deposit)
+                            else stringResource(R.string.internal_transfer_withdraw)
+                        }else stringResource(R.string.untitled),
                         amount = formatCurrency(transaction.amount, "###,###", "ت", 2),
                         date = formatTimestampToTime(transaction.date),
                         divider = transaction != items.last(),
-                        attached = listOf(
+                        attached =
+                            listOf(
                             if (transaction.images.orEmpty().isNotEmpty()) {
                                 AttachData(Constants.AttachTyp.ATTACHED_IMAGE, transaction.images.orEmpty().size)
                             } else null
@@ -421,7 +460,7 @@ private fun HomeScreen(
 
     InsertScreen(
         expandTransaction,
-        currentResource,
+        allResource,
         contacts.value,
         logoUrl,
         localBanks,

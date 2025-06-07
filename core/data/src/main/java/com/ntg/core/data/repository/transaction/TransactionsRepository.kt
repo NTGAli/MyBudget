@@ -13,5 +13,7 @@ interface TransactionsRepository {
 
     fun getTransactionsBySourceIds(sourceIds: List<Int>): Flow<List<Transaction>>
 
+    fun getSelectedWalletTransactions(): Flow<List<Transaction>>
+
     fun transactionById(id: Int): Flow<Transaction?>
 }

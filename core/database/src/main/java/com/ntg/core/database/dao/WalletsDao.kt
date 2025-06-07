@@ -58,7 +58,7 @@ interface WalletsDao {
         FROM wallets 
         where isSelected = 1
     """)
-    suspend fun getSelectedWalletIds(): List<Int>
+    fun getSelectedWalletIds(): Flow<List<Int>>
 
     @Transaction
     suspend fun getSourcesWithDetails(accountId: Int): List<SourceWithDetail> {
@@ -86,7 +86,15 @@ interface WalletsDao {
         WHERE isSelected = 1
         """
     )
-    suspend fun getSelectedSources(): List<WalletEntity>
+    fun getSelectedSources(): Flow<List<WalletEntity>>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM wallets
+        """
+    )
+    fun getAllSources(): Flow<List<WalletEntity>>
 
     @Query(
         """
@@ -104,7 +112,7 @@ interface WalletsDao {
         SELECT c.* FROM wallets w 
         INNER JOIN currencies c
         ON w.currencyId = c.id
-        where w.accountId = :accountId = 1 LIMIT 1
+        where w.accountId = :accountId LIMIT 1
         """
     )
     suspend fun currentCurrency(accountId: Int): CurrencyEntity?

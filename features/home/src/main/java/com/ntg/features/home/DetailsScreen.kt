@@ -145,13 +145,14 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
 
             }
 
-            SampleItem(
-                modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
-                    R.string.category
-                ), secondText = transaction.value?.name
-            ) {
-
+            if (transaction.value?.categoryId != null && transaction.value?.categoryId != -1){
+                SampleItem(
+                    modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
+                        R.string.category
+                    ), secondText = transaction.value?.name
+                )
             }
+
 
             SampleItem(
                 modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
@@ -165,21 +166,41 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
                 modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
                     R.string.type
                 ), secondText = when (transaction.value?.type) {
-                    Constants.BudgetType.INCOME -> stringResource(R.string.income)
-                    Constants.BudgetType.EXPENSE -> stringResource(R.string.expenses)
+                    Constants.BudgetType.INCOME -> {
+                        if (transaction.value?.categoryId == -1){
+                            stringResource(R.string.internal_transfer_deposit)
+                        }else stringResource(R.string.income)
+                    }
+                    Constants.BudgetType.EXPENSE -> {
+                        if (transaction.value?.categoryId == -1){
+                            stringResource(R.string.internal_transfer_withdraw)
+                        }else stringResource(R.string.expenses)
+                    }
                     else -> stringResource(R.string.internal_transfer)
                 }
-            ) {
+            )
 
+            if (transaction.value?.categoryId != null && transaction.value?.categoryId == -1){
+                SampleItem(
+                    modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
+                        R.string.from
+                    ), secondText = title
+                )
+
+                SampleItem(
+                    modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
+                        R.string.to
+                    ), secondText = title
+                )
+
+            }else{
+                SampleItem(
+                    modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
+                        R.string.source_expenditure
+                    ), secondText = title
+                )
             }
 
-            SampleItem(
-                modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
-                    R.string.source_expenditure
-                ), secondText = title
-            ) {
-
-            }
 
 
             if (transaction.value?.tags.orEmpty().isNotEmpty()) {

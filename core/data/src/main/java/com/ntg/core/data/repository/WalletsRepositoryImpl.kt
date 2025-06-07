@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class WalletsRepositoryImpl @Inject constructor(
@@ -87,21 +88,23 @@ class WalletsRepositoryImpl @Inject constructor(
         }.flowOn(ioDispatcher)
 
     override suspend fun getSelectedWalletIds(): Flow<List<Int>> =
-        flow {
-            emit(
-                walletDao.getSelectedWalletIds()
-            )
-        }.flowOn(ioDispatcher)
+        walletDao.getSelectedWalletIds()
+            .flowOn(ioDispatcher)
 
 
     override suspend fun getSelectedSources(): Flow<List<Wallet>> =
-        flow {
-            emit(
-                walletDao.getSelectedSources().map {
-                    it.asWallet()
-                }
-            )
-        }.flowOn(ioDispatcher)
+        walletDao.getSelectedSources()
+            .map { entities ->
+                entities.map { it.asWallet() }
+            }.flowOn(ioDispatcher)
+
+
+    override suspend fun getAllSources(): Flow<List<Wallet>> =
+        walletDao.getAllSources()
+            .map { entities ->
+                entities.map { it.asWallet() }
+            }.flowOn(ioDispatcher)
+
 
     override suspend fun getCurrentCurrency(): Flow<Currency?> =
         flow {

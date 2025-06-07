@@ -33,6 +33,8 @@ interface WalletsRepository {
 
     suspend fun getSelectedSources(): Flow<List<Wallet>>
 
+    suspend fun getAllSources(): Flow<List<Wallet>>
+
     suspend fun getCurrentCurrency(): Flow<Currency?>
 
     suspend fun getCurrentCurrency(accountId: Int): Flow<Currency?>

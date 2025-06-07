@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Upsert
 import com.ntg.core.database.model.TransactionEntity
 import com.ntg.core.model.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionsDao {
@@ -27,11 +28,19 @@ interface TransactionsDao {
         SELECT t.*, c.name FROM transactions t
         LEFT JOIN category_table c
         ON c.id = t.categoryId
-        WHERE t.sourceId IN (:ids)
+        WHERE t.sourceId IN (:ids) OR t.toSourceId IN (:ids)
         ORDER BY t.createdAt DESC
     """)
     suspend fun getBySourceIds(ids: List<Int>): List<Transaction>
 
+    @Query("""
+    SELECT t.*, c.name FROM transactions t
+    LEFT JOIN category_table c ON c.id = t.categoryId
+    LEFT JOIN wallets w ON t.sourceId = w.id
+    WHERE w.isSelected = 1 AND w.isRemoved = 0
+    ORDER BY t.createdAt DESC
+""")
+    fun getSelectedWalletTransactions(): Flow<List<Transaction>>
 
     @Query("DELETE FROM transactions WHERE accountId = :accountId")
     suspend fun deleteByAccount(accountId: Int)

@@ -80,6 +80,7 @@ import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.formatInput
+import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.orZero
@@ -100,7 +101,7 @@ fun InsertRoute(
     val scope = rememberCoroutineScope()
     val isPresent = remember { mutableStateOf(true) }
 
-    val currentResource = homeViewModel.selectedSources
+    val currentResource = homeViewModel.allSources
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val logoUrlColor = homeViewModel.bankLogoColor
         .collectAsStateWithLifecycle(initialValue = null).value?.value
@@ -167,8 +168,26 @@ fun InsertRoute(
                     updatedTransaction.value?.type == Constants.BudgetType.TRANSFER -> {
                         scope.launch {
                             // Handle transfer type
+                            if (updatedTransaction.value?.toSourceId == null || updatedTransaction.value?.sourceId == null) {
+                                onShowSnackbar(R.string.err_input_source, null, null)
+                                return@launch
+                            }
+                            if (updatedTransaction.value?.sourceId == updatedTransaction.value?.toSourceId) {
+                                onShowSnackbar(R.string.err_same_wallet, null, null)
+                                return@launch
+                            }
+                            homeViewModel.insertTransaction(
+                                updatedTransaction.value!!.copy(
+                                    accountId = updatedTransaction.value?.accountId.orZero(),
+                                    sourceId = updatedTransaction.value?.sourceId!!,
+                                    toSourceId = updatedTransaction.value?.toSourceId
+                                )
+                            )
+                            onBack()
                         }
+
                     }
+
                     updatedTransaction.value?.amount.orDefault() <= 0L -> {
                         scope.launch {
                             onShowSnackbar(R.string.err_amount, null, null)
@@ -213,10 +232,14 @@ fun InsertScreen(
 
     val context = LocalContext.current
     val amount = remember { mutableStateOf("") }
+    val fee = remember { mutableStateOf("") }
     val note = remember { mutableStateOf("") }
     var input by remember { mutableStateOf("") }
     var lastInput by remember { mutableStateOf("") }
     val tag = remember { mutableStateOf("") }
+
+    var editingFee by remember { mutableStateOf(false) }
+    var feeChanged by remember { mutableStateOf(false) }
 
     var selectedSource by remember {
         mutableStateOf<Wallet?>(null)
@@ -300,6 +323,7 @@ fun InsertScreen(
         if (transaction != null) {
             lastInput = formatInput(transaction.amount.toString())
             amount.value = formatInput(transaction.amount.toString())
+            fee.value = formatInput(transaction.fee.orDefault().toString())
             selectedTime = transaction.date
             images.clear()
             images.addAll(transaction.images.orEmpty())
@@ -309,6 +333,7 @@ fun InsertScreen(
 //            contacts.addAll(transaction.contacts.orEmpty())
             note.value = transaction.note.orEmpty()
             selectedSource = currentResource.orEmpty().find { it.id == transaction.sourceId }
+            secondSource = currentResource.orEmpty().find { it.id == transaction.toSourceId }
             selectedCategory = categories.orEmpty().find { it.id == transaction.categoryId }
             budgetType = transaction.type.orZero()
         }
@@ -320,8 +345,10 @@ fun InsertScreen(
                 id = transaction?.id ?: 0,
                 accountId = selectedSource?.accountId.orZero(),
                 sourceId = selectedSource?.id.orZero(),
+                toSourceId = secondSource?.id.orZero(),
                 categoryId = selectedCategory?.id.orZero(),
                 amount = amount.value.replace(",", "").toLong(),
+                fee = fee.value.replace(",", "").toLongOrNull(),
                 type = budgetType,
                 date = selectedTime,
                 note = note.value,
@@ -335,8 +362,12 @@ fun InsertScreen(
     LaunchedEffect(expandTransaction.value) {
         if (!expandTransaction.value) {
             amount.value = ""
+            fee.value = ""
+            feeChanged = false
+            editingFee = false
             selectedCategory = null
             selectedSource = null
+            secondSource = null
             note.value = ""
             budgetType = Constants.BudgetType.EXPENSE
             tags.clear()
@@ -347,6 +378,19 @@ fun InsertScreen(
 
     LaunchedEffect(key1 = budgetType) {
         selectedCategory = null
+    }
+
+    LaunchedEffect(amount.value, budgetType) {
+        if (budgetType == Constants.BudgetType.TRANSFER && !feeChanged) {
+            val raw = amount.value.replace(",", "").toLongOrNull() ?: 0L
+            val autoFee = when {
+                raw <= 1_000_000 -> 720
+                raw <= 2_000_000 -> 1000
+                raw >= 3_000_000 -> 1280
+                else -> 0
+            }
+            fee.value = formatInput(autoFee.toString())
+        }
     }
 
 
@@ -440,6 +484,7 @@ fun InsertScreen(
                     sheetType = 0
                     openedKeyboard = true
                     input = amount.value.replace(",", "")
+                    editingFee = false
                     lastInput = ""
                 }
             )
@@ -529,7 +574,7 @@ fun InsertScreen(
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
                         readOnly = true,
                         onClick = {
-                            sheetType = 1
+                            sheetType = -1
                             selectSourceType = 2
                             openedKeyboard = true
                         }
@@ -540,16 +585,17 @@ fun InsertScreen(
                             .padding(top = 8.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
-                        text = amount,
+                        text = fee,
                         label = stringResource(id = R.string.fee),
                         fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) concurrency.value else null,
                         fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) concurrency.value else null,
                         readOnly = true,
                         onClick = {
                             sheetType = 0
+                            editingFee = true
                             openedKeyboard = true
-                            input = amount.value
-                            lastInput = amount.value
+                            input = fee.value
+                            lastInput = fee.value
                         }
                     )
                 }
@@ -711,15 +757,22 @@ fun InsertScreen(
             onDismissRequest = {
                 searchContactQuery.value = ""
                 openedKeyboard = false
+                editingFee = false
             }) {
 
             when (sheetType) {
                 //calculator
                 0 -> {
+                    val init = if (editingFee) fee.value.replace(",", "") else amount.value.replace(",", "")
                     CalculatorBottomSheet(
-                        initialValue = amount.value.replace(",", ""),
+                        initialValue = init,
                         onResult = { result ->
-                            amount.value = formatInput(result)
+                            if (editingFee) {
+                                fee.value = formatInput(result)
+                                feeChanged = true
+                            } else {
+                                amount.value = formatInput(result)
+                            }
                             scope.launch {
                                 sheetState.hide()
                             }
@@ -728,9 +781,10 @@ fun InsertScreen(
                     )
                 }
 
-                1 -> {
+                // wallets
+                1,-1 -> {
                     LazyColumn {
-                        items(currentResource.orEmpty()) { wallet ->
+                        items(currentResource.orEmpty().filter { if (sheetType == 1)it.isSelected.orFalse() else true }) { wallet ->
                             var logoName = ""
                             val data = if (wallet.data is SourceType.BankCard) {
                                 logoName = localBanks?.find { it.id == (wallet.data as SourceType.BankCard).bankId }?.logoName.orEmpty()
