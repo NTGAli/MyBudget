@@ -196,14 +196,14 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
                         R.string.from
-                    ), secondText = if (transaction.value?.type == Constants.BudgetType.INCOME)
+                    ), secondText = if (transaction.value?.type == Constants.BudgetType.EXPENSE)
                         sourceTitle else destTitle
                 )
 
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
                         R.string.to
-                    ), secondText = if (transaction.value?.type == Constants.BudgetType.INCOME)
+                    ), secondText = if (transaction.value?.type == Constants.BudgetType.EXPENSE)
                         destTitle else sourceTitle
                 )
 
