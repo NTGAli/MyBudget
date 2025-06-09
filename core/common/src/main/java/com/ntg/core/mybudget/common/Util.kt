@@ -598,3 +598,24 @@ fun getLastWeekTransactions(transactions: List<Transaction>): List<Transaction> 
         transaction.date >= startOfLastWeek.time && transaction.date <= endOfLastWeek.time
     }
 }
+
+fun getCurrentJalaliMonth(): Pair<Int, Int> {
+    val currentJalali = getCurrentJalaliDate()
+    return Pair(currentJalali.first, currentJalali.second) // year, month
+}
+
+fun isTransactionInCurrentJalaliMonth(timestamp: Long, currentMonth: Pair<Int, Int>): Boolean {
+    val (currentYear, currentMonthNum) = currentMonth
+
+    // Convert timestamp to Jalali date
+    val transactionJalali = timestampToJalaliDate(timestamp)
+
+    return transactionJalali.first == currentYear && transactionJalali.second == currentMonthNum
+}
+
+
+fun timestampToJalaliDate(timestamp: Long): Triple<Int, Int, Int> {
+    // You can use your existing PersianDate class or similar utility
+    val persianDate = PersianDate(timestamp)
+    return Triple(persianDate.shYear, persianDate.shMonth, persianDate.shDay)
+}

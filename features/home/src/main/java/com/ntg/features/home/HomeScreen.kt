@@ -94,6 +94,8 @@ import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatTimestampToTime
 import com.ntg.core.mybudget.common.getCurrentJalaliDate
+import com.ntg.core.mybudget.common.getCurrentJalaliMonth
+import com.ntg.core.mybudget.common.isTransactionInCurrentJalaliMonth
 import com.ntg.core.mybudget.common.jalaliToTimestamp
 import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
@@ -364,6 +366,17 @@ private fun HomeScreen(
                 val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
                     .orEmpty().sumOf { it.amount }
 
+                val currentJalaliMonth = getCurrentJalaliMonth()
+                val currentMonthIncome = transactions.value?.filter {
+                    it.type == Constants.BudgetType.INCOME &&
+                            isTransactionInCurrentJalaliMonth(it.date, currentJalaliMonth)
+                }?.sumOf { it.amount } ?: 0L
+
+                val currentMonthExpense = transactions.value?.filter {
+                    it.type == Constants.BudgetType.EXPENSE &&
+                            isTransactionInCurrentJalaliMonth(it.date, currentJalaliMonth)
+                }?.sumOf { it.amount } ?: 0L
+
                 CardReport(
                     modifier = Modifier
                         .padding(top = 8.dp)
@@ -374,9 +387,9 @@ private fun HomeScreen(
                         currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     ),
-                    subTitle = stringResource(R.string.total_amount),
-                    out = expense.withSuffix(),
-                    inValue = income.withSuffix()
+                    subTitle = "موجودی همه حساب ها",
+                    out = currentMonthExpense.withSuffix(),
+                    inValue = currentMonthIncome.withSuffix()
                 )
 
                 Text(
