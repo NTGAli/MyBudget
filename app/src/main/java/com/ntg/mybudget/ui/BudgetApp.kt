@@ -112,12 +112,11 @@ internal fun BudgetApp(
     }
 
     var startDestination by remember {
-        mutableStateOf(Login_Route)
+        mutableStateOf("")
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = isUserLogged) {
         startDestination = if (isUserLogged) Home_Route else Login_Route
-//        startDestination = Home_Route
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -190,38 +189,38 @@ internal fun BudgetApp(
 //        )
             }
 
-
-            Column(Modifier.fillMaxSize()) {
-                // Show the top app bar on top level destinations.
-                val destination = appState.currentTopLevelDestination
-                val shouldShowTopAppBar = destination != null
-                if (destination != null) {
+            if (startDestination.isNotEmpty()){
+                Column(Modifier.fillMaxSize()) {
+                    val destination = appState.currentTopLevelDestination
+                    val shouldShowTopAppBar = destination != null
+                    if (destination != null) {
 //                    BudgetAppbar()
-                }
-
-                BudgetNavHost(
-                    appState = appState,
-                    onShowSnackbar = { message, action, raw ->
-                        snackData.value = SnackData(
-                            message = context.getString(message),
-                            raw = raw,
-                            action = action
-                        )
-                        snackbarHostState.showSnackbar("") == SnackbarResult.ActionPerformed
-                    },
-                    modifier = if (shouldShowTopAppBar) {
-                        Modifier.consumeWindowInsets(
-                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
-                        )
-                    } else {
-                        Modifier
-                    },
-                    startDestination = startDestination,
-                    sharedViewModel,
-                    finishLogin = {
-                        startDestination = it
                     }
-                )
+
+                    BudgetNavHost(
+                        appState = appState,
+                        onShowSnackbar = { message, action, raw ->
+                            snackData.value = SnackData(
+                                message = context.getString(message),
+                                raw = raw,
+                                action = action
+                            )
+                            snackbarHostState.showSnackbar("") == SnackbarResult.ActionPerformed
+                        },
+                        modifier = if (shouldShowTopAppBar) {
+                            Modifier.consumeWindowInsets(
+                                WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
+                            )
+                        } else {
+                            Modifier
+                        },
+                        startDestination = startDestination,
+                        sharedViewModel,
+                        finishLogin = {
+                            startDestination = it
+                        }
+                    )
+                }
             }
         }
     }
