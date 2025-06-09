@@ -95,6 +95,7 @@ class ReportViewModel @Inject constructor(
 
     private fun getAvgTransaction() {
         val avg = transactions
+            .filter { it.type == BudgetType.EXPENSE || it.type == BudgetType.INCOME }
             .groupBy { convertToFirstDay(it.date, Constants.FilterTime.DAY) }
             .mapValues { (_, group) -> group.map { it.amount }.average().toLong() }
 
