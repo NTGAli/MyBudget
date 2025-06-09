@@ -46,7 +46,6 @@ import com.ntg.core.model.Transaction
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.getCardDetailsFromAssets
-import com.ntg.core.mybudget.common.logd
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.mybudget.core.designsystem.R
@@ -90,7 +89,7 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
     val selectedContact = remember { mutableStateOf<Contact?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    val title = if (transaction.value?.walletData is SourceType.BankCard) {
+    val sourceTitle = if (transaction.value?.walletData is SourceType.BankCard) {
         val bandData = getCardDetailsFromAssets(
             context,
             (transaction.value?.walletData as SourceType.BankCard).number
@@ -98,6 +97,19 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
         if (bandData != null) {
             "${bandData.bank_title} - ${
                 (transaction.value?.walletData as SourceType.BankCard).number.takeLast(4)
+            }"
+        } else stringResource(id = R.string.bank_card)
+    } else ""
+
+
+    val destTitle = if (transaction.value?.destWalletData is SourceType.BankCard) {
+        val bandData = getCardDetailsFromAssets(
+            context,
+            (transaction.value?.destWalletData as SourceType.BankCard).number
+        )
+        if (bandData != null) {
+            "${bandData.bank_title} - ${
+                (transaction.value?.destWalletData as SourceType.BankCard).number.takeLast(4)
             }"
         } else stringResource(id = R.string.bank_card)
     } else ""
@@ -184,20 +196,22 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
                         R.string.from
-                    ), secondText = title
+                    ), secondText = if (transaction.value?.type == Constants.BudgetType.INCOME)
+                        sourceTitle else destTitle
                 )
 
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
                         R.string.to
-                    ), secondText = title
+                    ), secondText = if (transaction.value?.type == Constants.BudgetType.INCOME)
+                        destTitle else sourceTitle
                 )
 
             }else{
                 SampleItem(
                     modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(
                         R.string.source_expenditure
-                    ), secondText = title
+                    ), secondText = sourceTitle
                 )
             }
 

@@ -70,11 +70,13 @@ interface TransactionsDao {
     SELECT 
     t.*, 
     se.data AS walletData, 
+    dest.data AS destWalletData,
     cr.faName, 
     c.name
     FROM transactions t
     LEFT JOIN category_table c ON c.id = t.categoryId
     LEFT JOIN wallets se ON se.id = t.sourceId
+    LEFT JOIN wallets dest ON dest.id = t.toSourceId
     LEFT JOIN currencies cr ON cr.id = se.currencyId
     WHERE t.id = :id
     GROUP BY t.id

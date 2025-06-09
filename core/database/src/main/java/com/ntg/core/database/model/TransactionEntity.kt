@@ -42,6 +42,8 @@ fun TransactionEntity.asTransaction() =
         date = date,
         images = images,
         tags = tags,
+        walletData = null,
+        destWalletData = null
     )
 
 fun Transaction.toEntity() =
