@@ -470,6 +470,11 @@ fun Long.toPersianMonthlyDate(): String {
     return "$dayOfMonth $month"
 }
 
+fun Long.toPersianMonthlyString(): String {
+    val persianDate = PersianDate(Date(this))
+    return persianDate.monthName
+}
+
 fun jalaliToTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long {
     val persianDate = PersianDate()
     persianDate.initJalaliDate(year, month, day, hour, minute,0)

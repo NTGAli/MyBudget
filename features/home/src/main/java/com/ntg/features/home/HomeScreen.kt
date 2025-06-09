@@ -224,7 +224,6 @@ fun HomeRoute(
                                     type = Constants.BudgetType.EXPENSE,
                                     categoryId = -1
                                 )
-                                logd("JJJJJJJJJJJJ :::: ${exposeTransaction}")
                                 homeViewModel.insertTransaction(
                                     exposeTransaction!!
                                 )
@@ -234,7 +233,6 @@ fun HomeRoute(
                                     sourceId = transaction?.toSourceId!!,
                                     toSourceId = transaction?.sourceId!!,
                                 )
-                                logd("JJJJJJJJJJJJ :::: ${incomeTransaction}")
 
                                 homeViewModel.insertTransaction(
                                     incomeTransaction!!
@@ -305,10 +303,8 @@ private fun HomeScreen(
     val showAccountSheet = remember { mutableStateOf(false) }
     val modalBottomSheetState = rememberModalBottomSheetState()
 
-    // Create a stable key for the scroll state based on the account
     val scrollStateKey = remember(currentAccount.accountId) { "scroll_${currentAccount.accountId}" }
 
-    // Use rememberSaveable with a custom key
     val lazyListState = rememberSaveable(
         key = scrollStateKey,
         saver = LazyListState.Saver
@@ -378,7 +374,7 @@ private fun HomeScreen(
                         currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     ),
-                    subTitle = "موجودی همه حساب ها",
+                    subTitle = stringResource(R.string.total_amount),
                     out = expense.withSuffix(),
                     inValue = income.withSuffix()
                 )

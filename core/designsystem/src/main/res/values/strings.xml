@@ -71,6 +71,8 @@
     <string name="err_not_impelemnted">این کار داره</string>
     <string name="category">دسته بندی</string>
     <string name="amount">مبلغ</string>
+    <string name="total_amount">موجودی همه حساب ها</string>
+    <string name="card_info_format">اطلاعات ورودی و خروجی برای ماه %s می‌باشد.</string>
 
     // login
     <string name="login_with_phone">ورود با شماره ی تلفن</string>
