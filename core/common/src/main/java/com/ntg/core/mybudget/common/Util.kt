@@ -619,3 +619,46 @@ fun timestampToJalaliDate(timestamp: Long): Triple<Int, Int, Int> {
     val persianDate = PersianDate(timestamp)
     return Triple(persianDate.shYear, persianDate.shMonth, persianDate.shDay)
 }
+
+
+/**
+ * Gets the Jalali day of month from timestamp
+ * You should implement this based on your existing Jalali date utilities
+ */
+fun getJalaliDayOfMonth(timestamp: Long): Int {
+    // Implement this using your existing PersianDate utilities
+    // This is a placeholder implementation
+    val persianDate = PersianDate(timestamp)
+    return persianDate.shDay
+}
+
+/**
+ * Extension function to get current Jalali month name
+ */
+fun getCurrentJalaliMonthName(): String {
+    val months = listOf(
+        "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+        "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+    )
+    val currentDate = PersianDate()
+    return months[currentDate.shMonth - 1]
+}
+
+/**
+ * Helper function to get start of week timestamp
+ */
+fun getStartOfWeek(timestamp: Long): Long {
+    val persianDate = PersianDate(timestamp)
+    val dayOfWeek = persianDate.dayOfWeek() // 0 = Saturday
+
+    // Go back to Saturday (start of week in Persian calendar)
+    val daysToGoBack = dayOfWeek
+    return timestamp - (daysToGoBack * 24 * 60 * 60 * 1000)
+}
+
+/**
+ * Helper function to get start of previous week
+ */
+fun getStartOfPreviousWeek(currentWeekStart: Long): Long {
+    return currentWeekStart - (7 * 24 * 60 * 60 * 1000)
+}
