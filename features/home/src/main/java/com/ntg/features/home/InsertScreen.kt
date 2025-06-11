@@ -64,6 +64,7 @@ import com.ntg.core.designsystem.components.SampleItem
 import com.ntg.core.designsystem.components.SearchTextField
 import com.ntg.core.designsystem.components.SwitchText
 import com.ntg.core.designsystem.components.CalculatorBottomSheet
+import com.ntg.core.designsystem.components.DateItem
 import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.model.SwitchItem
@@ -826,6 +827,7 @@ fun InsertScreen(
                             SampleItem(
                                 modifier = Modifier.padding(horizontal = 8.dp),
                                 title = cat.name, setRadio = true,
+                                subText=cat.hint,
                                 isRadioCheck = selectedCategory == cat
                             ) {
                                 selectedCategory = cat
