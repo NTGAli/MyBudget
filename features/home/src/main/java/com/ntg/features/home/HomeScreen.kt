@@ -105,6 +105,7 @@ import com.ntg.core.mybudget.common.persianDate.PersianDate
 import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.core.mybudget.common.withSuffix
 import com.ntg.mybudget.core.designsystem.R
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -137,6 +138,7 @@ fun HomeRoute(
         .collectAsStateWithLifecycle(initialValue = null).value?.value
     val categories = homeViewModel.categories
         .collectAsStateWithLifecycle(initialValue = null)
+    logd("categories-home ::: ${categories.value}")
     val localBanks = homeViewModel.localUserBanks
         .collectAsStateWithLifecycle(initialValue = emptyList()).value?.toMutableStateList()
     val currencyData = homeViewModel.currency
@@ -205,68 +207,13 @@ fun HomeRoute(
     LaunchedEffect(key1 = transaction) {
         sharedViewModel.loginEventListener = object : LoginEventListener {
             override fun onBottomButtonClick() {
-                if (expandTransaction.value) {
-                    when {
-                        transaction == null -> {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_non_transacton, null, null)
-                            }
-                        }
-                        transaction?.type == Constants.BudgetType.TRANSFER -> {
-                            scope.launch {
-                                if (transaction?.toSourceId == null) {
-                                    onShowSnackbar(R.string.err_input_source, null, null)
-                                    return@launch
-                                }
-                                if (transaction?.sourceId == transaction?.toSourceId) {
-                                    onShowSnackbar(R.string.err_same_wallet, null, null)
-                                    return@launch
-                                }
-                                val exposeTransaction=transaction?.copy(
-                                    type = Constants.BudgetType.EXPENSE,
-                                    categoryId = -1
-                                )
-                                homeViewModel.insertTransaction(
-                                    exposeTransaction!!
-                                )
-                                val incomeTransaction=transaction?.copy(
-                                    type = Constants.BudgetType.INCOME,
-                                    categoryId = -1,
-                                    sourceId = transaction?.toSourceId!!,
-                                    toSourceId = transaction?.sourceId!!,
-                                )
-
-                                homeViewModel.insertTransaction(
-                                    incomeTransaction!!
-                                )
-                                expandTransaction.value = false
-                            }
-
-                        }
-
-                        transaction?.amount.orDefault() <= 0L -> {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_amount, null, null)
-                            }
-                        }
-                        transaction?.sourceId == 0 || transaction?.sourceId == null -> {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_input_source, null, null)
-                            }
-                        }
-                        transaction?.categoryId == null -> {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_input_category, null, null)
-                            }
-                        }
-                        else -> {
-                            homeViewModel.insertTransaction(transaction!!)
-                            expandTransaction.value = false
-                        }
-                    }
-                } else {
-                    expandTransaction.value = true
-                }
+                handleBottomButtonClick(
+                    transaction,
+                    expandTransaction,
+                    scope,
+                    homeViewModel,
+                    onShowSnackbar
+                )
             }
         }
     }
@@ -946,3 +893,58 @@ fun AccountSelectorSheet(
 }
 
 
+fun handleBottomButtonClick(
+    transaction: Transaction?,
+    expandTransaction: MutableState<Boolean>,
+    scope: CoroutineScope,
+    viewModel: HomeViewModel,
+    onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
+) {
+    if (expandTransaction.value) {
+        when {
+            transaction == null -> {
+                scope.launch { onShowSnackbar(R.string.err_non_transacton, null, null) }
+            }
+            transaction.type == Constants.BudgetType.TRANSFER -> {
+                scope.launch {
+                    if (transaction.toSourceId == null) {
+                        onShowSnackbar(R.string.err_input_source, null, null)
+                        return@launch
+                    }
+                    if (transaction.sourceId == transaction.toSourceId) {
+                        onShowSnackbar(R.string.err_same_wallet, null, null)
+                        return@launch
+                    }
+                    val expense = transaction.copy(
+                        type = Constants.BudgetType.EXPENSE,
+                        categoryId = -1
+                    )
+                    viewModel.insertTransaction(expense)
+                    val income = transaction.copy(
+                        type = Constants.BudgetType.INCOME,
+                        categoryId = -1,
+                        sourceId = transaction.toSourceId!!,
+                        toSourceId = transaction.sourceId!!,
+                    )
+                    viewModel.insertTransaction(income)
+                    expandTransaction.value = false
+                }
+            }
+            transaction.amount.orDefault() <= 0L -> {
+                scope.launch { onShowSnackbar(R.string.err_amount, null, null) }
+            }
+            transaction.sourceId == 0 || transaction.sourceId == null -> {
+                scope.launch { onShowSnackbar(R.string.err_input_source, null, null) }
+            }
+            transaction.categoryId == null -> {
+                scope.launch { onShowSnackbar(R.string.err_input_category, null, null) }
+            }
+            else -> {
+                viewModel.insertTransaction(transaction)
+                expandTransaction.value = false
+            }
+        }
+    } else {
+        expandTransaction.value = true
+    }
+}
