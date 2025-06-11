@@ -10,9 +10,11 @@ import com.ntg.core.mybudget.common.Dispatcher
 import com.ntg.core.network.BudgetNetworkDataSource
 import com.ntg.core.network.model.Result
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -23,10 +25,12 @@ class BankCardRepositoryImpl @Inject constructor(
 ): BankCardRepository {
 
     override suspend fun getUserLocalBanks(): Flow<List<Bank>> {
-        network.serverBanks().collect{
-            if (it is Result.Success){
-                bankDao.upsertBanks(it.data.orEmpty().map { it
-                    .toEntity() })
+        CoroutineScope(ioDispatcher).launch {
+            network.serverBanks().collect{
+                if (it is Result.Success){
+                    bankDao.upsertBanks(it.data.orEmpty().map { it
+                        .toEntity() })
+                }
             }
         }
         return  flow {
