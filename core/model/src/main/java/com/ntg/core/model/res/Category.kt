@@ -9,5 +9,6 @@ data class CategoryRes(
 data class Category(
     val id: Int,
     val name: String,
+    val hint: String,
     val type: Int,
 )
