@@ -15,11 +15,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -75,7 +75,7 @@ fun ExpenseDonutChart(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .padding(horizontal = 16.dp)
-                    .width(160.dp)
+                    .width(120.dp)
             ) {
                 PieChart(
                 input = outcomeList,
@@ -124,8 +124,8 @@ fun ExpenseDonutChart(
 @Composable
 fun PieChart(
     modifier: Modifier = Modifier,
-    radius: Float = 280f,
-    innerRadius: Float = 180f,
+    radius: Float = 240f,
+    innerRadius: Float = 120f,
     transparentWidth: Float = 60f,
     input: List<PieChartInput>,
     disableClick: Boolean
@@ -294,8 +294,18 @@ fun PieChart(
             inputList.forEach { pieChartInput ->
                 val scale = if (pieChartInput.isTapped && !disableClick) 1.1f else 1.0f
                 val angleToDraw = pieChartInput.value * anglePerValue
-                val brushPattern = ContextCompat.getDrawable(mContext, pieChartInput.brushPattern)?.toBitmap(700, 2000)
-                val brush = ShaderBrush(ImageShader(brushPattern!!.asImageBitmap()))
+//                val brushPattern = ContextCompat.getDrawable(mContext, pieChartInput.brushPattern)?.toBitmap(700, 2000)
+                val brush = if (pieChartInput.brushPattern != null) {
+                    val brushPattern = ContextCompat.getDrawable(mContext, pieChartInput.brushPattern)?.toBitmap(700, 2000)
+                    if (brushPattern != null) {
+                        ShaderBrush(ImageShader(brushPattern.asImageBitmap()))
+                    } else {
+                        SolidColor(Color.Transparent) // Fallback color
+                    }
+                } else {
+                    SolidColor(Color.Transparent) // Fallback color when brushPattern is null
+                }
+
                 scale(scale) {
                     drawArc(
                         brush = brush,
@@ -349,7 +359,7 @@ fun PieChart(
 
 data class PieChartInput(
     val color: Color,
-    val brushPattern: Int,
+    val brushPattern: Int?=null,
     val value: Long,
     val Title: String,
     val isTapped: Boolean = false

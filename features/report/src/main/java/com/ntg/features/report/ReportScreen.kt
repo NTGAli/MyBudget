@@ -45,7 +45,7 @@ fun ReportRoute(
     val donutChartData = reportViewModel.topFourExpenseCategories.entries.mapIndexed { index, entry ->
         PieChartInput(
             color = donutChartColors[index],
-            brushPattern = R.drawable.default_pattern,
+//            brushPattern = R.drawable.default_pattern,
             value = entry.value,
             Title = categories.find { it.id == entry.key }?.name.orEmpty()
         )

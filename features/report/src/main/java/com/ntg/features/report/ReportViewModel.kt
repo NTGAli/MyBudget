@@ -126,7 +126,7 @@ class ReportViewModel @Inject constructor(
 
     private fun getTopFourExpenseCategories() {
         val topExpenseCategories = transactions
-            .filter { it.type == BudgetType.EXPENSE }
+            .filter { it.type == BudgetType.EXPENSE && it.categoryId != -1 }
             .groupBy { transaction ->
                 transaction.categoryId ?: 0
             }
