@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,8 +43,10 @@ import com.ntg.core.model.Transaction
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.Constants.BudgetType
 import com.ntg.core.mybudget.common.formatInput
+import com.ntg.core.mybudget.common.getCurrentJalaliMonthName
 import com.ntg.core.mybudget.common.getDayOfWeek
 import com.ntg.core.mybudget.common.getJalaliDayOfMonth
+import com.ntg.core.mybudget.common.logd
 import com.ntg.mybudget.core.designsystem.R
 
 data class DayTransactionData(
@@ -180,31 +183,35 @@ private fun DayItem(
     onClick: () -> Unit
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color)
+            .clickable { onClick() },
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(color)
-                .clickable { onClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = dayData.dayOfMonth.toString(),
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                color = when {
-                    color.luminance() < 0.5f -> Color.White
-                    else -> MaterialTheme.colorScheme.onSurface
-                },
-                textAlign = TextAlign.Center,
-                maxLines = 1
-            )
+        Text(
+            text = dayData.dayOfMonth.toString(),
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            ),
+            color = when {
+                color.luminance() < 0.5f -> Color.White
+                else -> MaterialTheme.colorScheme.onSurface
+            },
+            textAlign = TextAlign.Center,
+            maxLines = 1
+        )
+
+        if (dayData.dayOfMonth == getJalaliDayOfMonth(System.currentTimeMillis())){
+            Box(modifier = Modifier
+                .size(4.dp)
+                .background(shape = CircleShape, color = MaterialTheme.colorScheme.onSurface)
+                .padding(top = 4.dp))
         }
+
     }
 }
 
@@ -296,7 +303,11 @@ private fun DayTransactionPopup(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "${formatInput(Math.abs(netAmount).toString())} ${if (netAmount >= 0) "درآمد" else "هزینه"}",
+                            text = "${
+                                formatInput(
+                                    Math.abs(netAmount).toString()
+                                )
+                            } ${if (netAmount >= 0) "درآمد" else "هزینه"}",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
@@ -356,20 +367,6 @@ private fun TransactionRow(
     }
 }
 
-// Helper function to get current Jalali month name
-@Composable
-private fun getCurrentJalaliMonthName(): String {
-    // You should implement this based on your existing Jalali date utilities
-    // This is a placeholder - replace with your actual implementation
-    val months = listOf(
-        "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-        "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
-    )
-    // Return current month based on your date utilities
-    return months[0] // Placeholder - implement actual logic
-}
-
-
 fun transactionsToWeekData(
     transactions: List<Transaction>,
     weekTitle: String,
@@ -405,6 +402,7 @@ fun transactionsToWeekData(
                 // If they're equal but not zero, determine by which is larger or most recent
                 if (incomeAmount == expenseAmount) BudgetType.INCOME else BudgetType.NOTHING
             }
+
             else -> BudgetType.NOTHING
         }
 
