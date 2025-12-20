@@ -1,4 +1,4 @@
-# MyBudget
+# MyBudget 💵💴 (Under Development)
 MyBudget is a comprehensive Android application engineered to empower users in managing their personal finances with precision and ease. This tool facilitates meticulous expense tracking, strategic budget allocation, and insightful financial analysis, all within a user-friendly interface designed for seamless navigation.
 
 ## Features
