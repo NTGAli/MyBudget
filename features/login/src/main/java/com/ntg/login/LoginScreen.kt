@@ -26,13 +26,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
+import com.ntg.core.designsystem.components.ButtonSize
+import com.ntg.core.designsystem.components.ButtonStyle
+import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.getLanguageFlag
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
@@ -51,6 +56,7 @@ fun LoginRoute(
     navigateToDetail: () -> Unit = {},
     navigateToCode: (String) -> Unit = {},
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
+    finishLogin: (String) -> Unit = {},
 ){
 
     sharedViewModel.setExpand.postValue(true)
@@ -117,7 +123,8 @@ fun LoginRoute(
     LoginScreen(
         navigateToDetail = navigateToDetail,
         code = code,
-        wasWrong = wasWrong
+        wasWrong = wasWrong,
+        onSkipLogin = { loginViewModel.skipLogin(finishLogin) }
     ){
         phone = it
     }
@@ -129,6 +136,7 @@ private fun LoginScreen(
     navigateToDetail: () -> Unit = {},
     code: MutableState<String>,
     wasWrong: MutableState<Boolean>,
+    onSkipLogin: () -> Unit = {},
     phone: (String) -> Unit,
 ){
 
@@ -213,6 +221,18 @@ private fun LoginScreen(
                 code, phone, wasWrong.value
             ) {
 
+            }
+
+            BudgetButton(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth(),
+                text = stringResource(id = R.string.continue_without_login),
+                style = ButtonStyle.TextOnly,
+                size = ButtonSize.MD,
+                type = ButtonType.Neutral
+            ) {
+                onSkipLogin()
             }
         }
     }

@@ -498,15 +498,12 @@ fun InsertScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     text = remember(selectedSource, localBanks) {
-                        if (selectedSource != null) {
-                            val localBankName = localBanks?.find { it.id == (selectedSource?.data as SourceType.BankCard).bankId }?.nativeName
-                            mutableStateOf(
-                                "${localBankName} - ${
-                                    (selectedSource?.data as SourceType.BankCard).number.takeLast(
-                                        4
-                                    )
-                                }"
-                            )
+                        if (selectedSource != null && selectedSource?.data is SourceType.BankCard) {
+                            val bankCard = selectedSource?.data as SourceType.BankCard
+                            val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
+                            val last4 = bankCard.number?.takeLast(4)
+                            val displayText = listOfNotNull(localBankName, last4).joinToString(" - ")
+                            mutableStateOf(displayText)
                         } else {
                             mutableStateOf("")
                         }
@@ -531,14 +528,12 @@ fun InsertScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                         text = remember(selectedSource) {
-                            if (selectedSource != null) {
-                                mutableStateOf(
-                                    "${localBanks?.find { it.id == (selectedSource?.data as SourceType.BankCard).bankId }?.nativeName.orEmpty()} - ${
-                                        (selectedSource?.data as SourceType.BankCard).number.takeLast(
-                                            4
-                                        )
-                                    }"
-                                )
+                            if (selectedSource != null && selectedSource?.data is SourceType.BankCard) {
+                                val bankCard = selectedSource?.data as SourceType.BankCard
+                                val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
+                                val last4 = bankCard.number?.takeLast(4)
+                                val displayText = listOfNotNull(localBankName, last4).joinToString(" - ")
+                                mutableStateOf(displayText)
                             } else {
                                 mutableStateOf("")
                             }
@@ -559,14 +554,12 @@ fun InsertScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                         text = remember(secondSource) {
-                            if (secondSource != null) {
-                                mutableStateOf(
-                                    "${localBanks?.find { it.id == (selectedSource?.data as SourceType.BankCard).bankId }?.nativeName.orEmpty()} - ${
-                                        (secondSource?.data as SourceType.BankCard).number.takeLast(
-                                            4
-                                        )
-                                    }"
-                                )
+                            if (secondSource != null && secondSource?.data is SourceType.BankCard) {
+                                val bankCard = secondSource?.data as SourceType.BankCard
+                                val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
+                                val last4 = bankCard.number?.takeLast(4)
+                                val displayText = listOfNotNull(localBankName, last4).joinToString(" - ")
+                                mutableStateOf(displayText)
                             } else {
                                 mutableStateOf("")
                             }
@@ -788,12 +781,12 @@ fun InsertScreen(
                         items(currentResource.orEmpty().filter { if (sheetType == 1)it.isSelected.orFalse() else true }) { wallet ->
                             var logoName = ""
                             val data = if (wallet.data is SourceType.BankCard) {
-                                logoName = localBanks?.find { it.id == (wallet.data as SourceType.BankCard).bankId }?.logoName.orEmpty()
-                                "${localBanks?.find { it.id == (wallet.data as SourceType.BankCard).bankId }?.nativeName.orEmpty()} - ${
-                                    (wallet.data as SourceType.BankCard).number.takeLast(
-                                        4
-                                    )
-                                }"
+                                val bankCard = wallet.data as SourceType.BankCard
+                                val bank = localBanks?.find { it.id == bankCard.bankId }
+                                logoName = bank?.logoName.orEmpty()
+                                val localBankName = bank?.nativeName
+                                val last4 = bankCard.number?.takeLast(4)
+                                listOfNotNull(localBankName, last4).joinToString(" - ")
                             } else ""
 
                             SampleItem(

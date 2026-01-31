@@ -54,7 +54,8 @@ fun NavGraphBuilder.loginScreen(
             sharedViewModel,
             navigateToDetail = navigateToCountries,
             navigateToCode = navigateToCode,
-            onShowSnackbar = onShowSnackbar
+            onShowSnackbar = onShowSnackbar,
+            finishLogin = finishLogin
         )
     }
 

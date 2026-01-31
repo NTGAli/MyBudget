@@ -44,6 +44,22 @@ class BudgetPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setGuestLogin() {
+        try {
+            userPreferences.updateData {
+                it.copy {
+                    isLogged = true
+                    token = ""
+                    expire = ""
+                    name = ""
+                    email = ""
+                }
+            }
+        } catch (ioException: IOException) {
+            Log.e("BudgetPreferences", "Failed to save guest login", ioException)
+        }
+    }
+
     suspend fun setLogout() {
         try {
             userPreferences.updateData {

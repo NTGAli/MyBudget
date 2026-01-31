@@ -14,12 +14,12 @@ data class SourceWithDetail(
 
 sealed class SourceType {
     data class BankCard (
-        val number: String,
+        val number: String? = null,
         val date: String?=null,
         val cvv: String? = null,
         val sheba: String? = null,
         val accountNumber: String? = null,
-        val name: String,
+        val name: String? = null,
         val bankId: Int? = null,
         val nativeName: String? = null,
         val logoName: String? = null,

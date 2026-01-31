@@ -306,8 +306,6 @@ private fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item(key = "header") {
-                val init = transactions.value?.filter { it.type == Constants.BudgetType.INIT }
-                    .orEmpty().sumOf { it.amount }
                 val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
                     .orEmpty().sumOf { it.amount }
                 val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
@@ -329,7 +327,7 @@ private fun HomeScreen(
                         .padding(top = 8.dp)
                         .padding(horizontal = 16.dp),
                     title = formatCurrency(
-                        amount = init + (income - expense),
+                        amount = income - expense,
                         mask = "###,###",
                         currency = currency.value?.symbol.orEmpty(),
                         pos = 2

@@ -90,27 +90,25 @@ fun DetailsScreen(transaction: State<Transaction?>, onBack: () -> Unit, navToIma
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val sourceTitle = if (transaction.value?.walletData is SourceType.BankCard) {
-        val bandData = getCardDetailsFromAssets(
-            context,
-            (transaction.value?.walletData as SourceType.BankCard).number
-        )
-        if (bandData != null) {
-            "${bandData.bank_title} - ${
-                (transaction.value?.walletData as SourceType.BankCard).number.takeLast(4)
-            }"
+        val bankCard = transaction.value?.walletData as SourceType.BankCard
+        val cardNumber = bankCard.number
+        val bandData = getCardDetailsFromAssets(context, cardNumber.orEmpty())
+        if (bandData != null && cardNumber != null) {
+            "${bandData.bank_title} - ${cardNumber.takeLast(4)}"
+        } else if (bandData != null) {
+            bandData.bank_title
         } else stringResource(id = R.string.bank_card)
     } else ""
 
 
     val destTitle = if (transaction.value?.destWalletData is SourceType.BankCard) {
-        val bandData = getCardDetailsFromAssets(
-            context,
-            (transaction.value?.destWalletData as SourceType.BankCard).number
-        )
-        if (bandData != null) {
-            "${bandData.bank_title} - ${
-                (transaction.value?.destWalletData as SourceType.BankCard).number.takeLast(4)
-            }"
+        val bankCard = transaction.value?.destWalletData as SourceType.BankCard
+        val cardNumber = bankCard.number
+        val bandData = getCardDetailsFromAssets(context, cardNumber.orEmpty())
+        if (bandData != null && cardNumber != null) {
+            "${bandData.bank_title} - ${cardNumber.takeLast(4)}"
+        } else if (bandData != null) {
+            bandData.bank_title
         } else stringResource(id = R.string.bank_card)
     } else ""
 

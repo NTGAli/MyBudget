@@ -84,3 +84,72 @@ fun Lottie(
     }
 
 }
+
+
+
+@Composable
+fun LottieComponent(
+    modifier: Modifier = Modifier,
+    res: Int,
+    color: Color? = null,
+    isPlaying: MutableState<Boolean> = remember { mutableStateOf(true) },
+    restartOnPlay: MutableState<Boolean> = remember { mutableStateOf(true) },
+    iterations: Int = LottieConstants.IterateForever,
+    onProgressChange: (Float) -> Unit = {}
+) {
+    // Track if animation should be playing internally
+    var internalIsPlaying by remember { mutableStateOf(false) }
+
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(res)
+    )
+
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = iterations,
+        isPlaying = internalIsPlaying,
+        restartOnPlay = true, // Always restart when triggered
+    )
+
+    // Listen for external isPlaying changes and trigger internal animation
+    LaunchedEffect(isPlaying.value) {
+        if (isPlaying.value) {
+            internalIsPlaying = true
+        }
+    }
+
+    // Monitor progress and handle completion
+    LaunchedEffect(progress) {
+        onProgressChange(progress)
+
+        // If we're playing and reached the end (for finite iterations)
+        if (internalIsPlaying && progress >= 1.0f && iterations != LottieConstants.IterateForever) {
+            internalIsPlaying = false
+        }
+    }
+
+    if (color != null) {
+        val dynamicProperties = rememberLottieDynamicProperties(
+            rememberLottieDynamicProperty(
+                property = LottieProperty.COLOR_FILTER,
+                value = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
+                    color.hashCode(),
+                    BlendModeCompat.SRC_ATOP
+                ),
+                keyPath = arrayOf("**")
+            )
+        )
+        LottieAnimation(
+            modifier = modifier,
+            composition = composition,
+            progress = { progress },
+            dynamicProperties = dynamicProperties
+        )
+    } else {
+        LottieAnimation(
+            modifier = modifier,
+            composition = composition,
+            progress = { progress },
+        )
+    }
+}

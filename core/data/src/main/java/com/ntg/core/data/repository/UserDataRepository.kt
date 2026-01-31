@@ -10,6 +10,8 @@ interface UserDataRepository {
 
     suspend fun setUserLogged(token: String, expire: String)
 
+    suspend fun setGuestLogin()
+
     suspend fun logout()
 
     suspend fun saveUserBasicData(name: String, email: String, phone: String, image: String)

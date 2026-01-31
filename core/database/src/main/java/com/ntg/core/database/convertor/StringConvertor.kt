@@ -57,7 +57,9 @@ class Converters {
             // Detect the type of SourceType using Gson
             val jsonObject = gson.fromJson(data, Map::class.java)
             when {
-                jsonObject.containsKey("number") -> gson.fromJson(data, SourceType.BankCard::class.java)
+                jsonObject.containsKey("number") || jsonObject.containsKey("accountNumber")
+                    || jsonObject.containsKey("name") || jsonObject.containsKey("bankId")
+                    || jsonObject.containsKey("sheba") -> gson.fromJson(data, SourceType.BankCard::class.java)
                 jsonObject.containsKey("value") -> gson.fromJson(data, SourceType.Gold::class.java)
                 else -> null
             }

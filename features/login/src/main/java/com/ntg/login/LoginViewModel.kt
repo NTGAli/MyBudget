@@ -170,6 +170,14 @@ class LoginViewModel
     }
 
 
+    fun skipLogin(finishLogin: (String) -> Unit) {
+        viewModelScope.launch {
+            userDataRepository.setGuestLogin()
+            setDefaultAccount()
+            finishLogin("SetupRoute")
+        }
+    }
+
     fun setDefaultAccount(){
         viewModelScope.launch {
             accountRepository.insert(

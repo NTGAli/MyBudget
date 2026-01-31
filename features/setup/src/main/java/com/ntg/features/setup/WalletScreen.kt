@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -29,11 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,7 +41,6 @@ import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
-import com.ntg.core.designsystem.components.CurrencyTextField
 import com.ntg.core.designsystem.components.ExposedDropdownMenuSample
 import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
@@ -90,10 +86,6 @@ fun WalletRoute(
     var sourceType by rememberSaveable {
         mutableIntStateOf(-1)
     }
-    var cardBalance by rememberSaveable {
-        mutableStateOf("")
-    }
-
     var localBanks by remember {
         mutableStateOf<List<Bank>?>(null)
     }
@@ -139,10 +131,9 @@ fun WalletRoute(
         navigateToCurrencies = navigateToCurrencies,
         selectedCurrency = selectedCurrency.value,
         enableSelectCurrency = accountCurrency == null
-    ) { sourceValue, card, balance ->
+    ) { sourceValue, card ->
         wallet = sourceValue
         bankCard = card
-        cardBalance = balance
     }
 
     val scope = rememberCoroutineScope()
@@ -154,28 +145,6 @@ fun WalletRoute(
                 when (sourceType) {
                     //Bank card
                     1 -> {
-                        if (bankCard?.number.orEmpty().isEmpty()) {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_empty_card_number, null, null)
-                            }
-                            return
-                        } else if (bankCard?.number.orEmpty().length != 16) {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_length_number, null, null)
-                            }
-                            return
-                        } else if (bankCard?.name.orEmpty().isEmpty()) {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_empty_name, null, null)
-                            }
-                            return
-                        } else if (cardBalance.isEmpty() && editSource == null) {
-                            scope.launch {
-                                onShowSnackbar(R.string.err_balance_empty, null, null)
-                            }
-                            return
-                        }
-
                         if (editSource != null) {
                             editSource.data = bankCard
                             setupViewModel.updateBankCard(editSource, context = context)
@@ -184,12 +153,6 @@ fun WalletRoute(
                             wallet?.accountId = accountId
                             wallet?.data = bankCard
                             setupViewModel.insertNewSource(wallet!!)
-
-                            // insert balance value
-                            setupViewModel.initCardTransactions(
-                                cardBalance.replace(",", "").toLong(), wallet?.id!!, accountId
-                            )
-
                             onBack()
                         } else {
                             scope.launch {
@@ -251,7 +214,7 @@ private fun WalletScreen(
     navigateToCurrencies: () -> Unit,
     selectedCurrency: Currency?,
     enableSelectCurrency: Boolean,
-    submitCard: (source: Wallet, card: SourceType.BankCard?, balance: String) -> Unit
+    submitCard: (source: Wallet, card: SourceType.BankCard?) -> Unit
 ) {
 
 
@@ -271,10 +234,6 @@ private fun WalletScreen(
         mutableStateOf(false)
     }
 
-    var balance by rememberSaveable {
-        mutableStateOf("")
-    }
-
     submitCard.invoke(
         Wallet(
             id = generateUniqueFiveDigitId(),
@@ -284,8 +243,7 @@ private fun WalletScreen(
             type = sourceType,
             dateCreated = System.currentTimeMillis().toString()
         ),
-        bankCard,
-        balance
+        bankCard
     )
 
 
@@ -347,9 +305,8 @@ private fun WalletScreen(
                         deleteCard = {
                             deleteSource()
                         }
-                    ) { card, finalBalance ->
+                    ) { card ->
                         bankCard = card
-                        balance = finalBalance
                     }
                 }
 
@@ -380,10 +337,9 @@ private fun BankCardView(
     enableSelectCurrency: Boolean,
     deleteCard: () -> Unit,
     navigateToCurrencies: () -> Unit,
-    bankCard: (SourceType.BankCard, String) -> Unit
+    bankCard: (SourceType.BankCard) -> Unit
 ) {
 
-    val layoutDirection = LocalLayoutDirection.current
     val context = LocalContext.current
 
     val concurrency = remember {
@@ -422,10 +378,6 @@ private fun BankCardView(
         mutableStateOf("")
     }
 
-    val balance = remember {
-        mutableStateOf("")
-    }
-
     LaunchedEffect(selectedCurrency) {
         val flag = getLanguageFlag(selectedCurrency?.countryAlpha2 ?: "") ?: ""
         concurrency.value =
@@ -449,14 +401,13 @@ private fun BankCardView(
             bankId = localBank?.id,
             nativeName = localBank?.nativeName,
             logoName = localBank?.logoName
-        ),
-        balance.value
+        )
     )
 
     LaunchedEffect(key1 = editBankCard) {
         if (editBankCard != null && cardNumber.value.isEmpty()) {
-            name.value = editBankCard.name
-            cardNumber.value = editBankCard.number
+            name.value = editBankCard.name.orEmpty()
+            cardNumber.value = editBankCard.number.orEmpty()
             sheba.value = editBankCard.sheba.orEmpty()
             accountNumber.value = editBankCard.accountNumber.orEmpty()
             cvv.value = editBankCard.cvv.orEmpty()
@@ -532,7 +483,6 @@ private fun BankCardView(
             .padding(horizontal = 24.dp),
         text = cardNumber,
         label = stringResource(id = R.string.card_number),
-        length = 16,
         keyboardType = KeyboardType.NumberPassword
     )
 
@@ -557,37 +507,6 @@ private fun BankCardView(
             showBottomSheet = true
         }
     )
-
-
-    if (editBankCard == null) {
-        TextDivider(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .padding(top = 16.dp),
-            title = stringResource(id = R.string.balance)
-        )
-
-
-
-        CurrencyTextField(
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            onChange = {
-                balance.value = it
-            },
-            currencySymbol = "",
-            currencyName = selectedCurrency?.nativeName.orEmpty(),
-            maxNoOfDecimal = 2,
-            label = stringResource(id = R.string.balance),
-            maxLines = 1,
-            divider = ",",
-            fixLeadingText = if (layoutDirection == LayoutDirection.Ltr) selectedCurrency?.symbol.orEmpty() else null,
-            fixTrailingText = if (layoutDirection == LayoutDirection.Rtl) selectedCurrency?.symbol.orEmpty() else null,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        )
-    }
 
 
     BudgetButton(

@@ -113,17 +113,17 @@ fun AccountSection(
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
             account.sources.forEach { source ->
 
-                val subTitle = if (source?.data is SourceType.BankCard) (source.data as SourceType.BankCard).number.mask("#### #### #### ####")
-                else ""
+                val bankCard = if (source?.data is SourceType.BankCard) source.data as SourceType.BankCard else null
+                val subTitle = bankCard?.number?.mask("#### #### #### ####").orEmpty()
 
-                val title = if (source?.data is SourceType.BankCard){
-                    val bandData = getCardDetailsFromAssets(context,
-                        (source.data as SourceType.BankCard).number)
-                    if (bandData != null){
-                        "${bandData.bank_title} - ${
-                            (source.data as SourceType.BankCard).number.takeLast(4)
-                        }"
-                    }else stringResource(id = R.string.bank_card)
+                val title = if (bankCard != null){
+                    val cardNumber = bankCard.number
+                    val bandData = getCardDetailsFromAssets(context, cardNumber.orEmpty())
+                    if (bandData != null && cardNumber != null){
+                        "${bandData.bank_title} - ${cardNumber.takeLast(4)}"
+                    } else if (bandData != null) {
+                        bandData.bank_title
+                    } else stringResource(id = R.string.bank_card)
                 }
                 else ""
 

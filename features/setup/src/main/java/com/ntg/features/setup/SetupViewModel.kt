@@ -10,10 +10,8 @@ import com.ntg.core.data.repository.CurrencyRepository
 import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.UserDataRepository
 import com.ntg.core.data.repository.api.AuthRepository
-import com.ntg.core.data.repository.transaction.TransactionsRepository
 import com.ntg.core.model.Account
 import com.ntg.core.model.Wallet
-import com.ntg.core.model.Transaction
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Currency
 import com.ntg.core.model.res.ServerConfig
@@ -37,7 +35,6 @@ class SetupViewModel
     private val authRepository: AuthRepository,
     private val userDataRepository: UserDataRepository,
     private val bankCardRepository: BankCardRepository,
-    private val transactionRepository: TransactionsRepository,
     private val configRepository: ConfigRepository,
     private val currencyRepository: CurrencyRepository,
     private val syncData: SyncData,
@@ -135,20 +132,6 @@ class SetupViewModel
         }
         if (context != null) {
             Sync.initialize(context = context)
-        }
-    }
-
-    fun initCardTransactions(
-        initAmount: Long,
-        sourceId: Int,
-        accountId: Int
-    ){
-        viewModelScope.launch {
-            transactionRepository.insertNewTransaction(
-                Transaction(
-                    0, amount = initAmount, accountId = accountId, sourceId = sourceId, date = System.currentTimeMillis(), type = Constants.BudgetType.INIT
-                )
-            )
         }
     }
 

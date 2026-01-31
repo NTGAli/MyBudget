@@ -20,6 +20,10 @@ internal class MainUserDataRepository @Inject constructor(
         budgetPreferencesDataSource.setUserLogged(token, expire)
     }
 
+    override suspend fun setGuestLogin() {
+        budgetPreferencesDataSource.setGuestLogin()
+    }
+
     override suspend fun logout() {
         sharedPreferences.edit().clear().apply()
         budgetPreferencesDataSource.setLogout()

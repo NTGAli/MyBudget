@@ -86,6 +86,7 @@
     <string name="err">خطایی رخ داده است.</string>
     <string name="err_invalid_code">کد وارد شده اشتباه است!</string>
     <string name="err_fetch_data">خطایی رخ داده!</string>
+    <string name="continue_without_login">ادامه بدون ورود</string>
 
     // profile
     <string name="UserAccount">حساب کاربری</string>
