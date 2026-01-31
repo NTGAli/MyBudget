@@ -20,9 +20,11 @@ import com.ntg.core.mybudget.common.logd
 import com.ntg.core.network.BudgetNetworkDataSource
 import com.ntg.core.network.model.Result
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class AccountRepositoryImpl @Inject constructor(
@@ -234,13 +236,25 @@ class AccountRepositoryImpl @Inject constructor(
     }
 
     override suspend fun walletTypes(): Flow<List<WalletType>?> {
-        network.walletTypes().collect {
-            if (it is Result.Success) {
-                if (it.data.orEmpty().isNotEmpty()) {
-                    walletDao.deleteAll()
+        val cached = walletDao.walletTypes()
+        if (cached.isNullOrEmpty()) {
+            val defaults = listOf(
+                WalletTypeEntity(id = 1, enName = "Bank Card", faName = "کارت بانکی"),
+                WalletTypeEntity(id = 2, enName = "Gold", faName = "طلا"),
+                WalletTypeEntity(id = 3, enName = "Crypto", faName = "رمزارز"),
+            )
+            walletDao.upsert(defaults)
+        }
+        // Try to refresh from API in background
+        CoroutineScope(ioDispatcher).launch {
+            try {
+                network.walletTypes().collect {
+                    if (it is Result.Success && it.data.orEmpty().isNotEmpty()) {
+                        walletDao.deleteAll()
+                        walletDao.upsert(it.data.orEmpty().map { it.toEntity() })
+                    }
                 }
-                walletDao.upsert(it.data.orEmpty().map { it.toEntity() })
-            }
+            } catch (_: Exception) { }
         }
         return flow {
             emit(

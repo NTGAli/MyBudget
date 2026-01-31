@@ -116,7 +116,9 @@ internal fun BudgetApp(
     }
 
     LaunchedEffect(key1 = isUserLogged) {
-        startDestination = if (isUserLogged) Home_Route else Login_Route
+        if (startDestination.isEmpty()) {
+            startDestination = if (isUserLogged) Home_Route else Login_Route
+        }
     }
 
     LaunchedEffect(key1 = Unit) {

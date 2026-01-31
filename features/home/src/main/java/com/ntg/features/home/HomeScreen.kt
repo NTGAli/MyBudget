@@ -151,7 +151,11 @@ fun HomeRoute(
     val showFilterSheet = remember { mutableStateOf(false) }
     val transactionFilter by homeViewModel.transactionFilter.collectAsStateWithLifecycle()
 
-    if (currentAccount.value != null && currentAccount.value.orEmpty().isNotEmpty()) {
+    val hasSources = currentAccount.value?.any { account ->
+        account.sources.any { it != null }
+    } == true
+
+    if (currentAccount.value != null && hasSources) {
 //        val sourceIds = currentAccount.value.orEmpty().first().sources.map { it?.id ?: 0 }
         val transactions = homeViewModel.transactions
             .collectAsStateWithLifecycle(initialValue = null)
@@ -198,7 +202,7 @@ fun HomeRoute(
                 homeViewModel.insertContact(it)
             }
         )
-    } else if (currentAccount.value != null && currentAccount.value.orEmpty().isEmpty()){
+    } else if (currentAccount.value != null && !hasSources){
         LaunchedEffect(currentAccount.value) {
             startFromSetup()
         }

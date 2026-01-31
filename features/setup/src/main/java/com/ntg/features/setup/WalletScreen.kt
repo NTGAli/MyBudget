@@ -35,20 +35,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
-import com.ntg.core.designsystem.components.BankCard
 import com.ntg.core.designsystem.components.BudgetButton
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.ExposedDropdownMenuSample
-import com.ntg.core.designsystem.components.TextDivider
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.res.Bank
-import com.ntg.core.model.res.ServerConfig
 import com.ntg.core.model.res.WalletType
 import com.ntg.core.mybudget.common.LoginEventListener
 import com.ntg.core.mybudget.common.SharedViewModel
@@ -98,10 +95,6 @@ fun WalletRoute(
         initialValue = null
     ).value
 
-    val logoUrlColor =
-        setupViewModel.getBankLogoColor().collectAsStateWithLifecycle(initialValue = null).value
-    val logoUrlMono =
-        setupViewModel.getBankLogoMono().collectAsStateWithLifecycle(initialValue = null).value
     val selectedCurrency =
         setupViewModel.selectedCurrency.collectAsStateWithLifecycle(initialValue = null)
     val accountCurrency =
@@ -125,8 +118,6 @@ fun WalletRoute(
             sourceType = it
         },
         walletTypes = walletTypes,
-        logoUrlMono = logoUrlMono,
-        logoUrlColor = logoUrlColor,
         localBanks = localBanks.orEmpty(),
         navigateToCurrencies = navigateToCurrencies,
         selectedCurrency = selectedCurrency.value,
@@ -206,8 +197,6 @@ private fun WalletScreen(
     editSource: Wallet?,
     walletTypes: List<WalletType>?,
     localBanks: List<Bank>,
-    logoUrlMono: ServerConfig?,
-    logoUrlColor: ServerConfig?,
     onBack: () -> Unit,
     deleteSource: () -> Unit,
     selectedSource: (Int) -> Unit,
@@ -297,8 +286,6 @@ private fun WalletScreen(
                     BankCardView(
                         if (editMode) editSource?.data as SourceType.BankCard else null,
                         localBanks = localBanks,
-                        logoUrlMono = logoUrlMono,
-                        logoUrlColor = logoUrlColor,
                         navigateToCurrencies = navigateToCurrencies,
                         selectedCurrency = selectedCurrency,
                         enableSelectCurrency = enableSelectCurrency,
@@ -331,8 +318,6 @@ private fun WalletScreen(
 private fun BankCardView(
     editBankCard: SourceType.BankCard? = null,
     localBanks: List<Bank>,
-    logoUrlMono: ServerConfig?,
-    logoUrlColor: ServerConfig?,
     selectedCurrency: Currency?,
     enableSelectCurrency: Boolean,
     deleteCard: () -> Unit,
@@ -444,38 +429,6 @@ private fun BankCardView(
         )
     }
 
-    TextDivider(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp),
-        title = stringResource(id = R.string.bank_card)
-    )
-
-
-
-    BankCard(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp),
-        cardNumber = cardNumber.value,
-        name = name.value,
-        amount = "0",
-        expiringDate = expire.value,
-        bankName = localBank?.nativeName.orEmpty(),
-        bankLogo = listOf(
-            "${logoUrlColor?.value}${localBank?.logoName}.svg",
-            "${logoUrlMono?.value}${localBank?.logoName}.svg"
-        )
-    )
-
-
-    TextDivider(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .padding(top = 24.dp),
-        title = stringResource(id = R.string.card_info)
-    )
-
     BudgetTextField(
         modifier = Modifier
             .padding(top = 16.dp)
@@ -485,29 +438,6 @@ private fun BankCardView(
         label = stringResource(id = R.string.card_number),
         keyboardType = KeyboardType.NumberPassword
     )
-
-    BudgetTextField(
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        text = name,
-        label = stringResource(id = R.string.first_last_name)
-    )
-
-    BudgetTextField(
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        text = expire,
-        label = stringResource(id = R.string.expire),
-        readOnly = true,
-        onClick = {
-            showBottomSheet = true
-        }
-    )
-
 
     BudgetButton(
         modifier = Modifier
@@ -522,7 +452,6 @@ private fun BankCardView(
         showMore = !showMore
     }
 
-
     AnimatedVisibility(
         modifier = Modifier.padding(bottom = 16.dp),
         visible = showMore
@@ -530,6 +459,28 @@ private fun BankCardView(
         Column {
             BudgetTextField(
                 modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                text = name,
+                label = stringResource(id = R.string.first_last_name)
+            )
+
+            BudgetTextField(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                text = expire,
+                label = stringResource(id = R.string.expire),
+                readOnly = true,
+                onClick = {
+                    showBottomSheet = true
+                }
+            )
+
+            BudgetTextField(
+                modifier = Modifier
+                    .padding(top = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 text = accountNumber,
