@@ -6,12 +6,18 @@ import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -87,6 +94,14 @@ import com.ntg.core.mybudget.common.orFalse
 import com.ntg.core.mybudget.common.orZero
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
+
+private fun walletDisplayName(wallet: Wallet?, localBanks: List<Bank>?): String {
+    if (wallet == null || wallet.data !is SourceType.BankCard) return ""
+    val bankCard = wallet.data as SourceType.BankCard
+    val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
+    val last4 = bankCard.number?.takeLast(4)
+    return listOfNotNull(localBankName, last4).joinToString(" - ")
+}
 
 @Composable
 fun InsertRoute(
@@ -274,6 +289,17 @@ fun InsertScreen(
     var openedKeyboard by remember {
         mutableStateOf(false)
     }
+
+    // Track whether expandTransaction transitioned from false→true (user opened the sheet)
+    var previousExpanded by remember { mutableStateOf(expandTransaction.value) }
+    LaunchedEffect(expandTransaction.value) {
+        if (expandTransaction.value && !previousExpanded && transaction == null) {
+            sheetType = 0
+            openedKeyboard = true
+        }
+        previousExpanded = expandTransaction.value
+    }
+
     val layoutDirection = LocalLayoutDirection.current
 
     var budgetType by remember {
@@ -337,6 +363,12 @@ fun InsertScreen(
             secondSource = currentResource.orEmpty().find { it.id == transaction.toSourceId }
             selectedCategory = categories.orEmpty().find { it.id == transaction.categoryId }
             budgetType = transaction.type.orZero()
+        }
+    }
+
+    LaunchedEffect(currentResource, expandTransaction.value) {
+        if (expandTransaction.value && transaction == null && selectedSource == null) {
+            selectedSource = currentResource.orEmpty().firstOrNull { it.isSelected }
         }
     }
 
@@ -498,15 +530,7 @@ fun InsertScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     text = remember(selectedSource, localBanks) {
-                        if (selectedSource != null && selectedSource?.data is SourceType.BankCard) {
-                            val bankCard = selectedSource?.data as SourceType.BankCard
-                            val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
-                            val last4 = bankCard.number?.takeLast(4)
-                            val displayText = listOfNotNull(localBankName, last4).joinToString(" - ")
-                            mutableStateOf(displayText)
-                        } else {
-                            mutableStateOf("")
-                        }
+                        mutableStateOf(walletDisplayName(selectedSource, localBanks))
                     },
                     label = stringResource(id = R.string.source_expenditure),
                     trailingIcon = painterResource(id = BudgetIcons.directionLeft),
@@ -528,15 +552,7 @@ fun InsertScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                         text = remember(selectedSource) {
-                            if (selectedSource != null && selectedSource?.data is SourceType.BankCard) {
-                                val bankCard = selectedSource?.data as SourceType.BankCard
-                                val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
-                                val last4 = bankCard.number?.takeLast(4)
-                                val displayText = listOfNotNull(localBankName, last4).joinToString(" - ")
-                                mutableStateOf(displayText)
-                            } else {
-                                mutableStateOf("")
-                            }
+                            mutableStateOf(walletDisplayName(selectedSource, localBanks))
                         },
                         label = stringResource(id = R.string.from),
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
@@ -554,15 +570,7 @@ fun InsertScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                         text = remember(secondSource) {
-                            if (secondSource != null && secondSource?.data is SourceType.BankCard) {
-                                val bankCard = secondSource?.data as SourceType.BankCard
-                                val localBankName = localBanks?.find { it.id == bankCard.bankId }?.nativeName
-                                val last4 = bankCard.number?.takeLast(4)
-                                val displayText = listOfNotNull(localBankName, last4).joinToString(" - ")
-                                mutableStateOf(displayText)
-                            } else {
-                                mutableStateOf("")
-                            }
+                            mutableStateOf(walletDisplayName(secondSource, localBanks))
                         },
                         label = stringResource(id = R.string.to),
                         trailingIcon = painterResource(id = BudgetIcons.directionLeft),
@@ -613,126 +621,210 @@ fun InsertScreen(
                 )
             }
 
-            // tags
-            TextDivider(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                title = stringResource(id = R.string.tags)
-            )
+            // --- More details collapsible section ---
+            var moreDetailsExpanded by remember { mutableStateOf(false) }
 
-            BudgetTextField(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                text = tag,
-                label = stringResource(id = R.string.tags),
-                trailingIcon = painterResource(id = BudgetIcons.Add),
-                trailingIconOnClick = {
-                    if (it.isNotEmpty()) {
-                        tags.add(it)
-                    }
-                    tag.value = ""
-                }
-            )
-
-            Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(top = 8.dp)
-                    .padding(horizontal = 24.dp),
-            ) {
-                tags.forEach {
-                    Tag(
-                        modifier = Modifier.padding(end = 8.dp),
-                        text = it,
-                        dismissClick = {
-                            tags.remove(it)
-                        }
-                    ) {
-                        tags.remove(it)
+            LaunchedEffect(transaction) {
+                if (transaction != null) {
+                    val hasDetails = transaction.tags.orEmpty().isNotEmpty() ||
+                            transaction.images.orEmpty().isNotEmpty() ||
+                            transaction.contactIds.orEmpty().isNotEmpty() ||
+                            transaction.note.orEmpty().isNotEmpty()
+                    if (hasDetails) {
+                        moreDetailsExpanded = true
                     }
                 }
             }
 
-            // people
-            TextDivider(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                title = stringResource(id = R.string.people)
+            val chevronRotation by animateFloatAsState(
+                targetValue = if (moreDetailsExpanded) 180f else 0f,
+                label = "chevron"
             )
 
             Row(
                 modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .clickable { moreDetailsExpanded = !moreDetailsExpanded }
                     .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
+                HorizontalDivider(modifier = Modifier.weight(1f))
+                Text(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    text = stringResource(id = R.string.more_details),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                Icon(
+                    modifier = Modifier.rotate(chevronRotation),
+                    painter = painterResource(id = BudgetIcons.directionDown),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                HorizontalDivider(modifier = Modifier.weight(1f))
+            }
 
-
-                Tag(
-                    modifier = Modifier.padding(end = 8.dp),
-                    icon = painterResource(id = BudgetIcons.Add)
-                ) {
-                    sheetType = 3
-                    openedKeyboard = true
+            // Summary chips when collapsed
+            AnimatedVisibility(
+                visible = !moreDetailsExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                val tagsLabel = stringResource(id = R.string.tags)
+                val peopleLabel = stringResource(id = R.string.people)
+                val descLabel = stringResource(id = R.string.description)
+                val imagesLabel = stringResource(id = R.string.images)
+                val summaryItems = buildList {
+                    if (tags.isNotEmpty()) add("${tags.size} $tagsLabel")
+                    if (people.isNotEmpty()) add("${people.size} $peopleLabel")
+                    if (note.value.isNotEmpty()) add("1 $descLabel")
+                    if (images.isNotEmpty()) add("${images.size} $imagesLabel")
                 }
-
-                people.forEach {person ->
-                    Tag(
-                        modifier = Modifier.padding(end = 8.dp),
-                        text = try {
-                            contacts.orEmpty().first { it.phoneNumber == person.contactId }.fullName
-                        }catch (e: Exception) {
-                            ""
-                        },
-                        dismissClick = {
-                            people.remove(person)
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(top = 8.dp)
+                        .padding(horizontal = 24.dp),
+                ) {
+                    summaryItems.forEach { text ->
+                        Tag(
+                            modifier = Modifier.padding(end = 8.dp),
+                            text = text,
+                            enableDismiss = false,
+                        ) {
+                            moreDetailsExpanded = true
                         }
-                    ) {
-                        people.remove(person)
                     }
                 }
-
             }
 
-
-            // images
-            TextDivider(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                title = stringResource(id = R.string.images)
-            )
-
-            ImagePicker(
-                modifier = Modifier.padding(top = 16.dp),
-                padding = PaddingValues(horizontal = 24.dp),
-                images = transaction?.images.orEmpty()
+            // Expanded content
+            AnimatedVisibility(
+                visible = moreDetailsExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
             ) {
-                if (it.isNotEmpty()) {
-                    images.clear()
-                    images.addAll(it)
+                Column {
+                    // tags
+                    TextDivider(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        title = stringResource(id = R.string.tags)
+                    )
+
+                    BudgetTextField(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        text = tag,
+                        label = stringResource(id = R.string.tags),
+                        trailingIcon = painterResource(id = BudgetIcons.Add),
+                        trailingIconOnClick = {
+                            if (it.isNotEmpty()) {
+                                tags.add(it)
+                            }
+                            tag.value = ""
+                        }
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(top = 8.dp)
+                            .padding(horizontal = 24.dp),
+                    ) {
+                        tags.forEach {
+                            Tag(
+                                modifier = Modifier.padding(end = 8.dp),
+                                text = it,
+                                dismissClick = {
+                                    tags.remove(it)
+                                }
+                            ) {
+                                tags.remove(it)
+                            }
+                        }
+                    }
+
+                    // people
+                    TextDivider(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        title = stringResource(id = R.string.people)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(top = 16.dp)
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        Tag(
+                            modifier = Modifier.padding(end = 8.dp),
+                            icon = painterResource(id = BudgetIcons.Add)
+                        ) {
+                            sheetType = 3
+                            openedKeyboard = true
+                        }
+
+                        people.forEach { person ->
+                            Tag(
+                                modifier = Modifier.padding(end = 8.dp),
+                                text = try {
+                                    contacts.orEmpty().first { it.phoneNumber == person.contactId }.fullName
+                                } catch (e: Exception) {
+                                    ""
+                                },
+                                dismissClick = {
+                                    people.remove(person)
+                                }
+                            ) {
+                                people.remove(person)
+                            }
+                        }
+                    }
+
+                    // images
+                    TextDivider(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        title = stringResource(id = R.string.images)
+                    )
+
+                    ImagePicker(
+                        modifier = Modifier.padding(top = 16.dp),
+                        padding = PaddingValues(horizontal = 24.dp),
+                        images = transaction?.images.orEmpty()
+                    ) {
+                        if (it.isNotEmpty()) {
+                            images.clear()
+                            images.addAll(it)
+                        }
+                    }
+
+                    // description
+                    BudgetTextField(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .padding(horizontal = 24.dp),
+                        singleLine = false,
+                        label = stringResource(id = R.string.description),
+                        text = note,
+                        maxLines = 5,
+                        minLines = 3
+                    )
                 }
             }
-
-
-            // description
-            BudgetTextField(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 24.dp),
-                singleLine = false,
-                label = stringResource(id = R.string.description),
-                text = note,
-                maxLines = 5,
-                minLines = 5
-            )
 
             Spacer(modifier = Modifier.padding(vertical = 24.dp))
 
