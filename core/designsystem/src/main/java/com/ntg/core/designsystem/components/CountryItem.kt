@@ -7,10 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import java.util.Objects
 
 @Composable
 fun CountryItem(
@@ -40,9 +37,8 @@ fun CountryItem(
         Text(
             modifier = Modifier.padding(end = 32.dp),
             text = "+${country.code}",
-            style = TextStyle(
-                color = MaterialTheme.colorScheme.outline,
-                fontSize = 14.sp
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.outline
             )
         )
     }

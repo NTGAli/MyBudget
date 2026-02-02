@@ -268,8 +268,10 @@ private fun CharView(
                 }
                 .offset(y = offset.y.dp),
             text = char,
-            fontWeight = FontWeight.Bold,
-            style = TextStyle(fontSize = 20.sp),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            ),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )

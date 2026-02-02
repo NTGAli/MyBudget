@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -180,7 +179,7 @@ fun BudgetButton(
         }
         ButtonSize.MD -> {
             innerPadding = PaddingValues(vertical = 10.dp, horizontal = 16.dp)
-            textStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+            textStyle = MaterialTheme.typography.labelLarge
             progressSize = 16.dp
             progressWidth = 2.dp
 

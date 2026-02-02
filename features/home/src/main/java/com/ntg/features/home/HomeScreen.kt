@@ -1,8 +1,20 @@
 package com.ntg.features.home
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +35,7 @@ import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -34,6 +47,8 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -50,12 +65,14 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -200,6 +217,9 @@ fun HomeRoute(
             },
             newContact = {
                 homeViewModel.insertContact(it)
+            },
+            deleteTransactions = {
+                homeViewModel.deleteTransactions(it)
             }
         )
     } else if (currentAccount.value != null && !hasSources){
@@ -249,9 +269,33 @@ private fun HomeScreen(
     transactionDetails: (Int) -> Unit,
     newContact: (Contact) -> Unit,
     onTransactionChanged: (Transaction) -> Unit,
+    deleteTransactions: (List<Int>) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var stickyHeaderText by remember { mutableStateOf("") }
+
+    val selectedTransactions = remember { mutableStateListOf<Int>() }
+    val inSelectionMode by remember { derivedStateOf { selectedTransactions.isNotEmpty() } }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var previousCount by remember { mutableIntStateOf(0) }
+
+    BackHandler(enabled = inSelectionMode) {
+        selectedTransactions.clear()
+    }
+
+    // Status bar color
+    val selectionBarColor = MaterialTheme.colorScheme.surfaceContainer.toArgb()
+    val defaultStatusBarColor = MaterialTheme.colorScheme.surface.toArgb()
+    val view = LocalView.current
+    val window = (view.context as? Activity)?.window
+    LaunchedEffect(inSelectionMode) {
+        window?.statusBarColor = if (inSelectionMode) selectionBarColor else defaultStatusBarColor
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            window?.statusBarColor = defaultStatusBarColor
+        }
+    }
 
     val showAccountSheet = remember { mutableStateOf(false) }
     val modalBottomSheetState = rememberModalBottomSheetState()
@@ -275,31 +319,96 @@ private fun HomeScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            AppBar(
-                titleState = {
-                    AccountSelector(
-                        title = currentAccount.accountName,
-                        subTitle = stringResource(
-                            id = R.string.items_format, currentAccount.sources.filter { it?.isSelected.orFalse() }.size
-                        ),
-                        isOpen = remember { mutableStateOf(false) }
+            Crossfade(targetState = inSelectionMode, label = "topBar") { selecting ->
+                if (selecting) {
+                    val currentCount = selectedTransactions.size
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .statusBarsPadding()
+                            .height(64.dp)
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        showAccountSheet.value = true
+                        IconButton(onClick = { selectedTransactions.clear() }) {
+                            Icon(
+                                painter = painterResource(id = BudgetIcons.Close),
+                                contentDescription = "Close",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.weight(1f).padding(start = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AnimatedContent(
+                                targetState = currentCount,
+                                transitionSpec = {
+                                    val goingUp = targetState > previousCount
+                                    val enter = if (goingUp) {
+                                        slideInVertically { -it } + fadeIn()
+                                    } else {
+                                        slideInVertically { it } + fadeIn()
+                                    }
+                                    val exit = if (goingUp) {
+                                        slideOutVertically { it } + fadeOut()
+                                    } else {
+                                        slideOutVertically { -it } + fadeOut()
+                                    }
+                                    (enter togetherWith exit).using(SizeTransform(clip = false))
+                                },
+                                label = "counter"
+                            ) { count ->
+                                Text(
+                                    text = stringResource(R.string.selected_count_format, count.toString()),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+
+                        LaunchedEffect(currentCount) {
+                            previousCount = currentCount
+                        }
+
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(
+                                painter = painterResource(id = BudgetIcons.trash),
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
-                },
-                actions = listOf(
-                    AppbarItem(
-                        id=0,
-                        imageVector = ImageVector.vectorResource(BudgetIcons.filter),
-                        iconColor = MaterialTheme.colorScheme.outline
+                } else {
+                    AppBar(
+                        titleState = {
+                            AccountSelector(
+                                title = currentAccount.accountName,
+                                subTitle = stringResource(
+                                    id = R.string.items_format, currentAccount.sources.filter { it?.isSelected.orFalse() }.size
+                                ),
+                                isOpen = remember { mutableStateOf(false) }
+                            ) {
+                                showAccountSheet.value = true
+                            }
+                        },
+                        actions = listOf(
+                            AppbarItem(
+                                id=0,
+                                imageVector = ImageVector.vectorResource(BudgetIcons.filter),
+                                iconColor = MaterialTheme.colorScheme.outline
+                            )
+                        ),
+                        enableNavigation = false,
+                        scrollBehavior = scrollBehavior,
+                        actionOnClick = {
+                            // OnClick for open filter bottom sheet
+                        }
                     )
-                ),
-                enableNavigation = false,
-                scrollBehavior = scrollBehavior,
-                actionOnClick = {
-                    // OnClick for open filter bottom sheet
                 }
-            )
+            }
         }
     ) { padding ->
         LazyColumn(
@@ -387,9 +496,23 @@ private fun HomeScreen(
                                 AttachData(Constants.AttachTyp.ATTACHED_IMAGE, transaction.images.orEmpty().size)
                             } else null
                         ),
-                        type = transaction.type.orZero()
+                        type = transaction.type.orZero(),
+                        isSelected = selectedTransactions.contains(transaction.id),
+                        onLongClick = {
+                            if (!inSelectionMode) {
+                                selectedTransactions.add(transaction.id)
+                            }
+                        }
                     ) {
-                        transactionDetails(transaction.id)
+                        if (inSelectionMode) {
+                            if (selectedTransactions.contains(transaction.id)) {
+                                selectedTransactions.remove(transaction.id)
+                            } else {
+                                selectedTransactions.add(transaction.id)
+                            }
+                        } else {
+                            transactionDetails(transaction.id)
+                        }
                     }
                 }
             }
@@ -414,6 +537,35 @@ private fun HomeScreen(
                 }
             }
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_transaction_title)) },
+            text = { Text(stringResource(R.string.delete_selected_transactions_desc, selectedTransactions.size.toString())) },
+            confirmButton = {
+                BudgetButton(
+                    text = stringResource(id = R.string.delete),
+                    type = ButtonType.Error,
+                    size = ButtonSize.MD,
+                    style = ButtonStyle.TextOnly
+                ) {
+                    deleteTransactions(selectedTransactions.toList())
+                    selectedTransactions.clear()
+                    showDeleteDialog = false
+                }
+            },
+            dismissButton = {
+                BudgetButton(
+                    text = stringResource(id = R.string.cancel),
+                    size = ButtonSize.MD,
+                    style = ButtonStyle.TextOnly
+                ) {
+                    showDeleteDialog = false
+                }
+            }
+        )
     }
 
     InsertScreen(

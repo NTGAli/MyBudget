@@ -206,6 +206,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun deleteTransactions(ids: List<Int>) {
+        viewModelScope.launch {
+            ids.forEach { transactionsRepository.deleteTransaction(it) }
+        }
+    }
+
     fun insertContact(contact: Contact) {
         viewModelScope.launch {
             contactRepository.upsertContact(contact)

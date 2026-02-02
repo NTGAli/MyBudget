@@ -66,7 +66,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -80,7 +79,6 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ntg.core.designsystem.util.sanitizeInput
 import com.ntg.core.mybudget.common.getCountryName
 import com.ntg.core.mybudget.common.getCountryPattern
@@ -354,8 +352,8 @@ fun BudgetTextField(
     }
 
 
-    val textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.inverseSurface)
-    val hintStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.outline)
+    val textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.inverseSurface)
+    val hintStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.outline)
 
 
 
@@ -426,8 +424,7 @@ fun BudgetTextField(
                 Text(
                     modifier = Modifier.padding(start = 12.dp),
                     text = "+",
-                    style = TextStyle(
-                        fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.inverseSurface
                     )
                 )
@@ -707,7 +704,7 @@ fun CurrencyTextField(
                 text = errorText ?: "",
                 modifier = Modifier
                     .padding(end = 10.dp),
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 color = if (isError) errorColor else LocalTextStyle.current.color
             )
         }

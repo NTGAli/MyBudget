@@ -3,6 +3,7 @@ package com.ntg.features.home
 import android.app.Activity
 import android.content.Intent
 import android.provider.ContactsContract
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -244,6 +245,10 @@ fun InsertScreen(
     newContact: (Contact) -> Unit,
     onTransactionChange: (Transaction) -> Unit,
 ) {
+
+    BackHandler(enabled = expandTransaction.value) {
+        expandTransaction.value = false
+    }
 
     val context = LocalContext.current
     val amount = remember { mutableStateOf("") }
@@ -798,6 +803,17 @@ fun InsertScreen(
             }
 
             if (moreDetailsExpanded) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { moreDetailsExpanded = false }
+                        .padding(top = 12.dp),
+                    text = stringResource(id = R.string.show_less),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+                )
                 Spacer(modifier = Modifier.padding(vertical = 24.dp))
             }
 

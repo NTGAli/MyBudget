@@ -17,13 +17,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ntg.core.designsystem.theme.BudgetIcons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -420,8 +418,6 @@ fun RowScope.CalculatorKey(
         if (label.isNotEmpty()) {
             Text(
                 text = label,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Medium,
                 color = labelColor,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall.copy(
@@ -563,8 +559,6 @@ fun RowScope.KeyboardKey(
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = label,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
                 color = labelColor,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall.copy(

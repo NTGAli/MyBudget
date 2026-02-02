@@ -1,8 +1,9 @@
 package com.ntg.core.designsystem.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.model.AttachData
 import com.ntg.core.mybudget.common.Constants
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TransactionItem(
     modifier: Modifier = Modifier,
@@ -30,12 +32,21 @@ fun TransactionItem(
     type: Int,
     divider: Boolean = false,
     attached: List<AttachData?> = emptyList(),
+    isSelected: Boolean = false,
+    onLongClick: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .clickable { onClick() }
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                else Color.Transparent
+            )
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(horizontal = 8.dp)
     ) {
         TransactionHeader(

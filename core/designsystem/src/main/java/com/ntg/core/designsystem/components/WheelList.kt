@@ -27,7 +27,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ntg.core.designsystem.theme.outlineFonts
 
 @Composable
 fun <T> WheelList(
@@ -37,11 +36,12 @@ fun <T> WheelList(
     items: List<T>,
     initialItem: T,
     itemScaleFact: Float = 1.5f,
-    textStyle: TextStyle = TextStyle(fontSize = 14.sp),
+    textStyle: TextStyle = TextStyle.Default,
     textColor: Color = MaterialTheme.colorScheme.outline,
     selectedTextColor: Color = MaterialTheme.colorScheme.onBackground,
     onItemSelected: (index: Int, item: T) -> Unit = { _, _ -> }
 ) {
+    val resolvedTextStyle = if (textStyle == TextStyle.Default) MaterialTheme.typography.bodyMedium else textStyle
     val itemHalfHeight = LocalDensity.current.run { itemHeight.toPx() / 2f }
     val scrollState = rememberLazyListState(0)
     var lastSelectedIndex by remember {
@@ -96,18 +96,17 @@ fun <T> WheelList(
 
                     val textAnimated by animateFloatAsState(
                         targetValue = if (lastSelectedIndex == i) {
-                            (textStyle.fontSize * itemScaleFact).value
+                            (resolvedTextStyle.fontSize * itemScaleFact).value
                         } else {
-                            textStyle.fontSize.value
+                            resolvedTextStyle.fontSize.value
                         }, label = ""
                     )
 
                     Text(
                         text = item.toString(),
-                        style = textStyle,
+                        style = resolvedTextStyle,
                         color = textColorAnimated,
-                        fontSize = textAnimated.sp,
-                        fontFamily = outlineFonts
+                        fontSize = textAnimated.sp
                     )
                 }
             }

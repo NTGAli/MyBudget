@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -256,8 +255,7 @@ private fun CardInfo(
                 .padding(top = 32.dp, bottom = 16.dp)
                 .alpha(animatedAlpha),
             text = amount,
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = Color.White
+            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
         )
 
         Text(

@@ -31,11 +31,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.ntg.core.designsystem.theme.MyBudgetTheme
@@ -193,10 +191,7 @@ private fun DayItem(
     ) {
         Text(
             text = dayData.dayOfMonth.toString(),
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp
-            ),
+            style = MaterialTheme.typography.labelLarge,
             color = when {
                 color.luminance() < 0.5f -> Color.White
                 else -> MaterialTheme.colorScheme.onSurface
@@ -243,9 +238,7 @@ private fun DayTransactionPopup(
                 // Header with date
                 Text(
                     text = "${dayData.dayOfMonth} ${getCurrentJalaliMonthName()}",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -297,9 +290,7 @@ private fun DayTransactionPopup(
                     ) {
                         Text(
                             text = "خالص:",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
+                            style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
@@ -308,9 +299,7 @@ private fun DayTransactionPopup(
                                     Math.abs(netAmount).toString()
                                 )
                             } ${if (netAmount >= 0) "درآمد" else "هزینه"}",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
+                            style = MaterialTheme.typography.labelLarge,
                             color = if (netAmount >= 0) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error
                         )
                     }
@@ -359,9 +348,7 @@ private fun TransactionRow(
         }
         Text(
             text = "$amount تومان",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Bold
-            ),
+            style = MaterialTheme.typography.labelLarge,
             color = color
         )
     }

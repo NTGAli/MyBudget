@@ -237,14 +237,14 @@ private fun AppBottomBar(
     val navs = listOf(
         NavigationItem(
             1,
-            "test",
-            painterResource(id = BudgetIcons.Home),
-            painterResource(id = BudgetIcons.Home),
+            "Report",
+            painterResource(id = BudgetIcons.filter),
+            painterResource(id = BudgetIcons.filter),
             isSelected = true,
         ),
         NavigationItem(
             2,
-            "test",
+            "Home",
             painterResource(id = BudgetIcons.Home),
             painterResource(id = BudgetIcons.Home),
             isSelected = false,

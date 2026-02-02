@@ -11,7 +11,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -116,9 +115,6 @@ fun MyBudgetTheme(
     if (!view.isInEditMode) {
         val window = (view.context as Activity).window
         SideEffect {
-            window.statusBarColor = colorScheme.background.toArgb()
-            window.navigationBarColor = colorScheme.background.toArgb()
-
             WindowCompat
                 .getInsetsController(window, view)
                 .isAppearanceLightStatusBars = colorScheme ==  LightColorScheme

@@ -5,12 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,10 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ntg.core.designsystem.model.NavigationItem
 import com.ntg.core.designsystem.theme.BudgetIcons
@@ -62,21 +61,21 @@ fun BottomNavigation(
         label = "button_width_animation"
     )
 
-    val buttonPadding by animateDpAsState(
-        targetValue = if (expandButton) 10.dp else 4.dp,
-        label = "button_padding_animation"
-    )
-
     Column(
         modifier = modifier
-            .height(IntrinsicSize.Min)
             .background(MaterialTheme.colorScheme.background)
+            .navigationBarsPadding()
     ) {
-        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceDim)
+        HorizontalDivider(
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant
+        )
 
         Box(modifier = Modifier.fillMaxWidth()) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 NavigationIcon(
@@ -93,8 +92,7 @@ fun BottomNavigation(
 
                 Spacer(
                     modifier = Modifier
-                        .width(92.dp)
-                        .background(Color.White)
+                        .width(100.dp)
                 )
 
                 NavigationIcon(
@@ -114,7 +112,6 @@ fun BottomNavigation(
                 modifier = Modifier.align(Alignment.Center),
                 expandButton = expandButton,
                 animatedWidth = animatedWidth,
-                padding = buttonPadding,
                 txtButton = txtButton,
                 isLoading = isLoading,
                 onClick = { onCLick(-1) }
@@ -130,25 +127,28 @@ private fun RowScope.NavigationIcon(
     isVisible: Boolean,
     onClick: () -> Unit
 ) {
-    Icon(
+    Box(
         modifier = Modifier
-            .padding(start = 4.dp)
-            .padding(vertical = 8.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .then(if (isVisible) Modifier.weight(1f) else Modifier.size(0.dp))
-            .padding(vertical = 16.dp),
-        painter = if (isSelected) item.selectedPainter else item.painter,
-        contentDescription = item.title,
-    )
+            .padding(vertical = 20.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            modifier = Modifier.size(28.dp),
+            painter = if (isSelected) item.selectedPainter else item.painter,
+            contentDescription = item.title,
+            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        )
+    }
 }
 
 @Composable
 private fun ActionButton(
     modifier: Modifier = Modifier,
     expandButton: Boolean,
-    animatedWidth: androidx.compose.ui.unit.Dp,
-    padding: androidx.compose.ui.unit.Dp,
+    animatedWidth: Dp,
     txtButton: String?,
     isLoading: Boolean,
     onClick: () -> Unit
@@ -156,21 +156,20 @@ private fun ActionButton(
     Box(
         modifier = modifier
             .then(if (expandButton) Modifier.width(animatedWidth) else Modifier)
-            .padding(horizontal = 24.dp, vertical = padding)
-            .clip(RoundedCornerShape(8.dp))
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(16.dp))
             .background(
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.primary
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = padding)
+            .padding(horizontal = 24.dp, vertical = 10.dp)
     ) {
         if (txtButton != null) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = txtButton,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.labelLarge.copy(
                     color = if (isLoading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
                 )
             )
@@ -179,7 +178,7 @@ private fun ActionButton(
                 CircularProgressIndicator(
                     modifier = Modifier
                         .progressSemantics()
-                        .size(16.dp)
+                        .size(20.dp)
                         .align(Alignment.Center),
                     color = MaterialTheme.colorScheme.onBackground,
                     strokeWidth = 2.dp
@@ -187,7 +186,9 @@ private fun ActionButton(
             }
         } else {
             Icon(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier
+                    .size(28.dp)
+                    .align(Alignment.Center),
                 painter = painterResource(id = BudgetIcons.Transaction),
                 contentDescription = "Transaction",
                 tint = MaterialTheme.colorScheme.onPrimary

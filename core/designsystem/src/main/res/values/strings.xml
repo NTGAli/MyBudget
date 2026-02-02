@@ -146,6 +146,8 @@
     <string name="Report">گزارش مالی</string>
     <string name="delete_transaction_title">حذف تراکنش</string>
     <string name="delete_transaction_desc">آیا مطمئن هستید که این تراکنش را می خواهید حذف کنید؟</string>
+    <string name="selected_count_format">%s انتخاب شده</string>
+    <string name="delete_selected_transactions_desc">آیا مطمئن هستید که %s تراکنش را می‌خواهید حذف کنید؟</string>
     <string name="yes">بله</string>
     <string name="searchInPeople">جست و جو درمیان افراد</string>
     <string name="no_contact">مخاطبی وحود نداره!</string>
@@ -162,5 +164,17 @@
     <string name="withdraw">برداشت</string>
     <string name="deposit">واریز</string>
     <string name="untitled">بدون عنوان</string>
+    <string name="more_details">جزئیات بیشتر</string>
+
+    // empty states
+    <string name="no_wallets">هیچ کیف پولی اضافه نشده.</string>
+    <string name="no_report_data">داده‌ای برای نمایش گزارش وجود ندارد.</string>
+    <string name="no_search_results">نتیجه‌ای یافت نشد.</string>
+    <string name="no_transactions">تراکنشی ثبت نشده.</string>
+
+    // status
+    <string name="success_message">عملیات با موفقیت انجام شد.</string>
+    <string name="error_message">خطایی رخ داده است. لطفاً دوباره تلاش کنید.</string>
+    <string name="offline_message">اتصال اینترنت برقرار نیست.</string>
 
 </resources>

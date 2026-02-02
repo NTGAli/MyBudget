@@ -12,7 +12,7 @@ import com.ntg.mybudget.core.designsystem.R
 val outlineFonts = FontFamily(
     Font(R.font.bakh_light, FontWeight.Light),
     Font(R.font.bakh_regular, FontWeight.Normal),
-    Font(R.font.bakh_regular, FontWeight.Medium),
+    Font(R.font.bakh_bold, FontWeight.Medium),
     Font(R.font.bakh_bold, FontWeight.Bold)
 )
 
@@ -20,42 +20,42 @@ val Typography = Typography(
 
     displayLarge = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 57.sp,
         lineHeight = 64.sp,
-        letterSpacing = (-0.25).sp
+        letterSpacing = 0.sp
     ),
     displayMedium = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 45.sp,
         lineHeight = 52.sp,
         letterSpacing = 0.sp
     ),
     displaySmall = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp
     ),
     headlineLarge = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
     ),
     headlineSmall = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp
@@ -72,56 +72,56 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.15.sp
+        letterSpacing = 0.sp
     ),
     titleSmall = TextStyle(
         fontFamily = outlineFonts,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
+        letterSpacing = 0.sp
     ),
     bodyLarge = TextStyle(
         fontFamily = outlineFonts,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = outlineFonts,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.sp
     ),
     bodySmall = TextStyle(
         fontFamily = outlineFonts,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.4.sp
+        letterSpacing = 0.sp
     ),
     labelLarge = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Medium,/*Can Be Bold for Prominent*/
+        fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
+        letterSpacing = 0.sp
     ),
     labelMedium = TextStyle(
         fontFamily = outlineFonts,
-        fontWeight = FontWeight.Medium,/*Can Be Bold for Prominent*/
+        fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp
     ),
     labelSmall = TextStyle(
         fontFamily = outlineFonts,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp
     )
 )
 

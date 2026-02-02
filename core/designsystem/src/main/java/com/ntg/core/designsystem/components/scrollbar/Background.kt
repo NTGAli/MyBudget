@@ -17,7 +17,7 @@ fun BudgetBackground(
     content: @Composable () -> Unit,
 ) {
     val color = MaterialTheme.colorScheme.background
-    val tonalElevation = 8.dp
+    val tonalElevation = 0.dp
     Surface(
         color = color,
         tonalElevation = if (tonalElevation == Dp.Unspecified) 0.dp else tonalElevation,
