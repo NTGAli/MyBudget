@@ -42,6 +42,7 @@ import com.ntg.core.designsystem.theme.BudgetIcons
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.logd
 import com.ntg.features.home.Home_Route
+import com.ntg.features.report.Report_ROUTE
 import com.ntg.features.setup.Setup_Route
 import com.ntg.login.Login_Route
 import com.ntg.mybudget.navigation.BudgetNavHost
@@ -143,7 +144,7 @@ internal fun BudgetApp(
             },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
-//        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = {
             if (snackData.value != null){
                 AnimatedSnackbarHost(
@@ -155,14 +156,24 @@ internal fun BudgetApp(
         },
         bottomBar = {
             if (appState.shouldShowBottomBar) {
+                val currentRoute = appState.currentDestination?.route
+                val selectedItem = when {
+                    currentRoute == Report_ROUTE -> 1
+                    else -> 2
+                }
+
                 AppBottomBar(
+                    selectedItem = selectedItem,
                     onNavigateToDestination = {
                         if (it == TopLevelDestination.REPORT){
                             appState.navigateToTopLevelDestination(TopLevelDestination.REPORT)
                         }else if (it == TopLevelDestination.HOME){
                             appState.navigateToTopLevelDestination(TopLevelDestination.HOME)
                         }else{
-                            sharedViewModel.bottomMainButton()
+                            val handled = sharedViewModel.onBottomButtonClick()
+                            if (!handled) {
+                                appState.navigateToTopLevelDestination(TopLevelDestination.HOME)
+                            }
                         }
                     },
                     expandButton = isExpand,

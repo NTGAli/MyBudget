@@ -283,20 +283,6 @@ private fun HomeScreen(
         selectedTransactions.clear()
     }
 
-    // Status bar color
-    val selectionBarColor = MaterialTheme.colorScheme.surfaceContainer.toArgb()
-    val defaultStatusBarColor = MaterialTheme.colorScheme.surface.toArgb()
-    val view = LocalView.current
-    val window = (view.context as? Activity)?.window
-    LaunchedEffect(inSelectionMode) {
-        window?.statusBarColor = if (inSelectionMode) selectionBarColor else defaultStatusBarColor
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            window?.statusBarColor = defaultStatusBarColor
-        }
-    }
-
     val showAccountSheet = remember { mutableStateOf(false) }
     val modalBottomSheetState = rememberModalBottomSheetState()
 
