@@ -74,7 +74,7 @@ fun BottomNavigation(
     ) {
         HorizontalDivider(
             thickness = 0.5.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
+            color = MaterialTheme.colorScheme.surfaceContainerHighest
         )
 
         Box(modifier = Modifier.fillMaxWidth()) {
