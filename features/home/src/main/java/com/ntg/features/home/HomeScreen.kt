@@ -1,6 +1,5 @@
 package com.ntg.features.home
 
-import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
@@ -47,7 +46,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -65,14 +63,12 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -106,7 +102,7 @@ import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.Constants
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.formatCurrency
 import com.ntg.core.mybudget.common.formatTimestampToTime
@@ -123,6 +119,7 @@ import com.ntg.core.mybudget.common.toPersianDate
 import com.ntg.core.mybudget.common.withSuffix
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -134,6 +131,8 @@ fun HomeRoute(
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
     navigateToDetail: (id: Int) -> Unit,
+    navigateToEdit: (id: Int) -> Unit,
+    navigateToImageFull: (path: String) -> Unit,
     startFromSetup: () -> Unit,
     onShowSnackbar: suspend (Int, String?, Int?) -> Boolean,
 ) {
@@ -142,6 +141,14 @@ fun HomeRoute(
     sharedViewModel.bottomNavTitle.postValue(if (expandTransaction.value) "submit" else null)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (sharedViewModel.openTransactionOnHome) {
+            sharedViewModel.openTransactionOnHome = false
+            delay(150)
+            expandTransaction.value = true
+        }
+    }
 
     val accounts = homeViewModel.accountWithSources()
         .collectAsStateWithLifecycle(initialValue = emptyList())
@@ -162,6 +169,9 @@ fun HomeRoute(
         .collectAsStateWithLifecycle(initialValue = null)
     val contacts = homeViewModel.contacts
         .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val detailTransactionState by homeViewModel.transaction
+        .collectAsStateWithLifecycle(initialValue = null)
 
     var transaction by remember { mutableStateOf<Transaction?>(null) }
 
@@ -212,9 +222,11 @@ fun HomeRoute(
             editAccount = {
                 navigateToAccount(it)
             },
-            transactionDetails = {
-                navigateToDetail(it)
-            },
+            onLoadTransaction = { homeViewModel.loadTransactionById(it) },
+            detailTransaction = detailTransactionState,
+            onDeleteTransaction = { homeViewModel.deleteTransaction(it) },
+            navToEdit = navigateToEdit,
+            navToImageFull = navigateToImageFull,
             newContact = {
                 homeViewModel.insertContact(it)
             },
@@ -229,7 +241,7 @@ fun HomeRoute(
     }
 
     LaunchedEffect(key1 = transaction) {
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
                 handleBottomButtonClick(
                     transaction,
@@ -266,7 +278,11 @@ private fun HomeScreen(
     deleteAccount: (id: Int) -> Unit,
     deleteWallet: (id: Int) -> Unit,
     editAccount: (id: Int) -> Unit,
-    transactionDetails: (Int) -> Unit,
+    onLoadTransaction: (Int) -> Unit,
+    detailTransaction: Transaction?,
+    onDeleteTransaction: (Int) -> Unit,
+    navToEdit: (Int) -> Unit,
+    navToImageFull: (String) -> Unit,
     newContact: (Contact) -> Unit,
     onTransactionChanged: (Transaction) -> Unit,
     deleteTransactions: (List<Int>) -> Unit,
@@ -285,6 +301,10 @@ private fun HomeScreen(
 
     val showAccountSheet = remember { mutableStateOf(false) }
     val modalBottomSheetState = rememberModalBottomSheetState()
+
+    var showDetailSheet by remember { mutableStateOf(false) }
+    var detailTransactionId by remember { mutableStateOf<Int?>(null) }
+    val detailSheetState = rememberModalBottomSheetState()
 
     val scrollStateKey = remember(currentAccount.accountId) { "scroll_${currentAccount.accountId}" }
 
@@ -319,6 +339,7 @@ private fun HomeScreen(
                     ) {
                         IconButton(onClick = { selectedTransactions.clear() }) {
                             Icon(
+                                modifier = Modifier.size(24.dp),
                                 painter = painterResource(id = BudgetIcons.Close),
                                 contentDescription = "Close",
                                 tint = MaterialTheme.colorScheme.onSurface
@@ -348,7 +369,7 @@ private fun HomeScreen(
                                 label = "counter"
                             ) { count ->
                                 Text(
-                                    text = stringResource(R.string.selected_count_format, count.toString()),
+                                    text = count.toString(),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -497,7 +518,8 @@ private fun HomeScreen(
                                 selectedTransactions.add(transaction.id)
                             }
                         } else {
-                            transactionDetails(transaction.id)
+                            detailTransactionId = transaction.id
+                            showDetailSheet = true
                         }
                     }
                 }
@@ -590,6 +612,40 @@ private fun HomeScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+
+    LaunchedEffect(detailTransactionId) {
+        detailTransactionId?.let { onLoadTransaction(it) }
+    }
+
+    if (showDetailSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showDetailSheet = false
+                detailTransactionId = null
+            },
+            sheetState = detailSheetState
+        ) {
+            if (detailTransaction != null) {
+                TransactionDetailSheet(
+                    transaction = detailTransaction,
+                    sheetValue = detailSheetState.targetValue,
+                    onEdit = { id ->
+                        showDetailSheet = false
+                        detailTransactionId = null
+                        navToEdit(id)
+                    },
+                    onDelete = { id ->
+                        onDeleteTransaction(id)
+                        showDetailSheet = false
+                        detailTransactionId = null
+                    },
+                    onImageClick = { path ->
+                        navToImageFull(path)
+                    }
+                )
+            }
         }
     }
 }

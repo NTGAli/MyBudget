@@ -85,7 +85,7 @@ import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
 import com.ntg.core.model.res.Currency
 import com.ntg.core.mybudget.common.Constants
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.formatInput
 import com.ntg.core.mybudget.common.logd
@@ -173,7 +173,7 @@ fun InsertRoute(
     }
 
     LaunchedEffect(key1 = updatedTransaction) {
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
                 when {
                     updatedTransaction.value == null -> {
