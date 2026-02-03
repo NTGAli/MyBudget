@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +45,7 @@ fun BottomNavigation(
     expandButton: Boolean = false,
     isLoading: Boolean = false,
     initialSelectedItem: Int = 1,
+    selectedItem: Int = initialSelectedItem,
     onCLick: (Int) -> Unit,
 ) {
     require(items.size >= 2) { "BottomNavigation requires at least 2 items" }
@@ -52,6 +54,10 @@ fun BottomNavigation(
     val secondItem = items[1]
 
     var selectedItemId by remember { mutableStateOf(initialSelectedItem) }
+
+    LaunchedEffect(selectedItem) {
+        selectedItemId = selectedItem
+    }
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -169,6 +175,7 @@ private fun ActionButton(
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = txtButton,
+                maxLines = 1,
                 style = MaterialTheme.typography.labelLarge.copy(
                     color = if (isLoading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
                 )

@@ -134,6 +134,11 @@ internal fun BudgetApp(
             isLoading = it
         }
     }
+    val currentRoute = appState.currentDestination?.route
+    LaunchedEffect(currentRoute) {
+        sharedViewModel.bottomButtonListener = null
+    }
+
     val snackData = remember { mutableStateOf<SnackData?>(null) }
 
     Scaffold(
@@ -156,9 +161,8 @@ internal fun BudgetApp(
         },
         bottomBar = {
             if (appState.shouldShowBottomBar) {
-                val currentRoute = appState.currentDestination?.route
-                val selectedItem = when {
-                    currentRoute == Report_ROUTE -> 1
+                val selectedItem = when (currentRoute) {
+                    Report_ROUTE -> 1
                     else -> 2
                 }
 
@@ -172,6 +176,7 @@ internal fun BudgetApp(
                         }else{
                             val handled = sharedViewModel.onBottomButtonClick()
                             if (!handled) {
+                                sharedViewModel.openTransactionOnHome = true
                                 appState.navigateToTopLevelDestination(TopLevelDestination.HOME)
                             }
                         }
@@ -240,6 +245,7 @@ internal fun BudgetApp(
 
 @Composable
 private fun AppBottomBar(
+    selectedItem: Int = 2,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     expandButton: Boolean,
     isLoading: Boolean,
@@ -269,7 +275,8 @@ private fun AppBottomBar(
         expandButton = expandButton,
         txtButton = title,
         isLoading = isLoading,
-        initialSelectedItem=2
+        initialSelectedItem = 2,
+        selectedItem = selectedItem
     ) {
         if (it == -1){
             onNavigateToDestination(TopLevelDestination.TRANSACTION)

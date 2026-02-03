@@ -47,7 +47,7 @@ import com.ntg.core.model.Wallet
 import com.ntg.core.model.SourceType
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.WalletType
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.generateUniqueFiveDigitId
 import com.ntg.mybudget.core.designsystem.R
@@ -130,7 +130,7 @@ fun WalletRoute(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = bankCard) {
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
 
                 when (sourceType) {

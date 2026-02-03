@@ -32,7 +32,7 @@ import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.model.AccountWithSources
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
@@ -82,7 +82,7 @@ fun SetupRoute(
     )
 
     LaunchedEffect(key1 = accounts) {
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
                 scope.launch {
                     if (accounts.value.orEmpty().isEmpty()) {

@@ -62,6 +62,8 @@ fun NavGraphBuilder.homeScreen(
             navigateToSource = navigateToSource,
             navigateToAccount = navigateToAccount,
             navigateToDetail = navigateToDetail,
+            navigateToEdit = navigateToEdit,
+            navigateToImageFull = navToImageFull,
             navigateToProfile = navigateToProfile,
             startFromSetup = startFromSetup,
             onShowSnackbar = onShowSnackbar

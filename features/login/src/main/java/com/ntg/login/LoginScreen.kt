@@ -39,7 +39,7 @@ import com.ntg.core.designsystem.components.ButtonSize
 import com.ntg.core.designsystem.components.ButtonStyle
 import com.ntg.core.designsystem.components.ButtonType
 import com.ntg.core.designsystem.components.getLanguageFlag
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.getCountryFromPhoneNumber
 import com.ntg.core.mybudget.common.getCountryFullNameFromPhoneNumber
@@ -78,7 +78,7 @@ fun LoginRoute(
             code.value = it
         }
 
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
                 if (code.value.isEmpty() || phone.isEmpty() || getCountryFullNameFromPhoneNumber(
                         context,

@@ -20,7 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.model.Account
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.mybudget.core.designsystem.R
 import kotlinx.coroutines.launch
@@ -47,7 +47,7 @@ fun CreateAccountRoute(
 
     val scope = rememberCoroutineScope()
     LaunchedEffect(key1 = account) {
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
                 if (upsertAccount != null){
                     if (upsertAccount?.name.orEmpty().isNotEmpty()){

@@ -28,7 +28,7 @@ import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.BudgetTextField
 import com.ntg.core.designsystem.components.EditAvatarImage
 import com.ntg.core.model.UserData
-import com.ntg.core.mybudget.common.LoginEventListener
+import com.ntg.core.mybudget.common.BottomButtonListener
 import com.ntg.core.mybudget.common.SharedViewModel
 import com.ntg.core.mybudget.common.orDefault
 import com.ntg.core.network.model.Result
@@ -69,7 +69,7 @@ fun EditeProfileRout(
 
     LaunchedEffect(Unit) {
 
-        sharedViewModel.loginEventListener = object : LoginEventListener {
+        sharedViewModel.bottomButtonListener = object : BottomButtonListener {
             override fun onBottomButtonClick() {
                 editProfileViewModel.updateServerUserInfo()
             }

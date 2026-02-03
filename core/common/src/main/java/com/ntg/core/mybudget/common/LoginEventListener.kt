@@ -1,6 +1,4 @@
 package com.ntg.core.mybudget.common
 
-// In common or shared module
-interface LoginEventListener {
-    fun onBottomButtonClick()
-}
+@Deprecated("Use BottomButtonListener instead", ReplaceWith("BottomButtonListener"))
+typealias LoginEventListener = BottomButtonListener
