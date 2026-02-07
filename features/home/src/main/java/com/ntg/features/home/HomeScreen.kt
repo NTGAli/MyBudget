@@ -12,6 +12,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -89,6 +92,7 @@ import com.ntg.core.designsystem.components.DateDivider
 import com.ntg.core.designsystem.components.Lottie
 import com.ntg.core.designsystem.components.SampleAddAccountButton
 import com.ntg.core.designsystem.components.SampleItem
+import com.ntg.core.designsystem.components.Tag
 import com.ntg.core.designsystem.components.TransactionItem
 import com.ntg.core.designsystem.components.WheelList
 import com.ntg.core.designsystem.model.AppbarItem
@@ -97,6 +101,7 @@ import com.ntg.core.model.AccountWithSources
 import com.ntg.core.model.AttachData
 import com.ntg.core.model.Contact
 import com.ntg.core.model.Transaction
+import com.ntg.core.model.TransactionFilter
 import com.ntg.core.model.Wallet
 import com.ntg.core.model.res.Bank
 import com.ntg.core.model.res.Category
@@ -177,6 +182,9 @@ fun HomeRoute(
 
     val showFilterSheet = remember { mutableStateOf(false) }
     val transactionFilter by homeViewModel.transactionFilter.collectAsStateWithLifecycle()
+    val isFiltered by homeViewModel.isFiltered.collectAsStateWithLifecycle()
+    val filteredTransactions = homeViewModel.filteredTransactions
+        .collectAsStateWithLifecycle(initialValue = emptyList())
 
     val hasSources = currentAccount.value?.any { account ->
         account.sources.any { it != null }
@@ -199,6 +207,10 @@ fun HomeRoute(
             localBanks,
             contacts,
             currencyData,
+            showFilterSheet,
+            transactionFilter,
+            isFiltered,
+            filteredTransactions,
             navigateToSource,
             navigateToAccount,
             navigateToProfile,
@@ -232,7 +244,9 @@ fun HomeRoute(
             },
             deleteTransactions = {
                 homeViewModel.deleteTransactions(it)
-            }
+            },
+            onApplyFilter = { homeViewModel.applyTransactionFilter(it) },
+            onClearFilter = { homeViewModel.clearTransactionFilters() }
         )
     } else if (currentAccount.value != null && !hasSources){
         LaunchedEffect(currentAccount.value) {
@@ -255,7 +269,7 @@ fun HomeRoute(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun HomeScreen(
     accounts: State<List<AccountWithSources>?>,
@@ -269,6 +283,10 @@ private fun HomeScreen(
     localBanks: SnapshotStateList<Bank>?,
     contacts: State<List<Contact>?>,
     currency: State<Currency?>,
+    showFilterSheet: MutableState<Boolean>,
+    transactionFilter: TransactionFilter,
+    isFiltered: Boolean,
+    filteredTransactions: State<List<Transaction>>,
     navigateToSource: (id: Int, sourceId: Int?) -> Unit,
     navigateToAccount: (id: Int) -> Unit,
     navigateToProfile: () -> Unit,
@@ -286,6 +304,8 @@ private fun HomeScreen(
     newContact: (Contact) -> Unit,
     onTransactionChanged: (Transaction) -> Unit,
     deleteTransactions: (List<Int>) -> Unit,
+    onApplyFilter: (TransactionFilter) -> Unit,
+    onClearFilter: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var stickyHeaderText by remember { mutableStateOf("") }
@@ -316,8 +336,9 @@ private fun HomeScreen(
     }
 
     // Keep track of transaction data to prevent scroll reset on data changes
-    val stableTransactionData = remember(transactions.value) {
-        transactions.value?.filter {
+    val displayTransactions = if (isFiltered) filteredTransactions.value else transactions.value
+    val stableTransactionData = remember(displayTransactions) {
+        displayTransactions?.filter {
             it.type == Constants.BudgetType.EXPENSE || it.type == Constants.BudgetType.INCOME || it.type == Constants.BudgetType.TRANSFER
         }?.groupBy { it.date.toPersianDate() } ?: emptyMap()
     }
@@ -405,13 +426,13 @@ private fun HomeScreen(
                             AppbarItem(
                                 id=0,
                                 imageVector = ImageVector.vectorResource(BudgetIcons.filter),
-                                iconColor = MaterialTheme.colorScheme.outline
+                                iconColor = if (isFiltered) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                             )
                         ),
                         enableNavigation = false,
                         scrollBehavior = scrollBehavior,
                         actionOnClick = {
-                            // OnClick for open filter bottom sheet
+                            showFilterSheet.value = true
                         }
                     )
                 }
@@ -426,44 +447,122 @@ private fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item(key = "header") {
-                val income = transactions.value?.filter { it.type == Constants.BudgetType.INCOME }
-                    .orEmpty().sumOf { it.amount }
-                val expense = transactions.value?.filter { it.type == Constants.BudgetType.EXPENSE }
-                    .orEmpty().sumOf { it.amount }
-
                 val currentJalaliMonth = getCurrentJalaliMonth()
-                val currentMonthIncome = transactions.value?.filter {
-                    it.type == Constants.BudgetType.INCOME &&
-                            isTransactionInCurrentJalaliMonth(it.date, currentJalaliMonth)
-                }?.sumOf { it.amount } ?: 0L
+                val reportIncome: Long
+                val reportExpense: Long
 
-                val currentMonthExpense = transactions.value?.filter {
-                    it.type == Constants.BudgetType.EXPENSE &&
-                            isTransactionInCurrentJalaliMonth(it.date, currentJalaliMonth)
-                }?.sumOf { it.amount } ?: 0L
+                if (isFiltered) {
+                    reportIncome = displayTransactions?.filter {
+                        it.type == Constants.BudgetType.INCOME
+                    }?.sumOf { it.amount } ?: 0L
+                    reportExpense = displayTransactions?.filter {
+                        it.type == Constants.BudgetType.EXPENSE
+                    }?.sumOf { it.amount } ?: 0L
+                } else {
+                    reportIncome = transactions.value?.filter {
+                        it.type == Constants.BudgetType.INCOME &&
+                                isTransactionInCurrentJalaliMonth(it.date, currentJalaliMonth)
+                    }?.sumOf { it.amount } ?: 0L
+                    reportExpense = transactions.value?.filter {
+                        it.type == Constants.BudgetType.EXPENSE &&
+                                isTransactionInCurrentJalaliMonth(it.date, currentJalaliMonth)
+                    }?.sumOf { it.amount } ?: 0L
+                }
 
                 CardReport(
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .padding(horizontal = 16.dp),
                     title = formatCurrency(
-                        amount = income - expense,
+                        amount = reportExpense,
                         mask = "###,###",
                         currency = currency.value?.symbol.orEmpty(),
                         pos = 2
                     ),
-                    subTitle = "موجودی همه حساب ها",
-                    out = currentMonthExpense.withSuffix(),
-                    inValue = currentMonthIncome.withSuffix()
+                    subTitle = if (isFiltered) stringResource(id = R.string.filtered_expenses)
+                              else stringResource(id = R.string.monthly_expenses),
+                    out = reportExpense.withSuffix(),
+                    inValue = reportIncome.withSuffix()
                 )
 
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, start = 32.dp, bottom = 16.dp),
+                        .padding(top = 16.dp, start = 32.dp, bottom = if (isFiltered) 8.dp else 16.dp),
                     text = stringResource(id = R.string.transactions),
                     style = MaterialTheme.typography.titleMedium.copy(MaterialTheme.colorScheme.outline)
                 )
+
+                if (isFiltered) {
+                    FlowRow(
+                        modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (transactionFilter.type != null) {
+                            val typeName = when (transactionFilter.type) {
+                                Constants.BudgetType.EXPENSE -> stringResource(R.string.outcome)
+                                Constants.BudgetType.INCOME -> stringResource(R.string.income)
+                                Constants.BudgetType.TRANSFER -> stringResource(R.string.internal_transfer)
+                                else -> ""
+                            }
+                            Tag(text = typeName, dismissClick = {
+                                onApplyFilter(transactionFilter.copy(type = null))
+                            })
+                        }
+                        val filterDateFrom = transactionFilter.dateFrom
+                        val filterDateTo = transactionFilter.dateTo
+                        if (filterDateFrom != null || filterDateTo != null) {
+                            val dateLabel = buildString {
+                                if (filterDateFrom != null) append(filterDateFrom.toPersianDate())
+                                append(" - ")
+                                if (filterDateTo != null) append(filterDateTo.toPersianDate())
+                            }
+                            Tag(text = dateLabel, dismissClick = {
+                                onApplyFilter(transactionFilter.copy(dateFrom = null, dateTo = null))
+                            })
+                        }
+                        val filterAmountMin = transactionFilter.amountMin
+                        val filterAmountMax = transactionFilter.amountMax
+                        if (filterAmountMin != null || filterAmountMax != null) {
+                            val amountLabel = buildString {
+                                if (filterAmountMin != null) append(formatCurrency(filterAmountMin, "###,###", "", 0))
+                                append(" - ")
+                                if (filterAmountMax != null) append(formatCurrency(filterAmountMax, "###,###", "", 0))
+                            }
+                            Tag(text = amountLabel, dismissClick = {
+                                onApplyFilter(transactionFilter.copy(amountMin = null, amountMax = null))
+                            })
+                        }
+                        transactionFilter.categoryIds.forEach { catId ->
+                            val catName = categories?.find { it.id == catId }?.name ?: catId.toString()
+                            Tag(text = catName, dismissClick = {
+                                onApplyFilter(transactionFilter.copy(
+                                    categoryIds = transactionFilter.categoryIds - catId
+                                ))
+                            })
+                        }
+                        transactionFilter.tags.forEach { tag ->
+                            Tag(text = tag, dismissClick = {
+                                onApplyFilter(transactionFilter.copy(
+                                    tags = transactionFilter.tags - tag
+                                ))
+                            })
+                        }
+                        if (transactionFilter.hasImage) {
+                            Tag(text = stringResource(R.string.only_with_images), dismissClick = {
+                                onApplyFilter(transactionFilter.copy(hasImage = false))
+                            })
+                        }
+                        transactionFilter.contactNames.forEach { name ->
+                            Tag(text = name, dismissClick = {
+                                onApplyFilter(transactionFilter.copy(
+                                    contactNames = transactionFilter.contactNames - name
+                                ))
+                            })
+                        }
+                    }
+                }
             }
 
             stableTransactionData.forEach { (date, items) ->
@@ -527,20 +626,66 @@ private fun HomeScreen(
 
             if (stableTransactionData.isEmpty()) {
                 item(key = "empty_state") {
-                    Lottie(
-                        modifier = Modifier.padding(horizontal = 64.dp),
-                        res = R.raw.happy
-                    )
+                    if (isFiltered) {
+                        val context = LocalContext.current
+                        val notFoundBitmap = remember {
+                            try {
+                                context.assets.open("not_found.png").use { stream ->
+                                    android.graphics.BitmapFactory.decodeStream(stream)
+                                        ?.asImageBitmap()
+                                }
+                            } catch (_: Exception) { null }
+                        }
 
-                    BudgetButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                            .padding(horizontal = 24.dp),
-                        text = stringResource(R.string.submit_first_transacton),
-                        style = ButtonStyle.TextOnly
-                    ) {
-                        expandTransaction.value = true
+                        if (notFoundBitmap != null) {
+                            androidx.compose.foundation.Image(
+                                bitmap = notFoundBitmap,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(horizontal = 64.dp)
+                                    .padding(top = 32.dp)
+                                    .fillMaxWidth()
+                            )
+                        }
+
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp)
+                                .padding(horizontal = 24.dp),
+                            text = stringResource(R.string.no_filter_result),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.outline
+                            ),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+
+                        BudgetButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                                .padding(horizontal = 24.dp),
+                            text = stringResource(R.string.change_filters),
+                            style = ButtonStyle.TextOnly
+                        ) {
+                            showFilterSheet.value = true
+                        }
+                    } else {
+                        Lottie(
+                            modifier = Modifier.padding(horizontal = 64.dp),
+                            res = R.raw.happy
+                        )
+
+                        BudgetButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                                .padding(horizontal = 24.dp),
+                            text = stringResource(R.string.submit_first_transacton),
+                            style = ButtonStyle.TextOnly
+                        ) {
+                            expandTransaction.value = true
+                        }
                     }
                 }
             }
@@ -590,6 +735,15 @@ private fun HomeScreen(
     ) {
         onTransactionChanged(it)
     }
+
+    TransactionFilterBottomSheet(
+        showSheet = showFilterSheet,
+        categories = categories,
+        allTransactions = transactions.value,
+        initialFilter = transactionFilter,
+        onApplyFilter = onApplyFilter,
+        onClearFilter = onClearFilter
+    )
 
     if (showAccountSheet.value) {
         ModalBottomSheet(

@@ -12,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -21,7 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ntg.core.designsystem.components.AppBar
 import com.ntg.core.designsystem.components.ExpenseDonutChart
-import com.ntg.core.designsystem.components.IncomeOutcomeChart
+import com.ntg.core.designsystem.components.MonthlyChartData
+import com.ntg.core.designsystem.components.MonthlyReportChart
 import com.ntg.core.designsystem.components.PieChartInput
 import com.ntg.core.designsystem.components.TwoWeekOverviewChart
 import com.ntg.core.designsystem.components.WeekData
@@ -54,12 +54,11 @@ fun ReportRoute(
     // Get week data from the new StateFlows
     val thisWeekData by reportViewModel.thisWeekData.collectAsStateWithLifecycle()
     val previousWeekData by reportViewModel.previousWeekData.collectAsStateWithLifecycle()
+    val monthlyChartData by reportViewModel.monthlyChartData.collectAsStateWithLifecycle()
 
     ReportScreen(
-        reportViewModel.incomeTransactions,
-        reportViewModel.expenseTransactions,
-        reportViewModel.avgTransaction,
-        donutChartData,
+        monthlyChartData = monthlyChartData,
+        donutChartData = donutChartData,
         thisWeekData = thisWeekData,
         previousWeekData = previousWeekData
     )
@@ -68,9 +67,7 @@ fun ReportRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportScreen(
-    incomeTransactions: SnapshotStateMap<Long, Long>,
-    expenseTransactions: SnapshotStateMap<Long, Long>,
-    avgTransaction: SnapshotStateMap<Long, Long>,
+    monthlyChartData: MonthlyChartData?,
     donutChartData: List<PieChartInput>,
     thisWeekData: WeekData?,
     previousWeekData: WeekData?,
@@ -95,12 +92,13 @@ fun ReportScreen(
                 .padding(padding)
         ) {
 
-            // Income Outcome Chart
-            if (incomeTransactions.isNotEmpty() && expenseTransactions.isNotEmpty() && avgTransaction.isNotEmpty()) {
-                IncomeOutcomeChart(
-                    incomeList = incomeTransactions,
-                    outcomeList = expenseTransactions,
-                    walletBalance = avgTransaction,
+            // Monthly Report Chart
+            if (monthlyChartData != null) {
+                MonthlyReportChart(
+                    data = monthlyChartData,
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 16.dp)
                 )
             }
 

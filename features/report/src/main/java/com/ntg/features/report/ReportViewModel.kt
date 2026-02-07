@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.ntg.core.data.repository.CategoryRepository
 import com.ntg.core.data.repository.WalletsRepository
 import com.ntg.core.data.repository.transaction.TransactionsRepository
+import com.ntg.core.designsystem.components.MonthlyChartData
 import com.ntg.core.designsystem.components.WeekData
 import com.ntg.core.designsystem.components.convertLegacyWeekState
 import com.ntg.core.designsystem.components.transactionsToWeekData
@@ -16,11 +17,15 @@ import com.ntg.core.model.res.Category
 import com.ntg.core.mybudget.common.Constants
 import com.ntg.core.mybudget.common.Constants.BudgetType
 import com.ntg.core.mybudget.common.convertToFirstDay
+import com.ntg.core.mybudget.common.getCurrentJalaliMonth
+import com.ntg.core.mybudget.common.getCurrentJalaliMonthName
 import com.ntg.core.mybudget.common.getDayOfWeek
+import com.ntg.core.mybudget.common.getJalaliDayOfMonth
 import com.ntg.core.mybudget.common.getLastWeekTransactions
 import com.ntg.core.mybudget.common.getStartOfPreviousWeek
 import com.ntg.core.mybudget.common.getStartOfWeek
 import com.ntg.core.mybudget.common.getThisWeekTransactions
+import com.ntg.core.mybudget.common.isTransactionInCurrentJalaliMonth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,6 +58,9 @@ class ReportViewModel @Inject constructor(
     private val _previousWeekData = MutableStateFlow<WeekData?>(null)
     val previousWeekData: StateFlow<WeekData?> = _previousWeekData
 
+    private val _monthlyChartData = MutableStateFlow<MonthlyChartData?>(null)
+    val monthlyChartData: StateFlow<MonthlyChartData?> = _monthlyChartData
+
 
     init {
         getCategories()
@@ -78,6 +86,7 @@ class ReportViewModel @Inject constructor(
                 getExpenseTransactions()
                 getAvgTransaction()
                 getTopFourExpenseCategories()
+                computeMonthlyChartData()
 
                 // Update week data with new approach
                 updateWeekData()
@@ -225,6 +234,47 @@ class ReportViewModel @Inject constructor(
             weekState = getWeekState(lastWeekTransactions).toMutableList(),
             weekTitle = "هفته قبل",
             startDate = previousWeekStart
+        )
+    }
+
+    private fun computeMonthlyChartData() {
+        val currentMonth = getCurrentJalaliMonth()
+        val (currentYear, currentMonthNum) = currentMonth
+
+        val monthTransactions = transactions.filter { transaction ->
+            isTransactionInCurrentJalaliMonth(transaction.date, currentMonth)
+        }
+
+        val dailyIncome = mutableMapOf<Int, Long>()
+        val dailyExpense = mutableMapOf<Int, Long>()
+
+        monthTransactions.forEach { transaction ->
+            val day = getJalaliDayOfMonth(transaction.date)
+            when (transaction.type) {
+                BudgetType.INCOME -> {
+                    dailyIncome[day] = (dailyIncome[day] ?: 0L) + transaction.amount
+                }
+                BudgetType.EXPENSE -> {
+                    dailyExpense[day] = (dailyExpense[day] ?: 0L) + transaction.amount
+                }
+            }
+        }
+
+        val daysInMonth = when {
+            currentMonthNum in 1..6 -> 31
+            currentMonthNum in 7..11 -> 30
+            else -> 29
+        }
+
+        _monthlyChartData.value = MonthlyChartData(
+            monthName = getCurrentJalaliMonthName(),
+            year = currentYear,
+            daysInMonth = daysInMonth,
+            dailyIncome = dailyIncome,
+            dailyExpense = dailyExpense,
+            totalIncome = monthTransactions.filter { it.type == BudgetType.INCOME }.sumOf { it.amount },
+            totalExpense = monthTransactions.filter { it.type == BudgetType.EXPENSE }.sumOf { it.amount },
+            currentDay = com.ntg.core.mybudget.common.persianDate.PersianDate().shDay
         )
     }
 

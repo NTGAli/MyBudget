@@ -122,9 +122,10 @@ class HomeViewModel @Inject constructor(
 
 
         viewModelScope.launch {
-            _selectedSources.collect {
-                refreshFilteredTransactions()
-            }
+            combine(_transactions, _transactionFilter) { transactions, filter ->
+                if (isFilterActive(filter)) filterTransactions(transactions.orEmpty(), filter)
+                else transactions.orEmpty()
+            }.collect { _filteredTransactions.value = it }
         }
     }
 
@@ -221,33 +222,18 @@ class HomeViewModel @Inject constructor(
     fun applyTransactionFilter(filter: TransactionFilter) {
         _transactionFilter.value = filter
         _isFiltered.value = isFilterActive(filter)
-
-        // Re-fetch transactions with the new filter
-        refreshFilteredTransactions()
     }
 
     private fun isFilterActive(filter: TransactionFilter): Boolean {
         return filter.type != null ||
                 filter.dateFrom != null ||
                 filter.dateTo != null ||
-                filter.categoryId != null ||
+                filter.categoryIds.isNotEmpty() ||
                 filter.tags.isNotEmpty() ||
-                filter.hasImage
-    }
-
-    private fun refreshFilteredTransactions() {
-        viewModelScope.launch {
-            val sourceIds = _selectedSources.value?.map { it.id } ?: emptyList()
-            if (sourceIds.isEmpty()) {
-                _filteredTransactions.value = emptyList()
-                return@launch
-            }
-
-            transactionsRepository.getTransactionsBySourceIds(sourceIds).collect { allTransactions ->
-                val filteredList = filterTransactions(allTransactions, _transactionFilter.value)
-                _filteredTransactions.value = filteredList
-            }
-        }
+                filter.hasImage ||
+                filter.amountMin != null ||
+                filter.amountMax != null ||
+                filter.contactNames.isNotEmpty()
     }
 
     private fun filterTransactions(transactions: List<Transaction>, filter: TransactionFilter): List<Transaction> {
@@ -260,17 +246,19 @@ class HomeViewModel @Inject constructor(
             }
 
             // Filter by date range
-            if (filter.dateFrom != null) {
-                matches = matches && transaction.date >= filter.dateFrom.orDefault()
+            val dateFrom = filter.dateFrom
+            if (dateFrom != null) {
+                matches = matches && transaction.date >= dateFrom
             }
 
-            if (filter.dateTo != null) {
-                matches = matches && transaction.date <= filter.dateTo.orDefault()
+            val dateTo = filter.dateTo
+            if (dateTo != null) {
+                matches = matches && transaction.date <= dateTo
             }
 
-            // Filter by category
-            if (filter.categoryId != null) {
-                matches = matches && transaction.categoryId == filter.categoryId
+            // Filter by categories
+            if (filter.categoryIds.isNotEmpty()) {
+                matches = matches && transaction.categoryId in filter.categoryIds
             }
 
             // Filter by tags - match any of the filter tags
@@ -283,6 +271,22 @@ class HomeViewModel @Inject constructor(
                 matches = matches && !transaction.images.isNullOrEmpty()
             }
 
+            // Filter by amount range
+            val amountMin = filter.amountMin
+            if (amountMin != null) {
+                matches = matches && transaction.amount >= amountMin
+            }
+            val amountMax = filter.amountMax
+            if (amountMax != null) {
+                matches = matches && transaction.amount <= amountMax
+            }
+
+            // Filter by contacts
+            if (filter.contactNames.isNotEmpty()) {
+                val transactionContactNames = transaction.contacts?.mapNotNull { it.fullName }.orEmpty()
+                matches = matches && transactionContactNames.any { it in filter.contactNames }
+            }
+
             matches
         }
     }
@@ -290,14 +294,11 @@ class HomeViewModel @Inject constructor(
     fun clearTransactionFilters() {
         _transactionFilter.value = TransactionFilter()
         _isFiltered.value = false
-        refreshFilteredTransactions()
     }
 
     fun updatedSelectedSources(sourceIds: List<Int>) {
         viewModelScope.launch {
             sourceRepository.updateSelectedSources(sourceIds)
-            // After updating sources, refresh filtered transactions
-            refreshFilteredTransactions()
         }
     }
 }

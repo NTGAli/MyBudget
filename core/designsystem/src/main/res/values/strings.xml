@@ -72,6 +72,7 @@
     <string name="category">دسته بندی</string>
     <string name="amount">مبلغ</string>
     <string name="total_amount">موجودی همه حساب ها</string>
+    <string name="monthly_expenses">مخارج این ماه</string>
     <string name="card_info_format">اطلاعات ورودی و خروجی برای ماه %s می‌باشد.</string>
 
     // login
@@ -171,6 +172,32 @@
     <string name="no_report_data">داده‌ای برای نمایش گزارش وجود ندارد.</string>
     <string name="no_search_results">نتیجه‌ای یافت نشد.</string>
     <string name="no_transactions">تراکنشی ثبت نشده.</string>
+
+    // filter
+    <string name="filter_transactions">فیلتر تراکنش ها</string>
+    <string name="transaction_type">نوع تراکنش</string>
+    <string name="date_range">بازه زمانی</string>
+    <string name="from_date">از تاریخ</string>
+    <string name="to_date">تا تاریخ</string>
+    <string name="select_category">انتخاب دسته بندی</string>
+    <string name="add_tag">افزودن برچسب</string>
+    <string name="only_with_images">فقط دارای تصویر</string>
+    <string name="apply_filters">اعمال فیلتر</string>
+    <string name="clear_filters">حذف فیلتر</string>
+    <string name="all_categories">همه دسته بندی ها</string>
+    <string name="all">همه</string>
+    <string name="amount_range">بازه مبلغ</string>
+    <string name="min_amount">حداقل مبلغ</string>
+    <string name="max_amount">حداکثر مبلغ</string>
+    <string name="selected_categories_count">%s دسته بندی</string>
+    <string name="search_tags">جست و جو در برچسب ها</string>
+    <string name="select_contacts">انتخاب مخاطبین</string>
+    <string name="search_contacts">جست و جو در مخاطبین</string>
+    <string name="confirm_selection">تایید انتخاب</string>
+    <string name="no_filter_result">تراکنشی با این فیلتر یافت نشد</string>
+    <string name="change_filters">تغییر فیلتر</string>
+    <string name="filtered_expenses">هزینه‌های فیلتر شده</string>
+    <string name="toman">تومان</string>
 
     // status
     <string name="success_message">عملیات با موفقیت انجام شد.</string>
